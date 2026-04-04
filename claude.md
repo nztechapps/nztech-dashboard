@@ -41,3 +41,7 @@ Ver schema completo en /docs/schema.sql
 - Superficie: #13131A
 - Fuentes: Syne (display) + DM Mono (números)
 - Dark mode por defecto
+
+## URLs
+- Local: http://localhost:5175
+- Producción: https://nztech-dashboard.vercel.app

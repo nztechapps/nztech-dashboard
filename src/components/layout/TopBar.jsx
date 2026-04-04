@@ -1,4 +1,5 @@
 import { useAuth } from '../../hooks/useAuth'
+import { useNotifications } from '../../hooks/useNotifications'
 
 const IconBell = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -7,7 +8,8 @@ const IconBell = () => (
   </svg>
 )
 
-export function TopBar({ title = 'Dashboard', unreadCount = 0 }) {
+export function TopBar({ title = 'Dashboard' }) {
+  const { unreadCount } = useNotifications()
   return (
     <header
       className="fixed top-0 left-0 right-0 border-b flex items-center justify-between px-6"
@@ -39,9 +41,11 @@ export function TopBar({ title = 'Dashboard', unreadCount = 0 }) {
         <IconBell />
         {unreadCount > 0 && (
           <span
-            className="absolute top-1 right-1 w-2 h-2 rounded-full"
-            style={{ backgroundColor: '#00E5A0' }}
-          ></span>
+            className="absolute -top-1 -right-1 bg-[#FF4D4F] text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center"
+            style={{ fontSize: '11px' }}
+          >
+            {unreadCount}
+          </span>
         )}
       </button>
     </header>

@@ -1,8 +1,14 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Login } from './pages/Login'
+import Home from './pages/Home'
+import Apps from './pages/Apps'
+import AppDetail from './pages/AppDetail'
+import Finanzas from './pages/Finanzas'
+import Notificaciones from './pages/Notificaciones'
 import { AuthGuard } from './components/layout/AuthGuard'
 import { Sidebar } from './components/layout/Sidebar'
 import { TopBar } from './components/layout/TopBar'
+
 
 // Layout wrapper para rutas protegidas
 function ProtectedLayout({ children, title = 'Dashboard' }) {
@@ -15,72 +21,6 @@ function ProtectedLayout({ children, title = 'Dashboard' }) {
           {children}
         </main>
       </div>
-    </div>
-  )
-}
-
-// Páginas placeholder
-function Home() {
-  return (
-    <div className="p-6">
-      <h2 style={{ color: '#00E5A0' }} className="text-2xl font-bold">
-        Home
-      </h2>
-      <p style={{ color: 'rgba(255,255,255,0.45)' }} className="mt-2">
-        Bienvenido al dashboard
-      </p>
-    </div>
-  )
-}
-
-function Apps() {
-  return (
-    <div className="p-6">
-      <h2 style={{ color: '#00E5A0' }} className="text-2xl font-bold">
-        Apps
-      </h2>
-      <p style={{ color: 'rgba(255,255,255,0.45)' }} className="mt-2">
-        Gestiona tus apps móviles
-      </p>
-    </div>
-  )
-}
-
-function AppDetail() {
-  return (
-    <div className="p-6">
-      <h2 style={{ color: '#00E5A0' }} className="text-2xl font-bold">
-        Detalles de la App
-      </h2>
-      <p style={{ color: 'rgba(255,255,255,0.45)' }} className="mt-2">
-        Detalles específicos de la app
-      </p>
-    </div>
-  )
-}
-
-function Finanzas() {
-  return (
-    <div className="p-6">
-      <h2 style={{ color: '#00E5A0' }} className="text-2xl font-bold">
-        Finanzas
-      </h2>
-      <p style={{ color: 'rgba(255,255,255,0.45)' }} className="mt-2">
-        Métricas financieras
-      </p>
-    </div>
-  )
-}
-
-function Notificaciones() {
-  return (
-    <div className="p-6">
-      <h2 style={{ color: '#00E5A0' }} className="text-2xl font-bold">
-        Notificaciones
-      </h2>
-      <p style={{ color: 'rgba(255,255,255,0.45)' }} className="mt-2">
-        Centro de notificaciones
-      </p>
     </div>
   )
 }

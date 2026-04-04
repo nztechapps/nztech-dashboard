@@ -68,31 +68,6 @@ export function useNotifications(allNotifications = false) {
 
   useEffect(() => {
     fetchNotifications();
-
-    const channel = supabase
-      .channel('notifications-channel')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications' },
-        (payload) => {
-          setNotifications((prev) => [payload.new, ...prev]);
-          if (!payload.new.leida) setUnreadCount((prev) => prev + 1);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'notifications' },
-        (payload) => {
-          setNotifications((prev) =>
-            prev.map((n) => (n.id === payload.new.id ? payload.new : n))
-          );
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   return { notifications, unreadCount, loading, markAsRead, markAllAsRead };

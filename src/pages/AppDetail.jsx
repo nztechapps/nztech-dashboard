@@ -63,6 +63,7 @@ export default function AppDetail() {
         tipo: taskData.tipo || 'pipeline',
         prioridad: taskData.prioridad || 3,
         estado,
+        notas: taskData.notas || null,
       });
     } catch (err) {
       alert('Error al crear tarea');

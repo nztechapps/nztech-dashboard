@@ -1,7 +1,6 @@
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Content-Type = "application/javascript"
+[build]
+  publish = "dist"
+  command = "npm run build"
 
 [[redirects]]
   from = "/*"

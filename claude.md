@@ -44,4 +44,4 @@ Ver schema completo en /docs/schema.sql
 
 ## URLs
 - Local: http://localhost:5175
-- Producción: https://nztech-dashboard.vercel.app
+- Producción: https://nztech-dashboard.netlify.app (o la URL que asigne Netlify)

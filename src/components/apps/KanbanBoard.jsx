@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import {
   DndContext,
-  closestCenter,
+  pointerWithin,
+  rectIntersection,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -334,7 +335,9 @@ const KanbanColumn = ({ title, estado, tasks, onAddTask, onDeleteTask }) => {
 
 export default function KanbanBoard({ tasks, onUpdateTask, onDeleteTask, onAddTask }) {
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 }
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -371,7 +374,15 @@ export default function KanbanBoard({ tasks, onUpdateTask, onDeleteTask, onAddTa
   };
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={(args) => {
+        const pointerCollisions = pointerWithin(args);
+        if (pointerCollisions.length > 0) return pointerCollisions;
+        return rectIntersection(args);
+      }}
+      onDragEnd={handleDragEnd}
+    >
       <div style={{ display: 'flex', gap: '16px', overflow: 'auto', paddingBottom: '16px' }}>
         <KanbanColumn
           title="Todo"

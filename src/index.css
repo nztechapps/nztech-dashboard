@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-nz-primary: #00E5A0;
+  --color-nz-dark: #0A0A0F;
+  --color-nz-surface: #13131A;
+  --color-nz-surface2: #1C1C26;
+  --color-nz-accent: #7C6AFF;
+
+  --font-family-syne: 'Syne', sans-serif;
+  --font-family-mono: 'DM Mono', monospace;
+}
+
+html, body {
+  background-color: #0A0A0F;
+  color: white;
+  font-family: 'Syne', sans-serif;
+}

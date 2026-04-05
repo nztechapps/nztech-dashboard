@@ -30,5 +30,9 @@ export function AuthGuard({ children }) {
     return <Navigate to="/login" replace />
   }
 
+  if (user.email !== 'nztech.apps@outlook.com') {
+    return <Navigate to="/login" replace />
+  }
+
   return children
 }

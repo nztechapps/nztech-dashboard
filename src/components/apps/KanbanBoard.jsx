@@ -9,6 +9,7 @@ import {
   SortableContext, sortableKeyboardCoordinates,
   verticalListSortingStrategy, useSortable,
 } from '@dnd-kit/sortable';
+import DatePicker from '../ui/DatePicker';
 
 const IconPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -41,17 +42,12 @@ const IconText = () => (
 );
 
 const TaskCard = ({ task, onDelete, onUpdate }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [editedNotes, setEditedNotes] = useState(task.notas || '');
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
   const typeConfig = typeColors[task.tipo] || typeColors.pipeline;
-
-  const handleCardClick = (e) => {
-    if (e.target !== e.currentTarget && !e.target.closest('button')) return;
-    setIsExpanded(!isExpanded);
-  };
 
   const handleCopyPrompt = () => {
     navigator.clipboard.writeText(task.notas || '');
@@ -66,15 +62,27 @@ const TaskCard = ({ task, onDelete, onUpdate }) => {
     setIsEditingNotes(false);
   };
 
+  const getDateColor = (dateStr) => {
+    if (!dateStr) return '#999';
+    const dueDate = new Date(dateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dueDate.setHours(0, 0, 0, 0);
+    const daysUntil = (dueDate - today) / (1000 * 60 * 60 * 24);
+    if (daysUntil < 0) return '#FF4D4F'; // Rojo — vencido
+    if (daysUntil <= 3) return '#FFB400'; // Amarillo — vence pronto
+    return '#999'; // Gris — normal
+  };
+
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
       className="mb-3 bg-[#1C1C26] border border-[rgba(255,255,255,0.08)] rounded-[8px]">
-      <div style={{ padding: '12px', cursor: 'pointer' }} onClick={handleCardClick}>
+      <div style={{ padding: '12px' }}>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
           <div {...attributes} {...listeners} style={{ cursor: 'grab', color: '#999', marginTop: '2px', flexShrink: 0 }}>
             <IconGripVertical />
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={() => setExpanded(!expanded)}>
             <div style={{ color: 'white', fontSize: '13px', marginBottom: '6px', wordBreak: 'break-word' }}>{task.titulo}</div>
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
               <span style={{ backgroundColor: typeConfig.bg, color: typeConfig.text, fontSize: '10px', padding: '2px 6px', borderRadius: '12px' }}>{task.tipo}</span>
@@ -88,8 +96,16 @@ const TaskCard = ({ task, onDelete, onUpdate }) => {
         </div>
       </div>
 
-      {isExpanded && task.notas && (
+      {expanded && (task.notas || task.due_date) && (
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: '12px' }} onClick={(e) => e.stopPropagation()}>
+          {task.due_date && (
+            <div style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ color: '#999', fontSize: '10px', marginBottom: '4px' }}>Fecha límite</div>
+              <div style={{ color: getDateColor(task.due_date), fontSize: '13px', fontWeight: '500' }}>
+                {new Date(task.due_date).toLocaleDateString('es-ES')}
+              </div>
+            </div>
+          )}
           {isEditingNotes ? (
             <div>
               <textarea value={editedNotes} onChange={(e) => setEditedNotes(e.target.value)} onBlur={handleSaveNotes}
@@ -97,7 +113,7 @@ const TaskCard = ({ task, onDelete, onUpdate }) => {
                 autoFocus />
               <button onClick={handleSaveNotes} style={{ marginTop: '8px', padding: '6px 12px', backgroundColor: '#00E5A0', border: 'none', color: '#0A0A0F', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}>Guardar</button>
             </div>
-          ) : (
+          ) : task.notas ? (
             <div>
               <div style={{ backgroundColor: '#13131A', borderRadius: '6px', padding: '8px', marginBottom: '8px', fontSize: '12px', color: 'rgba(255,255,255,0.7)', fontFamily: 'DM Mono, monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                 {task.notas}
@@ -113,7 +129,7 @@ const TaskCard = ({ task, onDelete, onUpdate }) => {
                 )}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>
@@ -121,20 +137,38 @@ const TaskCard = ({ task, onDelete, onUpdate }) => {
 };
 
 const NewTaskForm = ({ estado, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({ titulo: '', tipo: 'pipeline', prioridad: 2, notas: '' });
+  const [formData, setFormData] = useState({ titulo: '', tipo: 'pipeline', prioridad: 2, notas: '', due_date: '' });
+  const [errors, setErrors] = useState({});
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: name === 'prioridad' ? parseInt(value) : value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.titulo.trim()) {
+      newErrors.titulo = 'El título es requerido';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.titulo.trim()) return;
+    if (!validate()) return;
     onSubmit(estado, formData);
   };
   return (
     <form onSubmit={handleSubmit} style={{ backgroundColor: '#1C1C26', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
-      <input type="text" name="titulo" value={formData.titulo} onChange={handleChange} placeholder="Título de la tarea" autoFocus
-        style={{ width: '100%', backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '13px', boxSizing: 'border-box', marginBottom: '8px' }} />
+      <div style={{ marginBottom: '8px' }}>
+        <input type="text" name="titulo" value={formData.titulo} onChange={handleChange} placeholder="Título de la tarea" autoFocus
+          style={{ width: '100%', backgroundColor: '#13131A', border: errors.titulo ? '1px solid #FF4D4F' : '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '13px', boxSizing: 'border-box' }} />
+        {errors.titulo && <span style={{ color: '#FF4D4F', fontSize: '11px', marginTop: '4px', display: 'block' }}>{errors.titulo}</span>}
+      </div>
       <textarea name="notas" value={formData.notas} onChange={handleChange} placeholder="Descripción o prompt para ejecutar esta tarea..."
         style={{ width: '100%', backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '12px', boxSizing: 'border-box', marginBottom: '10px', minHeight: '60px', fontFamily: 'DM Mono, monospace', resize: 'vertical' }} />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
@@ -150,6 +184,9 @@ const NewTaskForm = ({ estado, onSubmit, onCancel }) => {
           <option value="2">Media</option>
           <option value="3">Baja</option>
         </select>
+      </div>
+      <div style={{ marginBottom: '10px' }}>
+        <DatePicker value={formData.due_date} onChange={(date) => setFormData(prev => ({ ...prev, due_date: date }))} label="Fecha límite (opcional)" />
       </div>
       <div style={{ display: 'flex', gap: '8px' }}>
         <button type="submit" style={{ flex: 1, padding: '8px', backgroundColor: '#00E5A0', border: 'none', color: '#0A0A0F', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>Agregar</button>

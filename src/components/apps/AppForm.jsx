@@ -17,6 +17,7 @@ export default function AppForm({ isOpen, onClose, onSave, initialData = null, i
     admob_unit_id: '',
     play_url: '',
   });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (initialData) {
@@ -32,6 +33,7 @@ export default function AppForm({ isOpen, onClose, onSave, initialData = null, i
         play_url: '',
       });
     }
+    setErrors({});
   }, [initialData, isOpen]);
 
   const handleChange = (e) => {
@@ -40,12 +42,28 @@ export default function AppForm({ isOpen, onClose, onSave, initialData = null, i
       ...prev,
       [name]: value,
     }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.nombre?.trim()) {
+      newErrors.nombre = 'El nombre es requerido';
+    }
+    if (!formData.package?.trim()) {
+      newErrors.package = 'El package name es requerido';
+    } else if (!formData.package.includes('.')) {
+      newErrors.package = 'El package debe tener formato com.empresa.app';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.nombre || !formData.package) {
-      alert('Por favor completa nombre y package');
+    if (!validate()) {
       return;
     }
     try {
@@ -146,7 +164,7 @@ export default function AppForm({ isOpen, onClose, onSave, initialData = null, i
               style={{
                 width: '100%',
                 backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: errors.nombre ? '1px solid #FF4D4F' : '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '8px',
                 padding: '10px 12px',
                 color: 'white',
@@ -154,6 +172,7 @@ export default function AppForm({ isOpen, onClose, onSave, initialData = null, i
                 boxSizing: 'border-box',
               }}
             />
+            {errors.nombre && <span style={{ color: '#FF4D4F', fontSize: '11px', marginTop: '4px', display: 'block' }}>{errors.nombre}</span>}
           </div>
 
           <div style={{ marginBottom: '20px' }}>
@@ -169,7 +188,7 @@ export default function AppForm({ isOpen, onClose, onSave, initialData = null, i
               style={{
                 width: '100%',
                 backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: errors.package ? '1px solid #FF4D4F' : '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '8px',
                 padding: '10px 12px',
                 color: 'white',
@@ -177,6 +196,7 @@ export default function AppForm({ isOpen, onClose, onSave, initialData = null, i
                 boxSizing: 'border-box',
               }}
             />
+            {errors.package && <span style={{ color: '#FF4D4F', fontSize: '11px', marginTop: '4px', display: 'block' }}>{errors.package}</span>}
           </div>
 
           <div style={{ marginBottom: '20px' }}>

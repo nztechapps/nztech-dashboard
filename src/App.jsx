@@ -5,6 +5,8 @@ import Apps from './pages/Apps'
 import AppDetail from './pages/AppDetail'
 import Finanzas from './pages/Finanzas'
 import Notificaciones from './pages/Notificaciones'
+import Agentes from './pages/Agentes'
+import Calendario from './pages/Calendario'
 import { AuthGuard } from './components/layout/AuthGuard'
 import { Sidebar } from './components/layout/Sidebar'
 import { TopBar } from './components/layout/TopBar'
@@ -79,6 +81,26 @@ export default function App() {
             <AuthGuard>
               <ProtectedLayout title="Notificaciones">
                 <Notificaciones />
+              </ProtectedLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/agentes"
+          element={
+            <AuthGuard>
+              <ProtectedLayout title="Agentes">
+                <Agentes />
+              </ProtectedLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/calendario"
+          element={
+            <AuthGuard>
+              <ProtectedLayout title="Calendario">
+                <Calendario />
               </ProtectedLayout>
             </AuthGuard>
           }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import DatePicker from '../ui/DatePicker';
 
 const IconX = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -39,7 +40,6 @@ export default function MetricsForm({ isOpen, onClose, onSave, appId, isLoading 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.fecha) {
-      alert('Por favor selecciona una fecha');
       return;
     }
 
@@ -139,25 +139,7 @@ export default function MetricsForm({ isOpen, onClose, onSave, appId, isLoading 
           }}
         >
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: '#999', fontSize: '12px', marginBottom: '8px' }}>
-              Fecha *
-            </label>
-            <input
-              type="date"
-              name="fecha"
-              value={formData.fecha}
-              onChange={handleChange}
-              style={{
-                width: '100%',
-                backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                color: 'white',
-                fontSize: '14px',
-                boxSizing: 'border-box',
-              }}
-            />
+            <DatePicker value={formData.fecha} onChange={(date) => setFormData(prev => ({ ...prev, fecha: date }))} label="Fecha *" />
           </div>
 
           <div style={{ marginBottom: '20px' }}>

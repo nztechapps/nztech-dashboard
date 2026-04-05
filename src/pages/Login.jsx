@@ -9,9 +9,11 @@ export function Login() {
 
   const handleGoogleSignIn = async () => {
     setLoading(true)
-    const { error } = await signInWithGoogle()
+    const { data, error } = await signInWithGoogle()
     if (error) {
       setMessage(`Error: ${error.message}`)
+    } else if (data?.user?.email !== 'nztech.apps@outlook.com') {
+      setMessage('Acceso restringido')
     }
     setLoading(false)
   }
@@ -111,7 +113,7 @@ export function Login() {
         {message && (
           <p
             style={{
-              color: message.includes('Error') ? '#FF6B6B' : '#00E5A0',
+              color: (message.includes('Error') || message.includes('restringido')) ? '#FF4D4F' : '#00E5A0',
             }}
             className="mt-4 text-center text-sm"
           >

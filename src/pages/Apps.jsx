@@ -3,6 +3,8 @@ import { useApps } from '../hooks/useApps';
 import AppIcon from '../components/ui/AppIcon';
 import StatusBadge from '../components/ui/StatusBadge';
 import AppForm from '../components/apps/AppForm';
+import ConfirmModal from '../components/ui/ConfirmModal';
+import ToastNotification from '../components/ui/ToastNotification';
 import { supabase } from '../lib/supabase';
 import React, { useState, useEffect } from 'react';
 
@@ -35,6 +37,8 @@ export default function Apps() {
   const [isLoading, setIsLoading] = useState(false);
   const [appMetrics, setAppMetrics] = useState({});
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, appId: null, appName: '' });
+  const [toast, setToast] = useState(null);
 
   // Fetch monthly revenue for each app
   useEffect(() => {
@@ -77,17 +81,22 @@ export default function Apps() {
     setOpenMenuId(null);
   };
 
-  const handleDeleteApp = async (app) => {
-    if (window.confirm(`¿Eliminar "${app.nombre}"?`)) {
-      try {
-        setIsLoading(true);
-        await deleteApp(app.id);
-        setOpenMenuId(null);
-      } catch (err) {
-        alert('Error al eliminar app');
-      } finally {
-        setIsLoading(false);
-      }
+  const handleDeleteApp = (app) => {
+    setConfirmModal({ isOpen: true, appId: app.id, appName: app.nombre });
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      setIsLoading(true);
+      await deleteApp(confirmModal.appId);
+      setOpenMenuId(null);
+      setToast({ message: 'App eliminada', type: 'success' });
+      setConfirmModal({ isOpen: false, appId: null, appName: '' });
+    } catch (err) {
+      setToast({ message: 'Error al eliminar app', type: 'error' });
+      setConfirmModal({ isOpen: false, appId: null, appName: '' });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -96,14 +105,16 @@ export default function Apps() {
       setIsLoading(true);
       if (selectedApp) {
         await updateApp(selectedApp.id, formData);
+        setToast({ message: 'App actualizada correctamente', type: 'success' });
       } else {
         await createApp({
           ...formData,
           created_at: new Date().toISOString(),
         });
+        setToast({ message: 'App creada correctamente', type: 'success' });
       }
     } catch (err) {
-      alert('Error al guardar app');
+      setToast({ message: 'Error al guardar app', type: 'error' });
     } finally {
       setIsLoading(false);
     }
@@ -321,6 +332,26 @@ export default function Apps() {
         initialData={selectedApp}
         isLoading={isLoading}
       />
+
+      {/* ConfirmModal para eliminar app */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Eliminar app"
+        message={`¿Estás seguro que deseas eliminar "${confirmModal.appName}"? Esta acción no se puede deshacer.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, appId: null, appName: '' })}
+        confirmLabel="Eliminar"
+        confirmColor="#FF4D4F"
+      />
+
+      {/* Toast Notification */}
+      {toast && (
+        <ToastNotification
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

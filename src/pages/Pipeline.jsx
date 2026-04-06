@@ -444,7 +444,7 @@ export default function Pipeline() {
                       </span>
                     </div>
                     <p style={{ color: '#999', margin: '0 0 6px 0', fontSize: '12px' }}>
-                      {run.categoria} • {new Date(run.created_at).toLocaleDateString('es-ES')}
+                      {run.categoria} • {run.created_at && !isNaN(new Date(run.created_at)) ? new Date(run.created_at).toLocaleDateString('es-ES') : '—'}
                     </p>
                     {run.github_url && run.estado === 'completado' && (
                       <a

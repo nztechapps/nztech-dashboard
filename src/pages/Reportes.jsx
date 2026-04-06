@@ -171,13 +171,15 @@ export default function Reportes() {
                         </span>
                       )}
                       <span style={{ color: '#999', fontSize: '12px' }}>
-                        {new Date(reporte.created_at).toLocaleDateString('es-ES', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                        {reporte.created_at && !isNaN(new Date(reporte.created_at))
+                          ? new Date(reporte.created_at).toLocaleDateString('es-ES', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })
+                          : '—'}
                       </span>
                     </div>
                   </div>

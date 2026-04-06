@@ -368,12 +368,14 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
                   {exec.titulo || 'Sin título'}
                 </div>
                 <div style={{ color: '#999', fontSize: '10px' }}>
-                  {new Date(exec.created_at).toLocaleDateString('es-ES', {
-                    day: 'short',
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  {exec.created_at && !isNaN(new Date(exec.created_at))
+                    ? new Date(exec.created_at).toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : '—'}
                 </div>
               </div>
             ))}
@@ -527,12 +529,14 @@ function InboxSection() {
                     {item.contenido || 'Sin contenido'}
                   </p>
                   <div style={{ color: '#666', fontSize: '10px', marginTop: '4px' }}>
-                    {new Date(item.created_at).toLocaleDateString('es-ES', {
-                      day: 'short',
-                      month: 'short',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                    {item.created_at && !isNaN(new Date(item.created_at))
+                      ? new Date(item.created_at).toLocaleDateString('es-ES', {
+                          day: '2-digit',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                      : '—'}
                   </div>
                 </div>
                 <IconChevronDown

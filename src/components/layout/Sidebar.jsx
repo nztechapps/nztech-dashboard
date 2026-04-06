@@ -9,6 +9,9 @@ const navItems = [
   { path: '/notificaciones', label: 'Notificaciones', icon: 'bell' },
   { path: '/agentes', label: 'Agentes', icon: 'robot' },
   { path: '/calendario', label: 'Calendario', icon: 'calendar' },
+  { path: '/pipeline', label: 'Pipeline', icon: 'rocket' },
+  { path: '/reportes', label: 'Reportes', icon: 'document' },
+  { path: '/ideas', label: 'Ideas', icon: 'lightbulb' },
 ]
 
 const IconHome = () => (
@@ -59,6 +62,26 @@ const IconCalendar = () => (
   </svg>
 )
 
+const IconRocket = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M4.5 16.5c-1.5-1.5-2-3.5-2-5.5 0-4.5 3.5-8 8-8s8 3.5 8 8-3.5 8-8 8c-2 0-4-0.5-5.5-2"></path>
+    <polyline points="12 4 12 12 9 12"></polyline>
+  </svg>
+)
+
+const IconDocument = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+  </svg>
+)
+
+const IconLightbulb = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+  </svg>
+)
+
 const getIcon = (iconName) => {
   switch (iconName) {
     case 'home':
@@ -73,6 +96,12 @@ const getIcon = (iconName) => {
       return <IconRobot />
     case 'calendar':
       return <IconCalendar />
+    case 'rocket':
+      return <IconRocket />
+    case 'document':
+      return <IconDocument />
+    case 'lightbulb':
+      return <IconLightbulb />
     default:
       return null
   }

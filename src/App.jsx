@@ -7,6 +7,9 @@ import Finanzas from './pages/Finanzas'
 import Notificaciones from './pages/Notificaciones'
 import Agentes from './pages/Agentes'
 import Calendario from './pages/Calendario'
+import Pipeline from './pages/Pipeline'
+import Reportes from './pages/Reportes'
+import Ideas from './pages/Ideas'
 import { AuthGuard } from './components/layout/AuthGuard'
 import { Sidebar } from './components/layout/Sidebar'
 import { TopBar } from './components/layout/TopBar'
@@ -101,6 +104,36 @@ export default function App() {
             <AuthGuard>
               <ProtectedLayout title="Calendario">
                 <Calendario />
+              </ProtectedLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/pipeline"
+          element={
+            <AuthGuard>
+              <ProtectedLayout title="Pipeline">
+                <Pipeline />
+              </ProtectedLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/reportes"
+          element={
+            <AuthGuard>
+              <ProtectedLayout title="Reportes">
+                <Reportes />
+              </ProtectedLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/ideas"
+          element={
+            <AuthGuard>
+              <ProtectedLayout title="Ideas">
+                <Ideas />
               </ProtectedLayout>
             </AuthGuard>
           }

@@ -494,6 +494,123 @@ export default function Ideas() {
     }
   };
 
+  const parseCsvLine = (line) => {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  };
+
+  const handleCsvImport = async (file) => {
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').filter((l) => l.trim());
+
+      if (lines.length < 2) {
+        setToast({ message: 'El CSV debe contener al menos una fila de datos', type: 'error' });
+        return;
+      }
+
+      const headers = parseCsvLine(lines[0]);
+      const validCategories = [
+        'datos-gubernamentales-ar',
+        'finanzas-ar',
+        'utilidad-global',
+        'salud',
+        'productividad',
+        'info-ar',
+      ];
+
+      let successCount = 0;
+      let errorCount = 0;
+      const errors = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        try {
+          const values = parseCsvLine(lines[i]);
+          const row = {};
+          headers.forEach((header, idx) => {
+            row[header] = values[idx] || '';
+          });
+
+          if (!row.titulo || !row.titulo.trim()) {
+            errors.push(`Fila ${i + 1}: falta el título`);
+            errorCount++;
+            continue;
+          }
+
+          const prioridad = parseInt(row.prioridad) || 3;
+          if (prioridad < 1 || prioridad > 5) {
+            errors.push(`Fila ${i + 1}: prioridad debe ser entre 1 y 5`);
+            errorCount++;
+            continue;
+          }
+
+          if (row.categoria && !validCategories.includes(row.categoria)) {
+            errors.push(`Fila ${i + 1}: categoría inválida`);
+            errorCount++;
+            continue;
+          }
+
+          await createIdea({
+            titulo: row.titulo.trim(),
+            descripcion: row.descripcion || null,
+            publico: row.publico || null,
+            mercado: row.mercado || null,
+            categoria: row.categoria || null,
+            prioridad: prioridad,
+            notas: row.notas || null,
+            estado: 'idea',
+          });
+          successCount++;
+        } catch (err) {
+          errors.push(`Fila ${i + 1}: ${err.message}`);
+          errorCount++;
+        }
+      }
+
+      const message = `${successCount} ideas importadas correctamente${errorCount > 0 ? `, ${errorCount} errores` : ''}`;
+      setToast({
+        message,
+        type: errorCount > 0 && successCount === 0 ? 'error' : 'success',
+      });
+    } catch (err) {
+      setToast({ message: 'Error al leer el archivo CSV', type: 'error' });
+    }
+  };
+
+  const downloadTemplate = () => {
+    const template = `titulo,descripcion,publico,categoria,mercado,prioridad,notas
+"Mi app de ejemplo","Descripción de la app","Usuarios argentinos","utilidad-global","argentina",3,"Notas opcionales"`;
+
+    const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.setAttribute('href', URL.createObjectURL(blob));
+    link.setAttribute('download', 'ideas_template.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const categories = [...new Set(ideas.map((i) => i.categoria).filter(Boolean))];
   const mercados = [...new Set(ideas.map((i) => i.mercado).filter(Boolean))];
 
@@ -509,24 +626,75 @@ export default function Ideas() {
                 Ideas
               </h1>
             </div>
-            <button
-              onClick={() => setIsNewIdeaOpen(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                backgroundColor: '#00E5A0',
-                border: 'none',
-                color: '#0A0A0F',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: '600',
-              }}
-            >
-              <IconPlus /> Nueva idea
-            </button>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <input
+                type="file"
+                ref={(el) => {
+                  if (el) el.id = 'csv-input';
+                }}
+                accept=".csv"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleCsvImport(file);
+                  e.target.value = '';
+                }}
+              />
+              <button
+                onClick={() => document.getElementById('csv-input')?.click()}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: '#999',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                }}
+              >
+                Importar CSV
+              </button>
+              <button
+                onClick={downloadTemplate}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: '#999',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                }}
+              >
+                Template
+              </button>
+              <button
+                onClick={() => setIsNewIdeaOpen(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  backgroundColor: '#00E5A0',
+                  border: 'none',
+                  color: '#0A0A0F',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                }}
+              >
+                <IconPlus /> Nueva idea
+              </button>
+            </div>
           </div>
           <p style={{ color: '#999', fontSize: '13px', margin: 0 }}>
             Gestiona todas tus ideas para futuras apps

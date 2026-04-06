@@ -615,11 +615,11 @@ export default function Agentes() {
             gridTemplateColumns: '1fr 1.5fr',
             gap: '24px',
             marginBottom: '32px',
-            height: '500px',
+            alignItems: 'start',
           }}
         >
           {/* Left Column - Agents Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', overflow: 'auto', paddingRight: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', paddingRight: '8px' }}>
             {AGENTS.map((agent) => (
               <AgentCard key={agent.id} agent={agent} isSelected={selectedAgent?.id === agent.id} onSelect={setSelectedAgent} />
             ))}
@@ -632,7 +632,6 @@ export default function Agentes() {
               border: `1px solid ${selectedAgent ? '#00E5A0' : 'rgba(255,255,255,0.08)'}`,
               borderRadius: '10px',
               padding: '24px',
-              overflow: 'auto',
               transition: 'border-color 0.2s',
             }}
           >

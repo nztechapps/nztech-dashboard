@@ -179,23 +179,6 @@ const renderField = (value) => {
   return String(value);
 };
 
-const renderSpecField = (val) => {
-  if (!val) return null;
-
-  const parsed = parseField(val);
-  if (parsed === null) return null;
-
-  if (Array.isArray(parsed)) {
-    return renderField(parsed);
-  }
-
-  if (typeof parsed === 'object') {
-    return JSON.stringify(parsed, null, 2);
-  }
-
-  return String(parsed);
-};
-
 const ResearchSection = ({ data }) => {
   if (!data) return null;
 
@@ -222,18 +205,96 @@ const ResearchSection = ({ data }) => {
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr', gap: '16px' }}>
-      {fields.map(({ key, label }) =>
-        parsedData[key] ? (
+      {fields.map(({ key, label }) => {
+        const value = parsedData[key];
+        if (!value) return null;
+
+        // ASO especial: {titulo, keywords[], descripcion_corta}
+        if (key === 'aso' && typeof value === 'object') {
+          const aso = typeof value === 'string' ? JSON.parse(value) : value;
+          return (
+            <div key={key} style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                {label}
+              </h3>
+              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
+                {aso.titulo && <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#00E5A0' }}>{aso.titulo}</p>}
+                {aso.descripcion_corta && <p style={{ margin: '0 0 8px 0' }}>{aso.descripcion_corta}</p>}
+                {aso.keywords && Array.isArray(aso.keywords) && (
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    {aso.keywords.map((k, i) => (
+                      <span key={i} style={{ backgroundColor: 'rgba(100,150,255,0.2)', color: '#6496FF', padding: '4px 8px', borderRadius: '4px', fontSize: '11px' }}>
+                        {k}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        // DISEÑO especial: {paleta[], tipografia_display, estilo}
+        if (key === 'diseno' && typeof value === 'object') {
+          const diseno = typeof value === 'string' ? JSON.parse(value) : value;
+          return (
+            <div key={key} style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                {label}
+              </h3>
+              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
+                {diseno.paleta && Array.isArray(diseno.paleta) && (
+                  <div style={{ marginBottom: '12px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '500', marginBottom: '6px', color: '#999' }}>Paleta de Colores</div>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      {diseno.paleta.map((color, i) => (
+                        <div key={i} style={{ textAlign: 'center' }}>
+                          <div style={{ width: '40px', height: '40px', backgroundColor: color, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '4px' }}></div>
+                          <div style={{ fontSize: '10px', color: '#999' }}>{color}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {diseno.tipografia_display && <p style={{ margin: '8px 0' }}><strong>Tipografía:</strong> {diseno.tipografia_display}</p>}
+                {diseno.estilo && <p style={{ margin: '8px 0' }}><strong>Estilo:</strong> {diseno.estilo}</p>}
+              </div>
+            </div>
+          );
+        }
+
+        // MONETIZACIÓN especial: {modelo, revenue_estimado_mensual_usd}
+        if (key === 'monetizacion' && typeof value === 'object') {
+          const monetizacion = typeof value === 'string' ? JSON.parse(value) : value;
+          return (
+            <div key={key} style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                {label}
+              </h3>
+              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
+                {monetizacion.modelo && <p style={{ margin: '0 0 8px 0' }}><strong>{monetizacion.modelo}</strong></p>}
+                {monetizacion.revenue_estimado_mensual_usd && (
+                  <p style={{ margin: 0, fontSize: '14px', color: '#00E5A0', fontWeight: '600' }}>
+                    ${monetizacion.revenue_estimado_mensual_usd}/mes
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        // Renderizado por defecto con renderField
+        return (
           <div key={key} style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
             <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
               {label}
             </h3>
             <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
-              {renderField(parsedData[key])}
+              {renderField(value)}
             </div>
           </div>
-        ) : null
-      )}
+        );
+      })}
     </div>
   );
 };
@@ -247,7 +308,48 @@ export default function IdeaDetail() {
   const [generatingResearch, setGeneratingResearch] = useState(false);
   const [generatingSpecs, setGeneratingSpecs] = useState(false);
   const [toast, setToast] = useState(null);
+  const [activeTab, setActiveTab] = useState('info');
   const [editingFields, setEditingFields] = useState({});
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+
+  const tabs = ['info', 'research', 'specs', 'pipeline'];
+
+  const hasContent = {
+    info: true,
+    research: !!idea?.research_mercado || !!idea?.research,
+    specs: !!(idea?.specs_pantallas || idea?.specs_flujos || idea?.specs_apis || idea?.complejidad),
+    pipeline: !!idea?.paso_agente >= 2,
+  };
+
+  const handleTouchStart = (e) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = (e) => {
+    setTouchEnd(e.changedTouches[0].clientX);
+    handleSwipe();
+  };
+
+  const handleSwipe = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      const currentIndex = tabs.indexOf(activeTab);
+      if (currentIndex < tabs.length - 1) {
+        setActiveTab(tabs[currentIndex + 1]);
+      }
+    }
+    if (isRightSwipe) {
+      const currentIndex = tabs.indexOf(activeTab);
+      if (currentIndex > 0) {
+        setActiveTab(tabs[currentIndex - 1]);
+      }
+    }
+  };
 
   useEffect(() => {
     fetchIdea();
@@ -467,8 +569,13 @@ export default function IdeaDetail() {
     );
   }
 
-  const hasResearch = !!idea.research_mercado || !!idea.research;
-  const hasSpecs = !!(idea.specs_pantallas || idea.specs_flujos || idea.specs_apis || idea.complejidad);
+  const researchData = idea.research || (idea.research_mercado ? JSON.parse(idea.research_mercado) : null);
+  const specsData = idea.specs || {
+    pantallas: parseField(idea.specs_pantallas),
+    flujos: parseField(idea.specs_flujos),
+    apis: parseField(idea.specs_apis),
+    complejidad: idea.complejidad,
+  };
 
   return (
     <div style={{
@@ -507,37 +614,11 @@ export default function IdeaDetail() {
         </button>
 
         <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: 0 }}>
-          {editingFields.titulo !== undefined ? (
-            <input
-              autoFocus
-              value={editingFields.titulo}
-              onChange={(e) => handleFieldChange('titulo', e.target.value)}
-              onBlur={(e) => handleFieldBlur('titulo', e.target.value)}
-              style={{
-                fontSize: '28px',
-                fontWeight: '700',
-                color: 'white',
-                backgroundColor: 'transparent',
-                border: '1px solid #00E5A0',
-                borderRadius: '4px',
-                padding: '4px 8px',
-                width: '100%',
-                fontFamily: 'inherit',
-              }}
-            />
-          ) : (
-            <span
-              onClick={() => setEditingFields({ ...editingFields, titulo: idea.titulo })}
-              style={{ cursor: 'pointer', paddingBottom: '4px' }}
-              title="Click para editar"
-            >
-              {idea.titulo}
-            </span>
-          )}
+          {idea.titulo}
         </h1>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content Container */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -545,360 +626,497 @@ export default function IdeaDetail() {
         maxWidth: '900px',
         width: '100%',
         margin: '0 auto',
-        padding: '24px',
+        padding: '20px 24px',
         boxSizing: 'border-box',
-        gap: '32px',
-        overflowX: 'hidden',
       }}>
-
-        {/* Info Section */}
-        <section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <h2 style={{ color: '#00E5A0', fontSize: '16px', fontWeight: '700', margin: 0, textTransform: 'uppercase' }}>
-            Información
-          </h2>
-
-          {/* Status & Tags */}
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <span
+        {/* Tabs Navigation */}
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', overflow: 'auto' }}>
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              disabled={!hasContent[tab]}
               style={{
-                backgroundColor: 'rgba(0,229,160,0.12)',
-                color: getStatusColor(idea.estado),
-                fontSize: '12px',
-                fontWeight: '600',
-                padding: '6px 12px',
+                padding: '8px 16px',
+                border: 'none',
                 borderRadius: '6px',
+                backgroundColor: activeTab === tab ? '#00E5A0' : 'transparent',
+                color: activeTab === tab ? '#0A0A0F' : hasContent[tab] ? 'rgba(255,255,255,0.7)' : '#666',
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: hasContent[tab] ? 'pointer' : 'not-allowed',
+                textTransform: 'capitalize',
+                transition: 'all 200ms ease',
+                opacity: hasContent[tab] ? 1 : 0.5,
+                whiteSpace: 'nowrap',
               }}
             >
-              {idea.estado || 'idea'}
-            </span>
-            {idea.mercado && (
-              <span style={{
-                backgroundColor: 'rgba(100,150,255,0.12)',
-                color: '#6496FF',
-                fontSize: '12px',
-                fontWeight: '600',
-                padding: '6px 12px',
-                borderRadius: '6px',
-              }}>
-                {idea.mercado}
+              {tab === 'info' ? 'Info' : tab === 'research' ? 'Research' : tab === 'specs' ? 'Specs' : 'Pipeline'}
+            </button>
+          ))}
+        </div>
+
+        {/* Content Area with Touch Events */}
+        <div
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          style={{
+            position: 'relative',
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            paddingRight: '4px',
+          }}
+        >
+          {/* Info Tab */}
+          <div
+            style={{
+              opacity: activeTab === 'info' ? 1 : 0,
+              transform: activeTab === 'info' ? 'translateX(0)' : 'translateX(20px)',
+              transition: 'all 200ms ease',
+              pointerEvents: activeTab === 'info' ? 'auto' : 'none',
+              position: activeTab === 'info' ? 'relative' : 'absolute',
+              width: '100%',
+              maxHeight: '100%',
+            }}
+          >
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '24px' }}>
+              <span
+                style={{
+                  backgroundColor: 'rgba(0,229,160,0.12)',
+                  color: getStatusColor(idea.estado),
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                }}
+              >
+                {idea.estado || 'idea'}
               </span>
+              {idea.mercado && (
+                <span
+                  style={{
+                    backgroundColor: 'rgba(100,150,255,0.12)',
+                    color: '#6496FF',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                  }}
+                >
+                  {idea.mercado}
+                </span>
+              )}
+              {idea.categoria && (
+                <span
+                  style={{
+                    backgroundColor: 'rgba(124,106,255,0.12)',
+                    color: '#7C6AFF',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                  }}
+                >
+                  {idea.categoria}
+                </span>
+              )}
+            </div>
+
+            {idea.prioridad && (
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px', fontWeight: '500' }}>Prioridad</div>
+                <StarRating value={idea.prioridad} />
+              </div>
             )}
-            {idea.categoria && (
-              <span style={{
-                backgroundColor: 'rgba(124,106,255,0.12)',
-                color: '#7C6AFF',
-                fontSize: '12px',
-                fontWeight: '600',
-                padding: '6px 12px',
-                borderRadius: '6px',
-              }}>
-                {idea.categoria}
-              </span>
+
+            {/* Editable Descripción */}
+            {idea.descripcion && (
+              <div style={{ marginBottom: '24px' }}>
+                <h2 style={{ color: '#00E5A0', fontSize: '14px', fontWeight: '600', marginBottom: '12px', textTransform: 'uppercase' }}>
+                  Descripción
+                </h2>
+                {editingFields.descripcion !== undefined ? (
+                  <textarea
+                    autoFocus
+                    value={editingFields.descripcion}
+                    onChange={(e) => handleFieldChange('descripcion', e.target.value)}
+                    onBlur={(e) => handleFieldBlur('descripcion', e.target.value)}
+                    style={{
+                      width: '100%',
+                      minHeight: '100px',
+                      padding: '12px',
+                      backgroundColor: '#13131A',
+                      border: '1px solid #00E5A0',
+                      borderRadius: '6px',
+                      color: 'white',
+                      fontSize: '14px',
+                      fontFamily: 'inherit',
+                      resize: 'vertical',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                ) : (
+                  <p
+                    onClick={() => setEditingFields({ ...editingFields, descripcion: idea.descripcion })}
+                    style={{
+                      color: 'rgba(255,255,255,0.7)',
+                      fontSize: '14px',
+                      lineHeight: '1.6',
+                      margin: 0,
+                      whiteSpace: 'pre-wrap',
+                      cursor: 'pointer',
+                      padding: '8px',
+                      borderRadius: '4px',
+                    }}
+                    title="Click para editar"
+                  >
+                    {idea.descripcion}
+                  </p>
+                )}
+              </div>
             )}
+
+            {/* Público y Categoría editables */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+              <div>
+                <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px', fontWeight: '500', textTransform: 'uppercase' }}>
+                  Público
+                </div>
+                {editingFields.publico !== undefined ? (
+                  <input
+                    autoFocus
+                    type="text"
+                    value={editingFields.publico}
+                    onChange={(e) => handleFieldChange('publico', e.target.value)}
+                    onBlur={(e) => handleFieldBlur('publico', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      backgroundColor: '#13131A',
+                      border: '1px solid #00E5A0',
+                      borderRadius: '6px',
+                      color: 'white',
+                      fontSize: '14px',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                ) : (
+                  <div
+                    onClick={() => setEditingFields({ ...editingFields, publico: idea.publico || '' })}
+                    style={{
+                      padding: '10px 12px',
+                      backgroundColor: '#13131A',
+                      borderRadius: '6px',
+                      color: 'rgba(255,255,255,0.7)',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                    }}
+                    title="Click para editar"
+                  >
+                    {idea.publico || 'Sin especificar'}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px', fontWeight: '500', textTransform: 'uppercase' }}>
+                  Categoría
+                </div>
+                {editingFields.categoria !== undefined ? (
+                  <input
+                    autoFocus
+                    type="text"
+                    value={editingFields.categoria}
+                    onChange={(e) => handleFieldChange('categoria', e.target.value)}
+                    onBlur={(e) => handleFieldBlur('categoria', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      backgroundColor: '#13131A',
+                      border: '1px solid #00E5A0',
+                      borderRadius: '6px',
+                      color: 'white',
+                      fontSize: '14px',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                ) : (
+                  <div
+                    onClick={() => setEditingFields({ ...editingFields, categoria: idea.categoria || '' })}
+                    style={{
+                      padding: '10px 12px',
+                      backgroundColor: '#13131A',
+                      borderRadius: '6px',
+                      color: 'rgba(255,255,255,0.7)',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                    }}
+                    title="Click para editar"
+                  >
+                    {idea.categoria || 'Sin especificar'}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <button
+                onClick={handleGenerateResearch}
+                disabled={generatingResearch}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  backgroundColor: idea.research_mercado ? '#6496FF' : '#00E5A0',
+                  border: 'none',
+                  color: '#0A0A0F',
+                  borderRadius: '6px',
+                  cursor: generatingResearch ? 'not-allowed' : 'pointer',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  opacity: generatingResearch ? 0.6 : 1,
+                  transition: 'all 200ms ease',
+                }}
+              >
+                <IconBeaker />
+                {generatingResearch ? 'Generando research...' : (idea.research_mercado ? 'Actualizar Research' : 'Generar Research')}
+              </button>
+
+              <button
+                onClick={handleGenerateSpecs}
+                disabled={generatingSpecs || !idea.research_mercado}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  backgroundColor: idea.specs_pantallas ? '#7C6AFF' : '#00E5A0',
+                  border: 'none',
+                  color: '#0A0A0F',
+                  borderRadius: '6px',
+                  cursor: generatingSpecs || !idea.research_mercado ? 'not-allowed' : 'pointer',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  opacity: (generatingSpecs || !idea.research_mercado) ? 0.5 : 1,
+                  transition: 'all 200ms ease',
+                }}
+                title={!idea.research_mercado ? 'Primero genera el Research' : ''}
+              >
+                <IconFileText />
+                {generatingSpecs ? 'Generando specs...' : (idea.specs_pantallas ? 'Actualizar Specs' : 'Generar Specs')}
+              </button>
+            </div>
           </div>
 
-          {/* Prioridad */}
-          {idea.prioridad && (
-            <div>
-              <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px', fontWeight: '500' }}>Prioridad</div>
-              <StarRating value={idea.prioridad} />
-            </div>
-          )}
-
-          {/* Descripción */}
-          <div>
-            <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px', fontWeight: '500', textTransform: 'uppercase' }}>
-              Descripción
-            </div>
-            {editingFields.descripcion !== undefined ? (
-              <textarea
-                autoFocus
-                value={editingFields.descripcion}
-                onChange={(e) => handleFieldChange('descripcion', e.target.value)}
-                onBlur={(e) => handleFieldBlur('descripcion', e.target.value)}
-                style={{
-                  width: '100%',
-                  minHeight: '100px',
-                  padding: '12px',
-                  backgroundColor: '#13131A',
-                  border: '1px solid #00E5A0',
-                  borderRadius: '6px',
-                  color: 'white',
-                  fontSize: '14px',
-                  fontFamily: 'inherit',
-                  resize: 'vertical',
-                  boxSizing: 'border-box',
-                }}
-              />
+          {/* Research Tab */}
+          <div
+            style={{
+              opacity: activeTab === 'research' ? 1 : 0,
+              transform: activeTab === 'research' ? 'translateX(0)' : 'translateX(20px)',
+              transition: 'all 200ms ease',
+              pointerEvents: activeTab === 'research' ? 'auto' : 'none',
+              position: activeTab === 'research' ? 'relative' : 'absolute',
+              width: '100%',
+              maxHeight: '100%',
+            }}
+          >
+            {researchData ? (
+              <ResearchSection data={researchData} />
             ) : (
-              <p
-                onClick={() => setEditingFields({ ...editingFields, descripcion: idea.descripcion || '' })}
-                style={{
-                  color: 'rgba(255,255,255,0.7)',
-                  fontSize: '14px',
-                  lineHeight: '1.6',
-                  margin: 0,
-                  whiteSpace: 'pre-wrap',
-                  wordWrap: 'break-word',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  borderRadius: '4px',
-                }}
-                title="Click para editar"
-              >
-                {idea.descripcion || 'Sin descripción'}
-              </p>
-            )}
-          </div>
-
-          {/* Público */}
-          <div>
-            <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px', fontWeight: '500', textTransform: 'uppercase' }}>
-              Público Objetivo
-            </div>
-            {editingFields.publico !== undefined ? (
-              <input
-                autoFocus
-                type="text"
-                value={editingFields.publico}
-                onChange={(e) => handleFieldChange('publico', e.target.value)}
-                onBlur={(e) => handleFieldBlur('publico', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  backgroundColor: '#13131A',
-                  border: '1px solid #00E5A0',
-                  borderRadius: '6px',
-                  color: 'white',
-                  fontSize: '14px',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
-              />
-            ) : (
-              <div
-                onClick={() => setEditingFields({ ...editingFields, publico: idea.publico || '' })}
-                style={{
-                  padding: '10px 12px',
-                  backgroundColor: '#13131A',
-                  borderRadius: '6px',
-                  color: 'rgba(255,255,255,0.7)',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}
-                title="Click para editar"
-              >
-                {idea.publico || 'Sin especificar'}
+              <div style={{ backgroundColor: '#13131A', padding: '20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center' }}>
+                <p style={{ color: '#999', margin: 0 }}>No hay research aún. Genera uno con el botón en Info.</p>
               </div>
             )}
           </div>
 
-          {/* Categoría */}
-          <div>
-            <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px', fontWeight: '500', textTransform: 'uppercase' }}>
-              Categoría
-            </div>
-            {editingFields.categoria !== undefined ? (
-              <input
-                autoFocus
-                type="text"
-                value={editingFields.categoria}
-                onChange={(e) => handleFieldChange('categoria', e.target.value)}
-                onBlur={(e) => handleFieldBlur('categoria', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  backgroundColor: '#13131A',
-                  border: '1px solid #00E5A0',
-                  borderRadius: '6px',
-                  color: 'white',
-                  fontSize: '14px',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
-              />
+          {/* Specs Tab */}
+          <div
+            style={{
+              opacity: activeTab === 'specs' ? 1 : 0,
+              transform: activeTab === 'specs' ? 'translateX(0)' : 'translateX(20px)',
+              transition: 'all 200ms ease',
+              pointerEvents: activeTab === 'specs' ? 'auto' : 'none',
+              position: activeTab === 'specs' ? 'relative' : 'absolute',
+              width: '100%',
+              maxHeight: '100%',
+            }}
+          >
+            {idea.specs_pantallas || idea.specs_flujos || idea.specs_apis || idea.complejidad ? (
+              <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr', gap: '16px' }}>
+                {/* Pantallas */}
+                {idea.specs_pantallas && (
+                  <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                      Pantallas
+                    </h3>
+                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
+                      {renderField(parseField(idea.specs_pantallas))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Flujos */}
+                {idea.specs_flujos && (
+                  <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                      Flujos
+                    </h3>
+                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
+                      {Array.isArray(specsData.flujos) ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {specsData.flujos.map((flujo, i) => (
+                            <div key={i} style={{ paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                              <strong style={{ color: '#00E5A0' }}>{flujo.nombre}</strong>
+                              {Array.isArray(flujo.pasos) && (
+                                <ol style={{ margin: '8px 0 0 0', paddingLeft: '20px', color: 'rgba(255,255,255,0.7)' }}>
+                                  {flujo.pasos.map((paso, j) => (
+                                    <li key={j} style={{ margin: '4px 0', fontSize: '11px' }}>
+                                      {paso}
+                                    </li>
+                                  ))}
+                                </ol>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        specsData.flujos ? String(specsData.flujos) : 'Sin datos'
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* APIs */}
+                {idea.specs_apis && (
+                  <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                      APIs / Integraciones
+                    </h3>
+                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
+                      {Array.isArray(specsData.apis) ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {specsData.apis.map((api, i) => (
+                            <div key={i} style={{ paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                              <strong style={{ color: '#00E5A0' }}>{api.nombre}</strong>
+                              {api.endpoint && (
+                                <div style={{ marginTop: '4px' }}>
+                                  <a
+                                    href={api.endpoint}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                      color: '#6496FF',
+                                      fontSize: '11px',
+                                      textDecoration: 'none',
+                                      wordBreak: 'break-all',
+                                    }}
+                                  >
+                                    {api.endpoint}
+                                  </a>
+                                </div>
+                              )}
+                              {api.uso && (
+                                <div style={{ marginTop: '4px', fontSize: '11px' }}>
+                                  <span>{api.uso}</span>
+                                </div>
+                              )}
+                              {api.auth && (
+                                <div style={{ marginTop: '4px', fontSize: '10px', color: '#7C6AFF' }}>
+                                  <span>Auth: {api.auth}</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        specsData.apis ? String(specsData.apis) : 'Sin datos'
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Complejidad */}
+                {idea.complejidad && (
+                  <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                      Complejidad
+                    </h3>
+                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', fontWeight: '600', textTransform: 'capitalize' }}>
+                      {idea.complejidad}
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
-              <div
-                onClick={() => setEditingFields({ ...editingFields, categoria: idea.categoria || '' })}
-                style={{
-                  padding: '10px 12px',
-                  backgroundColor: '#13131A',
-                  borderRadius: '6px',
-                  color: 'rgba(255,255,255,0.7)',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}
-                title="Click para editar"
-              >
-                {idea.categoria || 'Sin especificar'}
+              <div style={{ backgroundColor: '#13131A', padding: '20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center' }}>
+                <p style={{ color: '#999', margin: 0 }}>No hay specs aún. Primero genera el Research, luego los Specs.</p>
               </div>
             )}
           </div>
 
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '12px' }}>
-            <button
-              onClick={handleGenerateResearch}
-              disabled={generatingResearch}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                backgroundColor: idea.research_mercado ? '#6496FF' : '#00E5A0',
-                border: 'none',
-                color: '#0A0A0F',
-                borderRadius: '6px',
-                cursor: generatingResearch ? 'not-allowed' : 'pointer',
-                fontSize: '13px',
-                fontWeight: '600',
-                opacity: generatingResearch ? 0.6 : 1,
-                transition: 'all 200ms ease',
-              }}
-            >
-              <IconBeaker />
-              {generatingResearch ? 'Generando research...' : (idea.research_mercado ? 'Actualizar Research' : 'Generar Research')}
-            </button>
-
-            <button
-              onClick={handleGenerateSpecs}
-              disabled={generatingSpecs || !idea.research_mercado}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                backgroundColor: idea.specs_pantallas ? '#7C6AFF' : '#00E5A0',
-                border: 'none',
-                color: '#0A0A0F',
-                borderRadius: '6px',
-                cursor: generatingSpecs || !idea.research_mercado ? 'not-allowed' : 'pointer',
-                fontSize: '13px',
-                fontWeight: '600',
-                opacity: (generatingSpecs || !idea.research_mercado) ? 0.5 : 1,
-                transition: 'all 200ms ease',
-              }}
-              title={!idea.research_mercado ? 'Primero genera el Research' : ''}
-            >
-              <IconFileText />
-              {generatingSpecs ? 'Generando specs...' : (idea.specs_pantallas ? 'Actualizar Specs' : 'Generar Specs')}
-            </button>
-          </div>
-        </section>
-
-        {/* Research Section */}
-        {hasResearch && (
-          <section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h2 style={{ color: '#00E5A0', fontSize: '16px', fontWeight: '700', margin: 0, textTransform: 'uppercase' }}>
-              Research
-            </h2>
-            <ResearchSection data={idea.research || idea.research_mercado} />
-          </section>
-        )}
-
-        {/* Specs Section */}
-        {hasSpecs && (
-          <section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h2 style={{ color: '#00E5A0', fontSize: '16px', fontWeight: '700', margin: 0, textTransform: 'uppercase' }}>
-              Especificaciones
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr', gap: '16px' }}>
-              {idea.specs_pantallas && (
-                <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-                    Pantallas
-                  </h3>
-                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
-                    {renderSpecField(idea.specs_pantallas)}
-                  </div>
+          {/* Pipeline Tab */}
+          <div
+            style={{
+              opacity: activeTab === 'pipeline' ? 1 : 0,
+              transform: activeTab === 'pipeline' ? 'translateX(0)' : 'translateX(20px)',
+              transition: 'all 200ms ease',
+              pointerEvents: activeTab === 'pipeline' ? 'auto' : 'none',
+              position: activeTab === 'pipeline' ? 'relative' : 'absolute',
+              width: '100%',
+              maxHeight: '100%',
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ backgroundColor: '#13131A', padding: '20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <h2 style={{ color: '#7C6AFF', fontSize: '14px', fontWeight: '600', marginBottom: '12px', margin: '0 0 12px 0', textTransform: 'uppercase' }}>
+                  Estado del pipeline
+                </h2>
+                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', lineHeight: '1.6' }}>
+                  {idea.estado === 'aprobada' ? (
+                    <p style={{ color: '#00E5A0', margin: 0 }}>✓ Idea ya enviada al pipeline</p>
+                  ) : (
+                    <p style={{ margin: 0 }}>Listo para enviar al pipeline cuando se complete el análisis</p>
+                  )}
                 </div>
-              )}
+              </div>
 
-              {idea.specs_flujos && (
-                <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-                    Flujos
-                  </h3>
-                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5', whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
-                    {renderSpecField(idea.specs_flujos)}
-                  </div>
-                </div>
-              )}
-
-              {idea.specs_apis && (
-                <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-                    APIs / Integraciones
-                  </h3>
-                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5', whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
-                    {renderSpecField(idea.specs_apis)}
-                  </div>
-                </div>
-              )}
-
-              {idea.complejidad && (
-                <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-                    Complejidad
-                  </h3>
-                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', fontWeight: '600', textTransform: 'capitalize' }}>
-                    {renderSpecField(idea.complejidad)}
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* Pipeline Section */}
-        <section style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <h2 style={{ color: '#00E5A0', fontSize: '16px', fontWeight: '700', margin: 0, textTransform: 'uppercase' }}>
-            Pipeline
-          </h2>
-
-          <div style={{ backgroundColor: '#13131A', padding: '20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', lineHeight: '1.6' }}>
-              {idea.estado === 'aprobada' ? (
-                <p style={{ color: '#00E5A0', margin: 0 }}>✓ Idea ya enviada al pipeline</p>
-              ) : hasResearch && hasSpecs ? (
-                <p style={{ margin: 0 }}>Listo para enviar al pipeline. Research y Specs completados.</p>
-              ) : (
-                <p style={{ margin: 0 }}>Completa el Research y los Specs para poder enviar al pipeline.</p>
+              {idea.paso_agente >= 2 && idea.estado !== 'aprobada' && (
+                <button
+                  onClick={handleSendToPipeline}
+                  disabled={sendingPipeline}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '12px 32px',
+                    backgroundColor: '#00E5A0',
+                    border: 'none',
+                    color: '#0A0A0F',
+                    borderRadius: '8px',
+                    cursor: sendingPipeline ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    opacity: sendingPipeline ? 0.6 : 1,
+                  }}
+                >
+                  <IconRocket />
+                  {sendingPipeline ? 'Enviando...' : 'Enviar a Pipeline →'}
+                </button>
               )}
             </div>
           </div>
-
-          {hasResearch && hasSpecs && idea.estado !== 'aprobada' && (
-            <button
-              onClick={handleSendToPipeline}
-              disabled={sendingPipeline}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '12px 32px',
-                backgroundColor: '#00E5A0',
-                border: 'none',
-                color: '#0A0A0F',
-                borderRadius: '8px',
-                cursor: sendingPipeline ? 'not-allowed' : 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
-                opacity: sendingPipeline ? 0.6 : 1,
-                transition: 'all 200ms ease',
-              }}
-            >
-              <IconRocket />
-              {sendingPipeline ? 'Enviando...' : 'Enviar a Pipeline →'}
-            </button>
-          )}
-        </section>
-
+        </div>
       </div>
 
       {toast && (

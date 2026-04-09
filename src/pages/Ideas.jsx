@@ -1353,10 +1353,8 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
 
 export default function Ideas() {
   const navigate = useNavigate();
-  const { ideas, loading, createIdea, updateIdea } = useIdeas();
+  const { ideas, loading, createIdea } = useIdeas();
   const [isNewIdeaOpen, setIsNewIdeaOpen] = useState(false);
-  const [selectedIdea, setSelectedIdea] = useState(null);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [filterEstado, setFilterEstado] = useState('');
   const [filterCategoria, setFilterCategoria] = useState('');
   const [filterMercado, setFilterMercado] = useState('');
@@ -1401,20 +1399,6 @@ export default function Ideas() {
       setToast({ message: err.message, type: 'error' });
     } finally {
       setIsCreating(false);
-    }
-  };
-
-  const handleUpdateIdea = async (ideaId, data) => {
-    try {
-      await updateIdea(ideaId, data);
-      // Refresh selected idea from the updated ideas list
-      const updated = ideas.find(i => i.id === ideaId);
-      if (updated) {
-        setSelectedIdea(updated);
-      }
-      setToast({ message: 'Idea actualizada', type: 'success' });
-    } catch (err) {
-      setToast({ message: err.message, type: 'error' });
     }
   };
 
@@ -1781,10 +1765,7 @@ export default function Ideas() {
                 </div>
 
                 <button
-                  onClick={() => {
-                    setSelectedIdea(idea);
-                    setIsPanelOpen(true);
-                  }}
+                  onClick={() => navigate(`/ideas/${idea.id}`)}
                   style={{
                     width: '100%',
                     background: 'none',
@@ -1907,13 +1888,6 @@ export default function Ideas() {
         onClose={() => setIsNewIdeaOpen(false)}
         onSubmit={handleCreateIdea}
         isLoading={isCreating}
-      />
-
-      <IdeaProcessingModal
-        idea={selectedIdea}
-        isOpen={isPanelOpen}
-        onClose={() => setIsPanelOpen(false)}
-        onUpdateIdea={handleUpdateIdea}
       />
 
       {toast && (

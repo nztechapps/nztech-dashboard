@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useIdeas } from '../hooks/useIdeas';
 import ToastNotification from '../components/ui/ToastNotification';
@@ -28,6 +29,13 @@ const IconRocket = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M4.5 16.5c-1.5-1.5-2-3.5-2-5.5 0-4.5 3.5-8 8-8s8 3.5 8 8-3.5 8-8 8c-2 0-4-0.5-5.5-2"></path>
     <polyline points="12 4 12 12 9 12"></polyline>
+  </svg>
+);
+
+const IconSpinner = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1s linear infinite' }}>
+    <circle cx="12" cy="12" r="1"></circle>
+    <path d="M12 2a10 10 0 0 0 0 20"></path>
   </svg>
 );
 
@@ -66,10 +74,25 @@ const StarRating = ({ value, onChange, disabled = false }) => (
   </div>
 );
 
-function IdeaModal({ idea, isOpen, onClose }) {
-  if (!isOpen || !idea) return null;
+const IconCheck = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
 
-  return (
+const IconTrash = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="3 6 5 6 21 6"></polyline>
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+    <line x1="10" y1="11" x2="10" y2="17"></line>
+    <line x1="14" y1="11" x2="14" y2="17"></line>
+  </svg>
+);
+
+function DeleteConfirmModal({ field, isOpen, onConfirm, onCancel }) {
+  if (!isOpen) return null;
+
+  return createPortal(
     <div
       style={{
         position: 'fixed',
@@ -78,114 +101,38 @@ function IdeaModal({ idea, isOpen, onClose }) {
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0,0,0,0.6)',
-        zIndex: 100,
+        zIndex: 1001,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '20px',
       }}
-      onClick={onClose}
+      onClick={onCancel}
     >
       <div
         style={{
           backgroundColor: '#13131A',
           borderRadius: '12px',
-          padding: '24px',
-          maxWidth: '500px',
-          width: '100%',
-          maxHeight: '80vh',
-          overflow: 'auto',
           border: '1px solid rgba(255,255,255,0.08)',
+          padding: '24px',
+          maxWidth: '400px',
+          width: '100%',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-          <h2 style={{ color: 'white', margin: 0, fontSize: '18px', fontWeight: '600' }}>
-            {idea.titulo}
-          </h2>
+        <h3 style={{ color: 'white', margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
+          ¿Borrar este campo?
+        </h3>
+        <p style={{ color: '#999', fontSize: '13px', margin: '0 0 24px 0', lineHeight: '1.5' }}>
+          El contenido generado se perderá y tendrás que regenerarlo.
+        </p>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
           <button
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', padding: 0 }}
-          >
-            <IconX />
-          </button>
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
-            <span
-              style={{
-                backgroundColor: 'rgba(0,229,160,0.12)',
-                color: getStatusColor(idea.estado),
-                fontSize: '11px',
-                fontWeight: '600',
-                padding: '4px 8px',
-                borderRadius: '4px',
-              }}
-            >
-              {idea.estado}
-            </span>
-            {idea.categoria && (
-              <span
-                style={{
-                  backgroundColor: 'rgba(124,106,255,0.12)',
-                  color: '#7C6AFF',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                }}
-              >
-                {idea.categoria}
-              </span>
-            )}
-            {idea.mercado && (
-              <span
-                style={{
-                  backgroundColor: 'rgba(100,150,255,0.12)',
-                  color: '#6496FF',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                }}
-              >
-                {idea.mercado}
-              </span>
-            )}
-          </div>
-
-          {idea.descripcion && (
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', margin: '0 0 12px 0', whiteSpace: 'pre-wrap' }}>
-              {idea.descripcion}
-            </p>
-          )}
-
-          {idea.prioridad && (
-            <div style={{ marginBottom: '12px' }}>
-              <div style={{ color: '#999', fontSize: '11px', marginBottom: '4px' }}>Prioridad</div>
-              <StarRating value={idea.prioridad} onChange={() => {}} disabled />
-            </div>
-          )}
-
-          {idea.notas && (
-            <div style={{ marginBottom: '12px' }}>
-              <div style={{ color: '#999', fontSize: '11px', marginBottom: '4px' }}>Notas</div>
-              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', fontFamily: 'DM Mono, monospace', whiteSpace: 'pre-wrap' }}>
-                {idea.notas}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px', display: 'flex', gap: '12px' }}>
-          <button
-            onClick={onClose}
+            onClick={onCancel}
             style={{
-              flex: 1,
-              padding: '10px',
+              padding: '10px 20px',
               backgroundColor: 'transparent',
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.12)',
               color: '#999',
               borderRadius: '6px',
               cursor: 'pointer',
@@ -193,11 +140,953 @@ function IdeaModal({ idea, isOpen, onClose }) {
               fontWeight: '600',
             }}
           >
-            Cerrar
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#FF4D4F',
+              border: 'none',
+              color: 'white',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: '600',
+            }}
+          >
+            Borrar
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
+  );
+}
+
+function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
+  const [editingFields, setEditingFields] = useState({});
+  const [processingStep, setProcessingStep] = useState(null);
+  const [activeStep, setActiveStep] = useState(0);
+  const [sendingPipeline, setSendingPipeline] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  if (!isOpen || !idea) return null;
+
+  // Limpiar valores JSON para mostrar formateados
+  const cleanValue = (val) => {
+    if (!val) return '';
+    const trimmed = val.trim();
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (typeof parsed === 'object') {
+          return JSON.stringify(parsed, null, 2);
+        }
+      } catch (e) {}
+    }
+    return trimmed;
+  };
+
+  const pasoAgente = idea.paso_agente || 0;
+  const agentStatus = idea.agente_status || 'idle';
+  const isProcessingNow = agentStatus === 'processing';
+
+  const steps = [
+    { id: 0, label: 'Paso 0 — Info base', completed: true },
+    { id: 1, label: 'Paso 1 — Research', completed: pasoAgente >= 1 },
+    { id: 2, label: 'Paso 2 — Specs', completed: pasoAgente >= 2 },
+    { id: 3, label: 'Pipeline', completed: false },
+  ];
+
+  const handleFieldChange = (field, value) => {
+    setEditingFields({ ...editingFields, [field]: value });
+  };
+
+  const handleFieldBlur = async (field, value) => {
+    if (value !== idea[field]) {
+      try {
+        await onUpdateIdea(idea.id, { [field]: value });
+      } catch (err) {
+        console.error('Error updating field:', err);
+      }
+    }
+    setEditingFields({ ...editingFields, [field]: undefined });
+  };
+
+  const handleRunStep = async (step) => {
+    setProcessingStep(step);
+    setErrorMessage(null);
+    try {
+      if (step === 1) {
+        // Step 1: Research de mercado
+        // Marcar como processing en Supabase para mostrar spinner
+        await onUpdateIdea(idea.id, { agente_status: 'processing' });
+
+        const response = await fetch('http://localhost:5678/webhook/idea-research', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            idea: {
+              titulo: idea.titulo,
+              descripcion: idea.descripcion,
+              mercado: idea.mercado,
+              categoria: idea.categoria,
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error en webhook research: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        // Guardar resultado en Supabase
+        await onUpdateIdea(idea.id, {
+          research_mercado: result.research_mercado,
+          paso_agente: 1,
+          agente_status: 'waiting_approval',
+        });
+
+        setActiveStep(1);
+      } else if (step === 2) {
+        // Step 2: Specs técnicas
+        // Marcar como processing en Supabase para mostrar spinner
+        await onUpdateIdea(idea.id, { agente_status: 'processing' });
+
+        const response = await fetch('http://localhost:5678/webhook/idea-specs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            idea: {
+              titulo: idea.titulo,
+              descripcion: idea.descripcion,
+              mercado: idea.mercado,
+              categoria: idea.categoria,
+              research_mercado: idea.research_mercado,
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error en webhook specs: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        // Guardar resultado en Supabase
+        await onUpdateIdea(idea.id, {
+          specs_pantallas: result.pantallas,
+          specs_flujos: result.flujos,
+          specs_apis: result.apis,
+          complejidad: result.complejidad,
+          paso_agente: 2,
+          agente_status: 'waiting_approval',
+        });
+
+        setActiveStep(2);
+      }
+    } catch (err) {
+      console.error(`Error running step ${step}:`, err);
+      setErrorMessage(err.message);
+      // Reset processing status on error
+      await onUpdateIdea(idea.id, { agente_status: 'idle' });
+    } finally {
+      setProcessingStep(null);
+    }
+  };
+
+  const handleSendToPipeline = async () => {
+    setSendingPipeline(true);
+    setErrorMessage(null);
+    try {
+      const response = await fetch('http://localhost:3001/pipeline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: idea.titulo,
+          descripcion: idea.descripcion,
+          publico: idea.publico || 'Usuarios argentinos',
+          categoria: idea.categoria || 'utilidad-global',
+          mercado: idea.mercado || '',
+          idea_id: idea.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('El servidor local no está corriendo. Ejecutá: node server.js en la carpeta del pipeline');
+      }
+
+      const result = await response.json();
+      const { runId } = result;
+
+      // Cambiar estado a 'aprobada'
+      await onUpdateIdea(idea.id, { estado: 'aprobada' });
+
+      // Cerrar modal y navegar al pipeline después de éxito
+      setTimeout(() => {
+        onClose();
+        window.location.href = `/pipeline?runId=${runId}`;
+      }, 500);
+    } catch (err) {
+      console.error('Error sending to pipeline:', err);
+      const errorMsg = err.message.includes('Failed to fetch') || err.message.includes('localhost')
+        ? '⚠️ El servidor local no está corriendo. Ejecutá: node server.js en la carpeta del pipeline'
+        : err.message;
+      setErrorMessage(errorMsg);
+    } finally {
+      setSendingPipeline(false);
+    }
+  };
+
+  const handleStepClick = (stepId) => {
+    if (stepId <= pasoAgente || stepId === 0) {
+      setActiveStep(stepId);
+    }
+  };
+
+  const handleDeleteField = async (field) => {
+    try {
+      const updateData = { [field]: null };
+
+      // Si borra research_mercado, resetear todo
+      if (field === 'research_mercado') {
+        updateData.paso_agente = 0;
+        updateData.specs_pantallas = null;
+        updateData.specs_flujos = null;
+        updateData.specs_apis = null;
+        updateData.complejidad = null;
+      }
+
+      await onUpdateIdea(idea.id, updateData);
+      setDeleteConfirm(null);
+    } catch (err) {
+      console.error('Error deleting field:', err);
+    }
+  };
+
+  return createPortal(
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+      }}
+      onClick={onClose}
+    >
+      {/* Modal */}
+      <div
+        style={{
+          backgroundColor: '#13131A',
+          borderRadius: window.innerWidth < 768 ? 0 : '12px',
+          maxWidth: window.innerWidth < 768 ? '100vw' : '640px',
+          width: window.innerWidth < 768 ? '100%' : '100%',
+          height: window.innerWidth < 768 ? '100vh' : 'min(85vh, 600px)',
+          border: window.innerWidth < 768 ? 'none' : '1px solid rgba(255,255,255,0.08)',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header con X */}
+        <div
+          style={{
+            padding: '24px',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            position: 'sticky',
+            top: 0,
+            backgroundColor: '#13131A',
+            zIndex: 10,
+          }}
+        >
+          <h2 style={{ color: 'white', margin: 0, fontSize: '18px', fontWeight: '600' }}>
+            {idea.titulo}
+          </h2>
+          <button
+            onClick={onClose}
+            style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', padding: 0, marginLeft: '12px' }}
+          >
+            <IconX />
+          </button>
+        </div>
+
+        {/* Stepper */}
+        <div
+          style={{
+            padding: '20px 24px',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            overflow: 'auto',
+          }}
+        >
+          {steps.map((step, idx) => (
+            <div key={step.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button
+                onClick={() => handleStepClick(step.id)}
+                disabled={step.id > pasoAgente && step.id !== 0}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: step.id <= pasoAgente || step.id === 0 ? 'pointer' : 'default',
+                  backgroundColor:
+                    activeStep === step.id
+                      ? '#00E5A0'
+                      : step.completed
+                        ? 'rgba(0,229,160,0.2)'
+                        : 'rgba(255,255,255,0.08)',
+                  color:
+                    activeStep === step.id
+                      ? '#0A0A0F'
+                      : step.completed
+                        ? '#00E5A0'
+                        : '#666',
+                  opacity: step.id > pasoAgente && step.id !== 0 ? 0.5 : 1,
+                }}
+              >
+                {step.completed && step.id !== activeStep ? <IconCheck /> : step.id}
+              </button>
+              {idx < steps.length - 1 && (
+                <span style={{ color: '#444', fontSize: '18px', margin: '0 -4px', display: window.innerWidth < 768 ? 'none' : 'block' }}>→</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            padding: window.innerWidth < 768 ? '16px' : '24px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* Error Banner */}
+          {errorMessage && (
+            <div
+              style={{
+                backgroundColor: 'rgba(255,77,79,0.12)',
+                border: '1px solid rgba(255,77,79,0.3)',
+                borderRadius: '6px',
+                padding: '12px 16px',
+                marginBottom: '20px',
+                color: '#FF4D4F',
+                fontSize: '13px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>{errorMessage}</span>
+                <button
+                  onClick={() => {
+                    const currentStep = activeStep;
+                    if (currentStep === 1) handleRunStep(1);
+                    else if (currentStep === 2) handleRunStep(2);
+                  }}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: '1px solid rgba(255,77,79,0.3)',
+                    color: '#FF4D4F',
+                    padding: '4px 12px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    marginLeft: '12px',
+                  }}
+                >
+                  Reintentar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* PASO 0 — Info base */}
+          {activeStep === 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                  Título
+                </label>
+                <input
+                  type="text"
+                  value={editingFields.titulo !== undefined ? editingFields.titulo : idea.titulo}
+                  onChange={(e) => handleFieldChange('titulo', e.target.value)}
+                  onBlur={(e) => handleFieldBlur('titulo', e.target.value)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: '#0A0A0F',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '6px',
+                    padding: '10px 12px',
+                    color: 'white',
+                    fontSize: '13px',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                  Descripción
+                </label>
+                <textarea
+                  value={editingFields.descripcion !== undefined ? editingFields.descripcion : idea.descripcion || ''}
+                  onChange={(e) => handleFieldChange('descripcion', e.target.value)}
+                  onBlur={(e) => handleFieldBlur('descripcion', e.target.value)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: '#0A0A0F',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '6px',
+                    padding: '10px 12px',
+                    color: 'white',
+                    fontSize: '13px',
+                    boxSizing: 'border-box',
+                    minHeight: '80px',
+                    fontFamily: 'DM Mono, monospace',
+                    resize: 'vertical',
+                  }}
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                    Mercado
+                  </label>
+                  <input
+                    type="text"
+                    value={editingFields.mercado !== undefined ? editingFields.mercado : idea.mercado || ''}
+                    onChange={(e) => handleFieldChange('mercado', e.target.value)}
+                    onBlur={(e) => handleFieldBlur('mercado', e.target.value)}
+                    style={{
+                      width: '100%',
+                      backgroundColor: '#0A0A0F',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '6px',
+                      padding: '10px 12px',
+                      color: 'white',
+                      fontSize: '13px',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                    Categoría
+                  </label>
+                  <input
+                    type="text"
+                    value={editingFields.categoria !== undefined ? editingFields.categoria : idea.categoria || ''}
+                    onChange={(e) => handleFieldChange('categoria', e.target.value)}
+                    onBlur={(e) => handleFieldBlur('categoria', e.target.value)}
+                    style={{
+                      width: '100%',
+                      backgroundColor: '#0A0A0F',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '6px',
+                      padding: '10px 12px',
+                      color: 'white',
+                      fontSize: '13px',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                  Prioridad
+                </label>
+                <StarRating
+                  value={editingFields.prioridad !== undefined ? editingFields.prioridad : idea.prioridad || 3}
+                  onChange={(val) => {
+                    handleFieldChange('prioridad', val);
+                    handleFieldBlur('prioridad', val);
+                  }}
+                />
+              </div>
+              <button
+                onClick={() => handleRunStep(1)}
+                disabled={isProcessingNow || sendingPipeline || processingStep !== null}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '12px 20px',
+                  backgroundColor: '#00E5A0',
+                  border: 'none',
+                  color: '#0A0A0F',
+                  borderRadius: '6px',
+                  cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  opacity: isProcessingNow || sendingPipeline || processingStep !== null ? 0.6 : 1,
+                  marginTop: '8px',
+                }}
+              >
+                {processingStep === 1 ? <IconSpinner /> : null}
+                Generar research →
+              </button>
+            </div>
+          )}
+
+          {/* PASO 1 — Research */}
+          {activeStep === 1 && pasoAgente >= 1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+              {isProcessingNow ? (
+                <div
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '16px',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      border: '3px solid rgba(255,255,255,0.1)',
+                      borderTop: '3px solid #00E5A0',
+                      borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite',
+                    }}
+                  />
+                  <div style={{ color: '#999', fontSize: '14px', textAlign: 'center' }}>
+                    Analizando mercado con IA...
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ position: 'relative' }}>
+                    <textarea
+                      value={editingFields.research_mercado !== undefined ? editingFields.research_mercado : idea.research_mercado || ''}
+                      onChange={(e) => handleFieldChange('research_mercado', e.target.value)}
+                      onBlur={(e) => handleFieldBlur('research_mercado', e.target.value)}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#0A0A0F',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '6px',
+                        padding: '12px',
+                        color: 'rgba(255,255,255,0.7)',
+                        fontSize: '13px',
+                        boxSizing: 'border-box',
+                        minHeight: '150px',
+                        fontFamily: 'DM Mono, monospace',
+                        resize: 'vertical',
+                      }}
+                    />
+                    <button
+                      onClick={() => setDeleteConfirm({ field: 'research_mercado' })}
+                      style={{
+                        position: 'absolute',
+                        top: '8px',
+                        right: '8px',
+                        backgroundColor: 'rgba(255,77,79,0.1)',
+                        border: '1px solid rgba(255,77,79,0.3)',
+                        color: '#FF4D4F',
+                        borderRadius: '4px',
+                        width: '32px',
+                        height: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.1)';
+                      }}
+                      title="Borrar contenido"
+                    >
+                      <IconTrash />
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button
+                      onClick={() => handleRunStep(1)}
+                      disabled={isProcessingNow || sendingPipeline || processingStep !== null}
+                      style={{
+                        flex: 1,
+                        padding: '10px 16px',
+                        backgroundColor: 'transparent',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: '#999',
+                        borderRadius: '6px',
+                        cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        opacity: isProcessingNow || sendingPipeline || processingStep !== null ? 0.5 : 1,
+                      }}
+                    >
+                      Regenerar
+                    </button>
+                    <button
+                      onClick={() => handleRunStep(2)}
+                      disabled={isProcessingNow || sendingPipeline || processingStep !== null}
+                      style={{
+                        flex: 1,
+                        padding: '10px 16px',
+                        backgroundColor: '#00E5A0',
+                        border: 'none',
+                        color: '#0A0A0F',
+                        borderRadius: '6px',
+                        cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        opacity: isProcessingNow || sendingPipeline || processingStep !== null ? 0.6 : 1,
+                      }}
+                    >
+                      Aprobar → Specs
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* PASO 2 — Specs técnicas */}
+          {activeStep === 2 && pasoAgente >= 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+              {isProcessingNow ? (
+                <div
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '16px',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      border: '3px solid rgba(255,255,255,0.1)',
+                      borderTop: '3px solid #00E5A0',
+                      borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite',
+                    }}
+                  />
+                  <div style={{ color: '#999', fontSize: '14px', textAlign: 'center' }}>
+                    Generando especificaciones técnicas...
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                      Pantallas
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <textarea
+                        value={editingFields.specs_pantallas !== undefined ? editingFields.specs_pantallas : cleanValue(idea.specs_pantallas)}
+                        onChange={(e) => handleFieldChange('specs_pantallas', e.target.value)}
+                        onBlur={(e) => handleFieldBlur('specs_pantallas', e.target.value)}
+                        style={{
+                          width: '100%',
+                          backgroundColor: '#0A0A0F',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: '6px',
+                          padding: '10px 12px',
+                          color: 'rgba(255,255,255,0.7)',
+                          fontSize: '12px',
+                          boxSizing: 'border-box',
+                          height: '120px',
+                          fontFamily: 'DM Mono, monospace',
+                          resize: 'none',
+                        }}
+                      />
+                      <button
+                        onClick={() => setDeleteConfirm({ field: 'specs_pantallas' })}
+                        style={{
+                          position: 'absolute',
+                          top: '8px',
+                          right: '8px',
+                          backgroundColor: 'rgba(255,77,79,0.1)',
+                          border: '1px solid rgba(255,77,79,0.3)',
+                          color: '#FF4D4F',
+                          borderRadius: '4px',
+                          width: '32px',
+                          height: '32px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.1)';
+                        }}
+                        title="Borrar contenido"
+                      >
+                        <IconTrash />
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                      Flujos
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <textarea
+                        value={editingFields.specs_flujos !== undefined ? editingFields.specs_flujos : cleanValue(idea.specs_flujos)}
+                        onChange={(e) => handleFieldChange('specs_flujos', e.target.value)}
+                        onBlur={(e) => handleFieldBlur('specs_flujos', e.target.value)}
+                        style={{
+                          width: '100%',
+                          backgroundColor: '#0A0A0F',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: '6px',
+                          padding: '10px 12px',
+                          color: 'rgba(255,255,255,0.7)',
+                          fontSize: '12px',
+                          boxSizing: 'border-box',
+                          height: '120px',
+                          fontFamily: 'DM Mono, monospace',
+                          resize: 'none',
+                        }}
+                      />
+                      <button
+                        onClick={() => setDeleteConfirm({ field: 'specs_flujos' })}
+                        style={{
+                          position: 'absolute',
+                          top: '8px',
+                          right: '8px',
+                          backgroundColor: 'rgba(255,77,79,0.1)',
+                          border: '1px solid rgba(255,77,79,0.3)',
+                          color: '#FF4D4F',
+                          borderRadius: '4px',
+                          width: '32px',
+                          height: '32px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.1)';
+                        }}
+                        title="Borrar contenido"
+                      >
+                        <IconTrash />
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                      APIs / Integraciones
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <textarea
+                        value={editingFields.specs_apis !== undefined ? editingFields.specs_apis : cleanValue(idea.specs_apis)}
+                        onChange={(e) => handleFieldChange('specs_apis', e.target.value)}
+                        onBlur={(e) => handleFieldBlur('specs_apis', e.target.value)}
+                        style={{
+                          width: '100%',
+                          backgroundColor: '#0A0A0F',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: '6px',
+                          padding: '10px 12px',
+                          color: 'rgba(255,255,255,0.7)',
+                          fontSize: '12px',
+                          boxSizing: 'border-box',
+                          height: '120px',
+                          fontFamily: 'DM Mono, monospace',
+                          resize: 'none',
+                        }}
+                      />
+                      <button
+                        onClick={() => setDeleteConfirm({ field: 'specs_apis' })}
+                        style={{
+                          position: 'absolute',
+                          top: '8px',
+                          right: '8px',
+                          backgroundColor: 'rgba(255,77,79,0.1)',
+                          border: '1px solid rgba(255,77,79,0.3)',
+                          color: '#FF4D4F',
+                          borderRadius: '4px',
+                          width: '32px',
+                          height: '32px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.1)';
+                        }}
+                        title="Borrar contenido"
+                      >
+                        <IconTrash />
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                      Complejidad
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="text"
+                        value={editingFields.complejidad !== undefined ? editingFields.complejidad : cleanValue(idea.complejidad)}
+                        onChange={(e) => handleFieldChange('complejidad', e.target.value)}
+                        onBlur={(e) => handleFieldBlur('complejidad', e.target.value)}
+                        placeholder="baja | media | alta"
+                        style={{
+                          width: '100%',
+                          backgroundColor: '#0A0A0F',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: '6px',
+                          padding: '10px 12px',
+                          color: 'rgba(255,255,255,0.7)',
+                          fontSize: '13px',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                      <button
+                        onClick={() => setDeleteConfirm({ field: 'complejidad' })}
+                        style={{
+                          position: 'absolute',
+                          top: '8px',
+                          right: '8px',
+                          backgroundColor: 'rgba(255,77,79,0.1)',
+                          border: '1px solid rgba(255,77,79,0.3)',
+                          color: '#FF4D4F',
+                          borderRadius: '4px',
+                          width: '32px',
+                          height: '32px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.1)';
+                        }}
+                        title="Borrar contenido"
+                      >
+                        <IconTrash />
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button
+                      onClick={() => handleRunStep(2)}
+                      disabled={isProcessingNow || sendingPipeline || processingStep !== null}
+                      style={{
+                        flex: 1,
+                        padding: '10px 16px',
+                        backgroundColor: 'transparent',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: '#999',
+                        borderRadius: '6px',
+                        cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        opacity: isProcessingNow || sendingPipeline || processingStep !== null ? 0.5 : 1,
+                      }}
+                    >
+                      Regenerar
+                    </button>
+                    <button
+                      onClick={handleSendToPipeline}
+                      disabled={sendingPipeline || isProcessingNow || processingStep !== null}
+                      style={{
+                        flex: 1,
+                        padding: '10px 16px',
+                        backgroundColor: '#00E5A0',
+                        border: 'none',
+                        color: '#0A0A0F',
+                        borderRadius: '6px',
+                        cursor: sendingPipeline || isProcessingNow || processingStep !== null ? 'not-allowed' : 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        opacity: sendingPipeline || isProcessingNow || processingStep !== null ? 0.6 : 1,
+                      }}
+                    >
+                      {sendingPipeline ? 'Enviando...' : 'Enviar a Pipeline →'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* PASO 3 — Pipeline (solo vista) */}
+          {activeStep === 3 && (
+            <div style={{ color: '#999', textAlign: 'center', padding: '40px 20px' }}>
+              <p>Pipeline será completado próximamente</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+
+      <DeleteConfirmModal
+        field={deleteConfirm?.field}
+        isOpen={deleteConfirm !== null}
+        onConfirm={() => {
+          if (deleteConfirm?.field) {
+            handleDeleteField(deleteConfirm.field);
+          }
+        }}
+        onCancel={() => setDeleteConfirm(null)}
+      />
+    </div>,
+    document.body
   );
 }
 
@@ -464,22 +1353,43 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
 
 export default function Ideas() {
   const navigate = useNavigate();
-  const { ideas, loading, createIdea } = useIdeas();
+  const { ideas, loading, createIdea, updateIdea } = useIdeas();
   const [isNewIdeaOpen, setIsNewIdeaOpen] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [filterEstado, setFilterEstado] = useState('');
   const [filterCategoria, setFilterCategoria] = useState('');
   const [filterMercado, setFilterMercado] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const filteredIdeas = ideas.filter((idea) => {
-    if (filterEstado && idea.estado !== filterEstado) return false;
-    if (filterCategoria && idea.categoria !== filterCategoria) return false;
-    if (filterMercado && idea.mercado !== filterMercado) return false;
-    return true;
-  });
+  // Agregar numeración basada en created_at (más antigua = #001)
+  const numberedIdeas = ideas.map((idea, index) => ({
+    ...idea,
+    numero: String(index + 1).padStart(3, '0'),
+  }));
+
+  const filteredIdeas = numberedIdeas
+    .filter((idea) => {
+      if (filterEstado && idea.estado !== filterEstado) return false;
+      if (filterCategoria && idea.categoria !== filterCategoria) return false;
+      if (filterMercado && idea.mercado !== filterMercado) return false;
+
+      // Búsqueda: número, título, categoría
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const numero = String(idea.numero);
+        return (
+          numero.includes(query) ||
+          idea.titulo.toLowerCase().includes(query) ||
+          (idea.categoria && idea.categoria.toLowerCase().includes(query))
+        );
+      }
+
+      return true;
+    })
+    .sort((a, b) => (b.prioridad || 0) - (a.prioridad || 0));
 
   const handleCreateIdea = async (formData) => {
     try {
@@ -491,6 +1401,20 @@ export default function Ideas() {
       setToast({ message: err.message, type: 'error' });
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleUpdateIdea = async (ideaId, data) => {
+    try {
+      await updateIdea(ideaId, data);
+      // Refresh selected idea from the updated ideas list
+      const updated = ideas.find(i => i.id === ideaId);
+      if (updated) {
+        setSelectedIdea(updated);
+      }
+      setToast({ message: 'Idea actualizada', type: 'success' });
+    } catch (err) {
+      setToast({ message: err.message, type: 'error' });
     }
   };
 
@@ -619,14 +1543,14 @@ export default function Ideas() {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexDirection: window.innerWidth < 768 ? 'column' : 'row', alignItems: window.innerWidth < 768 ? 'flex-start' : 'center', gap: window.innerWidth < 768 ? '12px' : '0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <IconLightbulb style={{ color: '#00E5A0' }} />
-              <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '600', margin: 0 }}>
+              <h1 style={{ color: 'white', fontSize: window.innerWidth < 768 ? '24px' : '28px', fontWeight: '600', margin: 0 }}>
                 Ideas
               </h1>
             </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', width: window.innerWidth < 768 ? '100%' : 'auto' }}>
               <input
                 type="file"
                 ref={(el) => {
@@ -699,6 +1623,26 @@ export default function Ideas() {
           <p style={{ color: '#999', fontSize: '13px', margin: 0 }}>
             Gestiona todas tus ideas para futuras apps
           </p>
+        </div>
+
+        {/* Búsqueda */}
+        <div style={{ marginBottom: '16px' }}>
+          <input
+            type="text"
+            placeholder="Buscar por número o nombre..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              backgroundColor: '#13131A',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '6px',
+              color: 'white',
+              fontSize: '13px',
+              boxSizing: 'border-box',
+            }}
+          />
         </div>
 
         {/* Filtros */}
@@ -808,36 +1752,60 @@ export default function Ideas() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))',
               gap: '16px',
             }}
           >
             {filteredIdeas.map((idea) => (
-              <button
-                key={idea.id}
-                onClick={() => {
-                  setSelectedIdea(idea);
-                  setIsDetailOpen(true);
-                }}
-                style={{
-                  background: 'none',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  backgroundColor: '#13131A',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1C1C26';
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#13131A';
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-                }}
-              >
+              <div key={idea.id} style={{ position: 'relative' }}>
+                {/* Número badge */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    left: '12px',
+                    backgroundColor: '#00E5A0',
+                    color: '#0A0A0F',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    zIndex: 2,
+                  }}
+                >
+                  #{idea.numero}
+                </div>
+
+                <button
+                  onClick={() => {
+                    setSelectedIdea(idea);
+                    setIsPanelOpen(true);
+                  }}
+                  style={{
+                    width: '100%',
+                    background: 'none',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    paddingTop: '56px',
+                    backgroundColor: '#13131A',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#1C1C26';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#13131A';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                  }}
+                >
                 <h3 style={{ color: 'white', margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
                   {idea.titulo}
                 </h3>
@@ -896,7 +1864,39 @@ export default function Ideas() {
                     ))}
                   </div>
                 )}
-              </button>
+                </button>
+                <button
+                  onClick={() => navigate(`/ideas/${idea.id}`)}
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    width: '32px',
+                    height: '32px',
+                    backgroundColor: 'rgba(100,150,255,0.1)',
+                    border: '1px solid rgba(100,150,255,0.3)',
+                    color: '#6496FF',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    transition: 'all 0.2s',
+                    zIndex: 3,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(100,150,255,0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(100,150,255,0.1)';
+                  }}
+                  title="Ver detalle"
+                >
+                  ↗
+                </button>
+              </div>
             ))}
           </div>
         )}
@@ -909,7 +1909,12 @@ export default function Ideas() {
         isLoading={isCreating}
       />
 
-      <IdeaModal idea={selectedIdea} isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)} />
+      <IdeaProcessingModal
+        idea={selectedIdea}
+        isOpen={isPanelOpen}
+        onClose={() => setIsPanelOpen(false)}
+        onUpdateIdea={handleUpdateIdea}
+      />
 
       {toast && (
         <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />

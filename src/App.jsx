@@ -10,6 +10,8 @@ import Calendario from './pages/Calendario'
 import Pipeline from './pages/Pipeline'
 import Reportes from './pages/Reportes'
 import Ideas from './pages/Ideas'
+import IdeaDetail from './pages/IdeaDetail'
+import Tareas from './pages/Tareas'
 import { AuthGuard } from './components/layout/AuthGuard'
 import { Sidebar } from './components/layout/Sidebar'
 import { TopBar } from './components/layout/TopBar'
@@ -17,12 +19,21 @@ import { TopBar } from './components/layout/TopBar'
 
 // Layout wrapper para rutas protegidas
 function ProtectedLayout({ children, title = 'Dashboard' }) {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
-    <div className="flex">
+    <div className="flex" style={{ flexDirection: isMobile ? 'column' : 'row' }}>
       <Sidebar />
-      <div className="flex-1 ml-[220px]">
+      <div className="flex-1" style={{ marginLeft: isMobile ? 0 : '220px' }}>
         <TopBar title={title} />
-        <main className="pt-[56px]" style={{ backgroundColor: '#0A0A0F', minHeight: '100vh' }}>
+        <main
+          className="pt-[56px]"
+          style={{
+            backgroundColor: '#0A0A0F',
+            minHeight: '100vh',
+            paddingBottom: isMobile ? '80px' : '0',
+          }}
+        >
           {children}
         </main>
       </div>
@@ -134,6 +145,26 @@ export default function App() {
             <AuthGuard>
               <ProtectedLayout title="Ideas">
                 <Ideas />
+              </ProtectedLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/tareas"
+          element={
+            <AuthGuard>
+              <ProtectedLayout title="Tareas">
+                <Tareas />
+              </ProtectedLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/ideas/:id"
+          element={
+            <AuthGuard>
+              <ProtectedLayout title="Detalle de la Idea">
+                <IdeaDetail />
               </ProtectedLayout>
             </AuthGuard>
           }

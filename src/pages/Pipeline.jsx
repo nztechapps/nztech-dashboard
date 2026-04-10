@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { usePipelineRuns } from '../hooks/usePipelineRuns';
+import { usePipelineRuns, useRealtimeRun } from '../hooks/usePipelineRuns';
+import { supabase } from '../lib/supabase';
 import ToastNotification from '../components/ui/ToastNotification';
 
 const IconRocket = () => (
@@ -43,8 +44,23 @@ const IconCopy = () => (
   </svg>
 );
 
+const IconCheck = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
+const IconAssembly = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="1"></circle>
+    <circle cx="19" cy="12" r="1"></circle>
+    <circle cx="5" cy="12" r="1"></circle>
+    <line x1="6" y1="12" x2="18" y2="12"></line>
+  </svg>
+);
+
 export default function Pipeline() {
-  const { runs, loading, createRun, cancelRun, useRealtimeRun } = usePipelineRuns();
+  const { runs, loading, createRun, cancelRun } = usePipelineRuns();
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -57,7 +73,7 @@ export default function Pipeline() {
   const [timer, setTimer] = useState(0);
 
   const activeRun = runs.find((r) => r.estado === 'running');
-  const realtimeRun = activeRun ? useRealtimeRun(activeRun.id) : null;
+  const realtimeRun = useRealtimeRun(activeRun?.id || null);
   const displayRun = realtimeRun || activeRun;
 
   // Timer para run activo
@@ -105,9 +121,44 @@ export default function Pipeline() {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
+  const getPackageName = (nombre) => {
+    const slug = nombre.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    return 'com.nztech.' + slug.replace(/-/g, '');
+  };
+
+  const handleChecklistUpdate = async (runId, key, value) => {
+    try {
+      const run = runs.find(r => r.id === runId);
+      if (!run) return;
+
+      const currentChecklist = run.checklist_firebase_admob || {};
+      const updatedChecklist = { ...currentChecklist, [key]: value };
+
+      const { error } = await supabase
+        .from('pipeline_runs')
+        .update({ checklist_firebase_admob: updatedChecklist })
+        .eq('id', runId);
+
+      if (error) throw error;
+
+      // Actualizar el run local
+      const updatedRun = { ...run, checklist_firebase_admob: updatedChecklist };
+      // Aquí React re-renderizará porque los runs cambian
+    } catch (err) {
+      setToast({ message: 'Error al actualizar checklist: ' + err.message, type: 'error' });
+    }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    setToast({ message: 'Copiado al portapapeles', type: 'success' });
+  };
+
   const getStatusColor = (estado) => {
     switch (estado) {
       case 'running':
+        return '#6496FF';
+      case 'ensamblando':
         return '#FFB400';
       case 'completado':
         return '#00E5A0';
@@ -122,12 +173,29 @@ export default function Pipeline() {
     switch (estado) {
       case 'running':
         return <IconPlay />;
+      case 'ensamblando':
+        return <IconAssembly />;
       case 'completado':
         return <IconCheckCircle />;
       case 'error':
         return <IconAlertCircle />;
       default:
         return null;
+    }
+  };
+
+  const getStatusDescription = (estado) => {
+    switch (estado) {
+      case 'running':
+        return '🔵 Generando archivos...';
+      case 'ensamblando':
+        return '🟡 Ensamblando repo Android...';
+      case 'completado':
+        return '🟢 Completado';
+      case 'error':
+        return '🔴 Error';
+      default:
+        return estado;
     }
   };
 
@@ -408,77 +476,280 @@ export default function Pipeline() {
             </div>
           ) : (
             <div style={{ display: 'grid', gap: '12px' }}>
-              {runs.map((run) => (
-                <div
-                  key={run.id}
-                  style={{
-                    backgroundColor: '#13131A',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: '8px',
-                    padding: '16px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                      <h3 style={{ color: 'white', margin: 0, fontSize: '14px', fontWeight: '600' }}>
-                        {run.nombre}
-                      </h3>
-                      <span
-                        style={{
-                          backgroundColor: getStatusColor(run.estado),
-                          color: run.estado === 'completado' ? '#0A0A0F' : 'white',
-                          fontSize: '10px',
-                          fontWeight: '600',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                        }}
-                      >
-                        {getStatusIcon(run.estado)}
-                        {run.estado}
-                      </span>
-                    </div>
-                    <p style={{ color: '#999', margin: '0 0 6px 0', fontSize: '12px' }}>
-                      {run.categoria} • {run.created_at && !isNaN(new Date(run.created_at)) ? new Date(run.created_at).toLocaleDateString('es-ES') : '—'}
-                    </p>
-                    {run.github_url && run.estado === 'completado' && (
-                      <a
-                        href={run.github_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#00E5A0', fontSize: '12px', textDecoration: 'none' }}
-                      >
-                        → Ver en GitHub
-                      </a>
-                    )}
-                  </div>
-                  {run.pipeline_output_path && (
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(run.pipeline_output_path);
-                      }}
-                      title="Copiar prompt"
+              {runs.map((run) => {
+                const packageName = getPackageName(run.nombre);
+                const checklist = run.checklist_firebase_admob || {};
+                const checklistItems = [
+                  { key: 'firebase_proyecto', label: 'Crear proyecto en console.firebase.google.com', category: 'Firebase' },
+                  { key: 'firebase_registrar', label: `Registrar app con ${packageName}`, category: 'Firebase' },
+                  { key: 'firebase_descargar', label: 'Descargar google-services.json', category: 'Firebase' },
+                  { key: 'firebase_copiar', label: 'Copiar google-services.json a app/ del proyecto', category: 'Firebase' },
+                  { key: 'admob_app', label: 'Crear app en admob.google.com', category: 'AdMob' },
+                  { key: 'admob_appid', label: 'Copiar App ID → AndroidManifest.xml', category: 'AdMob' },
+                  { key: 'admob_unit', label: 'Crear unidad de banner', category: 'AdMob' },
+                  { key: 'admob_unitid', label: 'Copiar Unit ID → activity_main.xml', category: 'AdMob' },
+                ];
+                const completedCount = checklistItems.filter(item => checklist[item.key]).length;
+
+                return (
+                  <div key={run.id}>
+                    <div
                       style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#00E5A0',
-                        cursor: 'pointer',
-                        padding: '4px',
+                        backgroundColor: '#13131A',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        padding: '16px',
                         display: 'flex',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
-                        marginLeft: '16px',
                       }}
                     >
-                      <IconCopy />
-                    </button>
-                  )}
-                </div>
-              ))}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                          <h3 style={{ color: 'white', margin: 0, fontSize: '14px', fontWeight: '600' }}>
+                            {run.nombre}
+                          </h3>
+                          <span
+                            style={{
+                              backgroundColor: getStatusColor(run.estado),
+                              color: run.estado === 'completado' ? '#0A0A0F' : 'white',
+                              fontSize: '10px',
+                              fontWeight: '600',
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                          >
+                            {getStatusIcon(run.estado)}
+                            {run.estado === 'ensamblando' ? 'ensamblando' : run.estado}
+                          </span>
+                        </div>
+
+                        <div style={{ color: '#00E5A0', fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>
+                          {getStatusDescription(run.estado)}
+                        </div>
+
+                        {run.paso_actual && (
+                          <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px', padding: '8px', backgroundColor: 'rgba(0, 229, 160, 0.05)', borderRadius: '4px', borderLeft: '2px solid #00E5A0' }}>
+                            <span style={{ color: '#666', fontSize: '10px', textTransform: 'uppercase', fontWeight: '600' }}>Paso actual:</span>
+                            <div style={{ color: '#DDD', marginTop: '4px' }}>
+                              {run.paso_actual}
+                            </div>
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '6px' }}>
+                          <span style={{ color: '#999', fontSize: '11px' }}>
+                            {run.categoria} • {run.created_at && !isNaN(new Date(run.created_at)) ? new Date(run.created_at).toLocaleDateString('es-ES') : '—'}
+                          </span>
+                        </div>
+
+                        {run.estado === 'completado' && (
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {run.repo_url && (
+                              <a
+                                href={run.repo_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '6px 12px',
+                                  backgroundColor: 'rgba(0, 229, 160, 0.1)',
+                                  border: '1px solid rgba(0, 229, 160, 0.3)',
+                                  color: '#00E5A0',
+                                  fontSize: '11px',
+                                  fontWeight: '600',
+                                  borderRadius: '4px',
+                                  textDecoration: 'none',
+                                  transition: 'all 200ms ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.2)';
+                                  e.currentTarget.style.borderColor = 'rgba(0, 229, 160, 0.6)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.1)';
+                                  e.currentTarget.style.borderColor = 'rgba(0, 229, 160, 0.3)';
+                                }}
+                              >
+                                📦 Abrir repo
+                              </a>
+                            )}
+                            {run.github_url && (
+                              <a
+                                href={run.github_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '6px 12px',
+                                  backgroundColor: 'rgba(100, 150, 255, 0.1)',
+                                  border: '1px solid rgba(100, 150, 255, 0.3)',
+                                  color: '#6496FF',
+                                  fontSize: '11px',
+                                  fontWeight: '600',
+                                  borderRadius: '4px',
+                                  textDecoration: 'none',
+                                  transition: 'all 200ms ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'rgba(100, 150, 255, 0.2)';
+                                  e.currentTarget.style.borderColor = 'rgba(100, 150, 255, 0.6)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'rgba(100, 150, 255, 0.1)';
+                                  e.currentTarget.style.borderColor = 'rgba(100, 150, 255, 0.3)';
+                                }}
+                              >
+                                📁 Ver output
+                              </a>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {run.pipeline_output_path && (
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(run.pipeline_output_path);
+                          }}
+                          title="Copiar prompt"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#00E5A0',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            marginLeft: '16px',
+                          }}
+                        >
+                          <IconCopy />
+                        </button>
+                      )}
+                    </div>
+
+                    {run.estado === 'completado' && (
+                      <div style={{ marginTop: '12px', backgroundColor: 'rgba(0, 229, 160, 0.05)', border: '1px solid rgba(0, 229, 160, 0.1)', borderRadius: '8px', padding: '16px' }}>
+                        <div style={{ marginBottom: '12px' }}>
+                          <h4 style={{ color: 'white', margin: '0 0 8px 0', fontSize: '13px', fontWeight: '600' }}>
+                            Package Name
+                          </h4>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <code
+                              style={{
+                                backgroundColor: '#0A0A0F',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                borderRadius: '4px',
+                                padding: '8px 12px',
+                                color: '#00E5A0',
+                                fontSize: '12px',
+                                fontFamily: 'DM Mono, monospace',
+                                flex: 1,
+                                minWidth: 0,
+                              }}
+                            >
+                              {packageName}
+                            </code>
+                            <button
+                              onClick={() => copyToClipboard(packageName)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#00E5A0',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <IconCopy />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div style={{ marginBottom: '12px' }}>
+                          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h4 style={{ color: 'white', margin: 0, fontSize: '13px', fontWeight: '600' }}>
+                              Setup Checklist
+                            </h4>
+                            <span style={{ color: '#999', fontSize: '11px' }}>
+                              {completedCount}/{checklistItems.length}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              height: '4px',
+                              backgroundColor: '#1C1C26',
+                              borderRadius: '2px',
+                              overflow: 'hidden',
+                              marginBottom: '12px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                height: '100%',
+                                backgroundColor: '#00E5A0',
+                                width: `${(completedCount / checklistItems.length) * 100}%`,
+                                transition: 'width 0.3s ease',
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {['Firebase', 'AdMob'].map((category) => (
+                          <div key={category} style={{ marginBottom: '12px' }}>
+                            <h5 style={{ color: '#999', margin: '0 0 8px 0', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                              {category}
+                            </h5>
+                            <div style={{ display: 'grid', gap: '6px' }}>
+                              {checklistItems.filter(item => item.category === category).map((item) => (
+                                <label
+                                  key={item.key}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    gap: '10px',
+                                    cursor: 'pointer',
+                                    padding: '8px',
+                                    borderRadius: '4px',
+                                    transition: 'background-color 0.2s',
+                                  }}
+                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.1)'}
+                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={checklist[item.key] || false}
+                                    onChange={(e) => handleChecklistUpdate(run.id, item.key, e.target.checked)}
+                                    style={{
+                                      width: '16px',
+                                      height: '16px',
+                                      margin: '2px 0 0 0',
+                                      cursor: 'pointer',
+                                      accentColor: '#00E5A0',
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                  <span style={{ color: checklist[item.key] ? '#999' : '#DDD', fontSize: '12px', textDecoration: checklist[item.key] ? 'line-through' : 'none' }}>
+                                    {item.label}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

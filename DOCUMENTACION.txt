@@ -1,0 +1,567 @@
+================================================================================
+                    NZTech Dashboard - Documentación Completa
+================================================================================
+
+PROYECTO: NZTech Dashboard
+VERSIÓN: 0.0.0
+DESCRIPCIÓN: Dashboard interno para gestionar el portfolio de apps móviles de NZTech
+USUARIO: Un solo usuario (sin sistema de usuarios múltiples)
+URL LOCAL: http://localhost:5175
+URL PRODUCCIÓN: https://nztech-dashboard.netlify.app
+
+
+================================================================================
+1. DESCRIPCIÓN GENERAL DEL PROYECTO
+================================================================================
+
+NZTech Dashboard es una aplicación web interna diseñada para gestionar:
+
+✓ Portfolio de aplicaciones móviles
+✓ Ideas para nuevas aplicaciones
+✓ Pipeline de generación automática de apps (usando IA)
+✓ Tareas y kanban de desarrollo
+✓ Métricas y análisis (DAU, ingresos, etc.)
+✓ Gestión de finanzas y gastos
+✓ Notificaciones de cambios en Supabase
+✓ Investigación de mercado y especificaciones técnicas
+
+El proyecto permite que un usuario cree ideas, las investigue con IA,
+genere especificaciones técnicas, y luego envíe al pipeline para que se
+genere automáticamente una nueva app.
+
+
+================================================================================
+2. STACK TECNOLÓGICO EXACTO
+================================================================================
+
+FRONTEND:
+  - React 19.2.4 - Framework UI principal
+  - Vite 8.0.1 - Build tool y dev server (muy rápido)
+  - React Router DOM 7.14.0 - Routing y navegación
+  - Tailwind CSS 4.2.2 - Styling (sin CSS externo)
+  - recharts 3.8.1 - Gráficos de datos
+
+BACKEND/DATABASE:
+  - Supabase v2 - PostgreSQL + Auth + Realtime
+  - Proyecto ID: dvmfjdjfzlylclhjzxbt
+  - Realtime Subscriptions (para updates en vivo)
+
+FUNCIONALIDADES AVANZADAS:
+  - @dnd-kit/core 6.3.1 - Drag and drop (kanban)
+  - @dnd-kit/sortable 10.0.0 - Elementos ordenables
+  - @supabase/supabase-js 2.101.1 - Cliente Supabase
+
+HERRAMIENTAS DE DESARROLLO:
+  - ESLint 9.39.4 - Linting de código
+  - PostCSS 8.5.8 - Procesamiento CSS
+  - Autoprefixer 10.4.27 - Prefijos CSS automáticos
+
+
+================================================================================
+3. ESTRUCTURA DE CARPETAS
+================================================================================
+
+nztech-dashboard/
+├── src/
+│   ├── App.jsx                          # Componente raíz y routing
+│   ├── main.jsx                         # Punto de entrada
+│   ├── index.css                        # Estilos globales
+│   │
+│   ├── lib/
+│   │   └── supabase.js                  # Cliente Supabase configurado
+│   │
+│   ├── hooks/                           # Custom React Hooks
+│   │   ├── useApps.js                   # Gestión de apps
+│   │   ├── useIdeas.js                  # Gestión de ideas
+│   │   ├── useTasks.js                  # Gestión de tareas
+│   │   ├── useMetrics.js                # Gestión de métricas
+│   │   ├── useFinanzas.js               # Gestión de finanzas
+│   │   ├── useNotifications.js          # Sistema de notificaciones
+│   │   ├── usePipelineRuns.js           # Gestión de pipeline (con realtime)
+│   │   ├── useAuth.js                   # Autenticación
+│   │   ├── useAsoTracker.js             # ASO tracking
+│   │   ├── useAgentInbox.js             # Inbox del agente
+│   │   └── ... (otros hooks)
+│   │
+│   ├── components/
+│   │   ├── layout/
+│   │   │   ├── Sidebar.jsx              # Navegación principal
+│   │   │   ├── TopBar.jsx               # Barra superior
+│   │   │   └── AuthGuard.jsx            # Protección de rutas
+│   │   │
+│   │   ├── ui/                          # Componentes reutilizables
+│   │   │   ├── ToastNotification.jsx    # Notificaciones toast
+│   │   │   ├── MetricCard.jsx           # Tarjeta de métrica
+│   │   │   ├── StatusBadge.jsx          # Badge de estado
+│   │   │   ├── ConfirmModal.jsx         # Modal de confirmación
+│   │   │   ├── DatePicker.jsx           # Selector de fecha
+│   │   │   └── AppIcon.jsx              # Ícono de app
+│   │   │
+│   │   ├── apps/
+│   │   │   ├── KanbanBoard.jsx          # Tablero kanban (drag & drop)
+│   │   │   └── AppForm.jsx              # Formulario de app
+│   │   │
+│   │   ├── metrics/
+│   │   │   ├── DAUChart.jsx             # Gráfico de usuarios activos
+│   │   │   ├── RevenueChart.jsx         # Gráfico de ingresos
+│   │   │   ├── MetricsTable.jsx         # Tabla de métricas
+│   │   │   └── MetricsForm.jsx          # Formulario de métricas
+│   │   │
+│   │   ├── finanzas/
+│   │   │   └── GastoForm.jsx            # Formulario de gastos
+│   │   │
+│   │   └── notifications/
+│   │       └── ... (componentes de notificaciones)
+│   │
+│   └── pages/                           # Páginas completas
+│       ├── Dashboard.jsx                # Home principal
+│       ├── Apps.jsx                     # Listado de apps con kanban
+│       ├── Ideas.jsx                    # Gestión de ideas con IA
+│       ├── IdeaDetail.jsx               # Detalle de idea con tabs
+│       ├── Tasks.jsx                    # Gestión de tareas
+│       ├── Metrics.jsx                  # Dashboard de métricas
+│       ├── Pipeline.jsx                 # Generación automática de apps
+│       ├── Finanzas.jsx                 # Gestión financiera
+│       ├── AsoTracker.jsx               # Seguimiento ASO
+│       └── AgentInbox.jsx               # Inbox del agente
+│
+├── public/                              # Assets estáticos
+├── docs/
+│   └── schema.sql                       # Schema de base de datos
+├── vite.config.js                       # Configuración Vite
+├── tailwind.config.js                   # Configuración Tailwind
+├── postcss.config.js                    # Configuración PostCSS
+├── .env.local                           # Variables de entorno (no versionar)
+├── package.json                         # Dependencias y scripts
+└── package-lock.json                    # Lock file
+
+
+================================================================================
+4. BASE DE DATOS - TABLAS PRINCIPALES
+================================================================================
+
+SUPABASE Project: dvmfjdjfzlylclhjzxbt
+
+TABLAS PRINCIPALES:
+  ✓ apps                  - Aplicaciones móviles del portfolio
+  ✓ tasks                 - Tareas de desarrollo
+  ✓ metrics               - Métricas de apps (DAU, revenue, etc)
+  ✓ notifications         - Notificaciones del sistema
+  ✓ ideas                 - Ideas para nuevas apps
+  ✓ pipeline_runs         - Historial de ejecuciones del pipeline
+  ✓ finanzas              - Datos financieros
+  ✓ eventos               - Eventos rastreados
+  ✓ gastos                - Gastos registrados
+  ✓ research              - Investigación de mercado
+
+VER: docs/schema.sql para el esquema completo
+
+CARACTERÍSTICAS DE BD:
+  - Realtime Subscriptions: Las tablas se sincronizan en vivo con la UI
+  - Row Level Security (RLS): Seguridad a nivel de fila (usuario único)
+  - Timestamps automáticos: created_at y updated_at
+
+
+================================================================================
+5. COMPONENTES Y PÁGINAS PRINCIPALES
+================================================================================
+
+PÁGINA: Dashboard.jsx (Home)
+  - Vista general del portfolio
+  - Resumen de apps principales
+  - Últimas métricas
+  - Notificaciones recientes
+
+PÁGINA: Apps.jsx
+  - Listado de todas las apps móviles
+  - Tablero kanban para estado (planning → development → launched)
+  - Drag & drop entre columnas
+  - Crear nueva app
+  - Ver detalles de app
+
+PÁGINA: Ideas.jsx
+  - Listado de ideas para nuevas apps
+  - Filtros por estado, categoría, mercado
+  - Modal de procesamiento de ideas (pasos 0, 1, 2, pipeline)
+  - Paso 0: Info base (título, descripción, etc)
+  - Paso 1: Research de mercado (generado con IA)
+  - Paso 2: Especificaciones técnicas (generadas con IA)
+  - Paso 3: Envío a pipeline para generación automática
+  - Botones de delete con confirmación
+
+PÁGINA: IdeaDetail.jsx
+  - Detalle completo de una idea
+  - Navegación horizontal por tabs: Info | Research | Specs | Pipeline
+  - Transiciones suaves (opacity + translateX)
+  - Soporte para swipe en mobile (>50px)
+  - Header sticky con botón "Volver"
+  - Botón "Enviar a Pipeline" (si está completa)
+  - Muestra JSON limpio (sin ```json crudo)
+
+PÁGINA: Pipeline.jsx
+  - Interfaz para generar nuevas apps automáticamente
+  - Formulario con nombre, descripción, público, mercado, categoría
+  - Run activo: muestra estado actual del pipeline
+  - Historial de runs completados, en progreso, con error
+  - Timer para runs activos
+  - Links a GitHub cuando está completada
+
+PÁGINA: Tasks.jsx
+  - Gestión de tareas de desarrollo
+  - Filtros por estado, app, prioridad
+  - Crear nueva tarea
+  - Actualizar estado (todo → doing → done)
+
+PÁGINA: Metrics.jsx
+  - Dashboard de análisis de apps
+  - Gráficos: DAU, Revenue, Crecimiento
+  - Tabla detallada de métricas
+  - Registrar nuevas métricas
+  - Filtros por app, fecha
+
+PÁGINA: Finanzas.jsx
+  - Gestión financiera
+  - Ingresos por app
+  - Registro de gastos
+  - Resumen financiero
+
+PÁGINA: AsoTracker.jsx
+  - Seguimiento de ASO (App Store Optimization)
+  - Rankings en app stores
+  - Palabras clave
+
+PÁGINA: AgentInbox.jsx
+  - Inbox de notificaciones del agente
+  - Mensajes de cambios en DB
+
+
+================================================================================
+6. DISEÑO VISUAL Y SISTEMA DE DISEÑO
+================================================================================
+
+COLORES:
+  - Primario: #00E5A0 (Verde NZTech) - Botones, acciones principales
+  - Fondo: #0A0A0F (Negro muy oscuro) - Fondo general
+  - Superficie: #13131A (Negro oscuro) - Tarjetas, modales
+  - Texto primario: white, rgba(255,255,255,0.7), rgba(255,255,255,0.9)
+  - Texto secundario: #999, #666
+  - Estados:
+    ✓ Success: #00E5A0 (verde)
+    ✓ Error: #FF4D4F (rojo)
+    ✓ Warning: #FFB400 (naranja)
+    ✓ Info: #6496FF (azul)
+
+TIPOGRAFÍA:
+  - Display: Syne (headers, títulos grandes)
+  - Números: DM Mono (monospace, para datos)
+  - Defecto: System fonts (sans-serif)
+
+MODO: Dark mode por defecto (no hay light mode)
+
+COMPONENTES UI:
+  - Botones: Fondo #00E5A0, padding 10-12px, rounded 6-8px
+  - Inputs: Fondo #0A0A0F, borde rgba(255,255,255,0.08)
+  - Cards: Fondo #13131A, borde sutil
+  - Modales: Overlay rgba(0,0,0,0.6), centered
+  - Tabs: Highlight #00E5A0, transición 200ms
+  - Badges: Pequeños, colores según estado
+  - Toasts: Notificaciones en esquina, auto-dismiss
+
+
+================================================================================
+7. FLUJOS PRINCIPALES
+================================================================================
+
+FLUJO 1: Crear y procesar una idea
+  1. Usuario va a "Ideas"
+  2. Click "Nueva idea" → abre modal NewIdeaModal
+  3. Completa: título, descripción, público, mercado, categoría, prioridad
+  4. Click "Crear idea" → se guarda en Supabase
+  5. Se abre IdeaProcessingModal con stepper (4 pasos)
+  6. Paso 0: Editar info base
+  7. Paso 1: Click "Generar research" → llamada a http://localhost:5678
+     - Agente IA investiga el mercado
+     - Se guarda research_mercado en BD
+     - Estado: investigando
+  8. Paso 2: Click "Specs" → llamada a http://localhost:5678
+     - Agente IA genera especificaciones técnicas
+     - Se guarda specs_pantallas, specs_flujos, specs_apis, complejidad
+  9. Paso 3: Click "Enviar a Pipeline" → llamada a http://localhost:3001/pipeline
+     - Se envían todos los datos al servidor del pipeline
+     - Respuesta: { runId, status: "running" }
+     - Estado idea cambia a "aprobada"
+     - Navega a /pipeline?runId={runId}
+
+FLUJO 2: Generar app en pipeline
+  1. Usuario va a "Pipeline"
+  2. Rellena formulario: nombre, descripción, público, mercado, categoría
+  3. Click "Generar app" → POST a http://localhost:3001/pipeline
+  4. Se crea un run con estado "running"
+  5. IdeaProcessingModal realtime subscription monitorea el run
+  6. UI muestra estado actual, paso, timer
+  7. Cuando completado: estado = "completado", github_url disponible
+  8. Click "Ver en GitHub" abre el repo creado
+
+FLUJO 3: Ver detalle de idea
+  1. Usuario en Ideas, click en una idea
+  2. Navega a /ideas/:id
+  3. Header sticky con título y botón volver
+  4. Tabs: Info | Research | Specs | Pipeline
+  5. En mobile: swipe left/right para cambiar tab
+  6. En Desktop: click en tab para cambiar (transición suave)
+  7. Tab "Pipeline": muestra estado y botón para enviar si está listo
+  8. Contenido sin scroll vertical (cada tab cabe en pantalla)
+
+
+================================================================================
+8. SISTEMA DE HOOKS PERSONALIZADOS
+================================================================================
+
+useApps()
+  - Obtiene todas las apps de 'apps' table
+  - Métodos: getApps(), createApp(), updateApp(), deleteApp()
+  - Realtime: suscripción a cambios
+
+useIdeas()
+  - Gestión de ideas para nuevas apps
+  - Métodos: getIdeas(), createIdea(), updateIdea(), deleteIdea()
+  - Estados: idea, investigando, aprobada, descartada
+  - Soporta filtros: estado, categoría, mercado
+
+useTasks()
+  - Gestión de tareas
+  - Métodos: getTasks(), createTask(), updateTask(), deleteTask()
+  - Estados: todo, doing, done
+
+useMetrics()
+  - Obtiene métricas de apps
+  - Métodos: getMetrics(), addMetric()
+  - Trackea: DAU, ingresos, instalaciones
+
+usePipelineRuns()
+  - Historia de ejecuciones del pipeline
+  - Métodos: fetchRuns(), createRun(), cancelRun()
+  - useRealtimeRun(runId): Hook separado para monitoreo en vivo
+
+useAuth()
+  - Autenticación con Supabase
+  - login(), logout(), getCurrentUser()
+
+useRealtimeRun(runId)
+  - Hook independiente para realtime subscription
+  - Usa nueva API: .channel().on('postgres_changes')
+  - Retorna run actual desde BD en tiempo real
+
+
+================================================================================
+9. INTEGRACIONES EXTERNAS
+================================================================================
+
+SUPABASE REALTIME:
+  - Subscripción a cambios en tablas
+  - API nueva: .channel().on('postgres_changes').subscribe()
+  - Desuscripción: supabase.removeChannel(channel)
+  - Ejemplo: Pipeline.jsx monitorea cambios de pipeline_runs
+
+WEBHOOKS LOCALES (en desarrollo):
+  - http://localhost:5678/webhook/idea-research
+    POST body: { idea: { titulo, descripcion, mercado, categoria } }
+    Response: { research_mercado: string }
+
+  - http://localhost:5678/webhook/idea-specs
+    POST body: { idea: { ... research_mercado } }
+    Response: { pantallas, flujos, apis, complejidad }
+
+  - http://localhost:3001/pipeline
+    POST body: { nombre, descripcion, publico, categoria, mercado, idea_id }
+    Response: { runId, status: "running" }
+
+  - http://localhost:3001/pipeline/cancel
+    POST body: { runId }
+
+NETLIFY DEPLOYMENT:
+  - Production: https://nztech-dashboard.netlify.app
+  - Deploy automático desde rama main
+
+
+================================================================================
+10. CONFIGURACIÓN Y VARIABLES DE ENTORNO
+================================================================================
+
+ARCHIVO: .env.local (no versionar - crear manualmente)
+
+Variables necesarias:
+
+VITE_SUPABASE_URL=https://dvmfjdjfzlylclhjzxbt.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon-key-de-supabase>
+VITE_SERVER_URL=http://localhost:3001
+
+DESARROLLO:
+  - URL local: http://localhost:5175
+  - Supabase: proyecto dvmfjdjfzlylclhjzxbt
+  - Webhooks: localhost:5678 (agente IA), localhost:3001 (pipeline)
+
+PRODUCCIÓN:
+  - URL: https://nztech-dashboard.netlify.app
+  - Variables en Netlify environment
+
+
+================================================================================
+11. CÓMO EJECUTAR EL PROYECTO
+================================================================================
+
+PREPARACIÓN INICIAL:
+
+1. Clonar repositorio:
+   git clone <repo>
+   cd nztech-dashboard
+
+2. Instalar dependencias:
+   npm install
+
+3. Crear .env.local:
+   VITE_SUPABASE_URL=https://dvmfjdjfzlylclhjzxbt.supabase.co
+   VITE_SUPABASE_ANON_KEY=<tu-key>
+   VITE_SERVER_URL=http://localhost:3001
+
+DESARROLLO LOCAL:
+
+4. Iniciar dev server:
+   npm run dev
+   → Abre http://localhost:5175
+
+5. Servir webhooks locales (en otra terminal):
+   cd ../servidor-agente-ia
+   python app.py  (o node server.js según corresponda)
+
+   cd ../pipeline-server
+   node server.js
+   → Escucha en localhost:3001
+
+6. (Opcional) Lint:
+   npm run lint
+
+BUILD PARA PRODUCCIÓN:
+
+7. Build:
+   npm run build
+   → Crea carpeta dist/
+
+8. Preview local del build:
+   npm run preview
+
+9. Deploy (automático en main):
+   git push origin main
+   → Netlify deploya automáticamente
+
+
+================================================================================
+12. CONVENCIONES DE CÓDIGO
+================================================================================
+
+COMPONENTES:
+  - ✓ PascalCase: MyComponent.jsx
+  - ✓ Componentes funcionales con hooks
+  - ✓ Props como objetos desestructurados
+
+HOOKS:
+  - ✓ camelCase con prefijo "use": useMyHook()
+  - ✓ Hooks al inicio del componente
+  - ✓ Nunca condicionalmente (antes de return)
+
+VARIABLES:
+  - ✓ camelCase: myVariable
+  - ✓ CONSTANTS en UPPERCASE_SNAKE_CASE
+  - ✓ Booleans con prefijo "is": isLoading, isOpen
+
+STYLING:
+  - ✓ Tailwind CSS clases (preferido)
+  - ✓ Inline styles (style={{}}) cuando sea necesario
+  - ✓ NO CSS externo (.css files)
+  - ✓ Colores: usar constantes de colores
+
+ARCHIVOS .ENV:
+  - ✓ VITE_* para variables expuestas al frontend
+  - ✓ Nunca hardcodear URLs o claves
+  - ✓ .env.local no versionado
+
+GIT:
+  - ✓ Rama main: producción
+  - ✓ Rama develop: desarrollo
+  - ✓ Feature branches: develop → feature/nombre → PR → develop
+
+
+================================================================================
+13. CARACTERÍSTICAS IMPLEMENTADAS (Últimas actualizaciones)
+================================================================================
+
+✓ Navegación horizontal en IdeaDetail con tabs (Info, Research, Specs, Pipeline)
+✓ Transiciones suaves entre tabs (opacity + translateX 200ms)
+✓ Soporte swipe en mobile (detección touchstart/touchend >50px)
+✓ Header sticky en IdeaDetail con botón "Volver a Ideas"
+✓ Limpieza de JSON crudo en campos Specs (cleanField function)
+✓ Botones de delete con modal de confirmación en Ideas.jsx
+✓ Endpoint Pipeline actualizado: http://localhost:3001/pipeline
+✓ Rules of Hooks corregidas: todos los hooks al inicio
+✓ useRealtimeRun como hook independiente (no condicional)
+✓ Supabase Realtime API actualizada (postgres_changes)
+✓ Desuscripción correcta con removeChannel()
+
+
+================================================================================
+14. TROUBLESHOOTING
+================================================================================
+
+ERROR: "El servidor local no está corriendo"
+→ Solución: npm run dev (o node server.js en otra terminal)
+
+ERROR: "Hooks called conditionally"
+→ Solución: Mover hooks al inicio del componente, antes de cualquier if/return
+
+ERROR: ".on() does not exist"
+→ Solución: Usar nueva API .channel().on('postgres_changes')
+
+ERROR: "404 Not Found en /pipeline"
+→ Solución: Asegurar que http://localhost:3001 está corriendo
+
+ERROR: "CORS error"
+→ Solución: Supabase debe permitir origen localhost:5175
+
+ERROR: Cambios en BD no aparecen en UI
+→ Solución: Verificar que realtime subscription está activa
+→ Solución: Ver en Supabase > Realtime > Status
+
+
+================================================================================
+15. PRÓXIMOS PASOS / TODO
+================================================================================
+
+MEJORAS PLANEADAS:
+  - [ ] Optimización de bundle size (chunks más pequeños)
+  - [ ] Agregar más gráficos (crecimiento, retención)
+  - [ ] Exportar reportes a PDF
+  - [ ] Notificaciones en tiempo real (web push)
+  - [ ] Búsqueda global (Cmd+K)
+  - [ ] Dark/Light mode toggle
+  - [ ] Caché local (IndexedDB)
+  - [ ] Offline support
+
+
+================================================================================
+16. CONTACTO Y REFERENCIAS
+================================================================================
+
+PROYECTO: NZTech Dashboard
+CREADO: 2024
+ACTUALIZACIÓN: Abril 2026
+DESARROLLADOR: Federico Nintzel
+STACK: React 19 + Vite + Tailwind + Supabase
+
+REFERENCIAS:
+  - Documentación Supabase: https://supabase.com/docs
+  - React Docs: https://react.dev
+  - Vite Docs: https://vitejs.dev
+  - Tailwind CSS: https://tailwindcss.com
+  - React Router: https://reactrouter.com
+
+================================================================================

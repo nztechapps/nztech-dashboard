@@ -10,6 +10,8 @@ const IconBell = () => (
 
 export function TopBar({ title = 'Dashboard' }) {
   const { unreadCount } = useNotifications()
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
     <header
       className="fixed top-0 left-0 right-0 border-b flex items-center justify-between px-6"
@@ -17,7 +19,7 @@ export function TopBar({ title = 'Dashboard' }) {
         height: '56px',
         backgroundColor: '#0A0A0F',
         borderBottomColor: 'rgba(255,255,255,0.08)',
-        marginLeft: '220px',
+        marginLeft: isMobile ? 0 : '220px',
         right: '0',
       }}
     >

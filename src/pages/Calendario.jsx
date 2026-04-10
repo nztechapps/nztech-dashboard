@@ -36,6 +36,19 @@ const IconArrowRight = () => (
   </svg>
 );
 
+const IconCheck = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
+const IconPlus = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
+);
+
 const TIPO_COLORS = {
   publicacion: '#1a4d2e',
   update: '#1e3a8a',
@@ -70,6 +83,8 @@ export default function Calendario() {
   const [tareas, setTareas] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [toast, setToast] = useState(null);
+  const [objectives, setObjectives] = useState([]);
+  const [newObjective, setNewObjective] = useState('');
   const [formData, setFormData] = useState({
     titulo: '',
     tipo: 'publicacion',
@@ -96,6 +111,28 @@ export default function Calendario() {
     };
     fetchTareas();
   }, []);
+
+  // Cargar objetivos del mes actual
+  useEffect(() => {
+    const fetchObjectives = async () => {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const firstDay = new Date(year, month, 1).toISOString().split('T')[0];
+      const lastDay = new Date(year, month + 1, 0).toISOString().split('T')[0];
+
+      const { data, error } = await supabase
+        .from('calendar_objectives')
+        .select('*')
+        .gte('fecha', firstDay)
+        .lte('fecha', lastDay)
+        .order('fecha', { ascending: true });
+
+      if (!error) {
+        setObjectives(data || []);
+      }
+    };
+    fetchObjectives();
+  }, [currentDate]);
 
   const days = [];
   for (let i = 0; i < firstDay; i++) {
@@ -125,12 +162,79 @@ export default function Calendario() {
     return eventos.filter((e) => e.fecha === dateStr);
   };
 
+  const getObjectivesForDay = (day) => {
+    if (!day) return [];
+    const dateStr = formatDateForComparison(new Date(year, month, day));
+    return objectives.filter((o) => o.fecha === dateStr);
+  };
+
   const getDayItems = (day) => {
-    if (!day) return { tareas: [], eventos: [] };
+    if (!day) return { tareas: [], eventos: [], objetivos: [] };
     return {
       tareas: getTareasForDay(day),
       eventos: getEventosForDay(day),
+      objetivos: getObjectivesForDay(day),
     };
+  };
+
+  const hasObjectivesOnDay = (day) => {
+    if (!day) return false;
+    return getObjectivesForDay(day).length > 0;
+  };
+
+  const handleAddObjective = async () => {
+    if (!newObjective.trim() || !selectedDay) return;
+
+    try {
+      const dateStr = formatDateForComparison(new Date(year, month, selectedDay));
+      const { data, error } = await supabase
+        .from('calendar_objectives')
+        .insert({
+          fecha: dateStr,
+          texto: newObjective.trim(),
+          completado: false,
+        })
+        .select();
+
+      if (error) throw error;
+
+      setObjectives([...objectives, data[0]]);
+      setNewObjective('');
+      setToast({ message: 'Objetivo agregado', type: 'success' });
+    } catch (err) {
+      setToast({ message: 'Error al agregar objetivo', type: 'error' });
+    }
+  };
+
+  const handleToggleObjective = async (objId, currentState) => {
+    try {
+      const { error } = await supabase
+        .from('calendar_objectives')
+        .update({ completado: !currentState })
+        .eq('id', objId);
+
+      if (error) throw error;
+
+      setObjectives(objectives.map(o => o.id === objId ? { ...o, completado: !currentState } : o));
+    } catch (err) {
+      setToast({ message: 'Error al actualizar objetivo', type: 'error' });
+    }
+  };
+
+  const handleDeleteObjective = async (objId) => {
+    try {
+      const { error } = await supabase
+        .from('calendar_objectives')
+        .delete()
+        .eq('id', objId);
+
+      if (error) throw error;
+
+      setObjectives(objectives.filter(o => o.id !== objId));
+      setToast({ message: 'Objetivo eliminado', type: 'success' });
+    } catch (err) {
+      setToast({ message: 'Error al eliminar objetivo', type: 'error' });
+    }
   };
 
   const handleDayClick = (day) => {
@@ -216,8 +320,13 @@ export default function Calendario() {
                   }}
                 >
                   {day && (
-                    <div style={{ color: '#999', fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>
-                      {day}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '4px' }}>
+                      <div style={{ color: '#999', fontSize: '12px', fontWeight: '600' }}>
+                        {day}
+                      </div>
+                      {hasObjectivesOnDay(day) && (
+                        <div style={{ width: '6px', height: '6px', backgroundColor: '#00E5A0', borderRadius: '50%' }} title="Tiene objetivos" />
+                      )}
                     </div>
                   )}
 
@@ -242,6 +351,10 @@ export default function Calendario() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '12px', height: '12px', backgroundColor: '#7C6AFF', borderRadius: '2px' }} />
             <span style={{ color: '#999', fontSize: '13px' }}>Tarea</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '6px', height: '6px', backgroundColor: '#00E5A0', borderRadius: '50%' }} />
+            <span style={{ color: '#999', fontSize: '13px' }}>Con objetivos</span>
           </div>
         </div>
       </div>
@@ -286,6 +399,117 @@ export default function Calendario() {
 
           {/* Content */}
           <div style={{ flex: 1, overflow: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Sección de Objetivos */}
+            {(() => {
+              const dayObjectives = getObjectivesForDay(selectedDay);
+              return (
+                <div style={{ backgroundColor: 'rgba(0, 229, 160, 0.05)', border: '1px solid rgba(0, 229, 160, 0.2)', borderRadius: '6px', padding: '12px' }}>
+                  <h4 style={{ color: '#00E5A0', fontSize: '12px', fontWeight: '600', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
+                    Objetivos del día
+                  </h4>
+
+                  {dayObjectives.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+                      {dayObjectives.map((obj) => (
+                        <div
+                          key={obj.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            backgroundColor: '#0A0A0F',
+                            padding: '8px',
+                            borderRadius: '4px',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={obj.completado}
+                            onChange={() => handleToggleObjective(obj.id, obj.completado)}
+                            style={{
+                              width: '14px',
+                              height: '14px',
+                              cursor: 'pointer',
+                              accentColor: '#00E5A0',
+                            }}
+                          />
+                          <span
+                            style={{
+                              flex: 1,
+                              color: obj.completado ? '#666' : '#DDD',
+                              fontSize: '12px',
+                              textDecoration: obj.completado ? 'line-through' : 'none',
+                              wordBreak: 'break-word',
+                            }}
+                          >
+                            {obj.texto}
+                          </span>
+                          <button
+                            onClick={() => handleDeleteObjective(obj.id)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#FF4D4F',
+                              cursor: 'pointer',
+                              padding: '2px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              flexShrink: 0,
+                            }}
+                            title="Eliminar objetivo"
+                          >
+                            <IconTrash />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <input
+                      type="text"
+                      placeholder="Nuevo objetivo..."
+                      value={newObjective}
+                      onChange={(e) => setNewObjective(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleAddObjective();
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        backgroundColor: '#0A0A0F',
+                        border: '1px solid rgba(0, 229, 160, 0.2)',
+                        borderRadius: '4px',
+                        padding: '6px 8px',
+                        color: 'white',
+                        fontSize: '11px',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                    <button
+                      onClick={handleAddObjective}
+                      style={{
+                        backgroundColor: 'transparent',
+                        border: '1px solid #00E5A0',
+                        color: '#00E5A0',
+                        borderRadius: '4px',
+                        padding: '6px 10px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                      }}
+                    >
+                      <IconPlus />
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
             {(() => {
               const items = getDayItems(selectedDay);
               const allItems = [
@@ -294,7 +518,7 @@ export default function Calendario() {
               ];
 
               if (allItems.length === 0 && !isFormOpen) {
-                return <div style={{ color: '#666', textAlign: 'center', paddingTop: '20px' }}>Sin eventos este día</div>;
+                return <div style={{ color: '#666', textAlign: 'center', paddingTop: '0px' }}>Sin eventos este día</div>;
               }
 
               return (

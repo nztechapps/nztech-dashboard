@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import MetricCard from '../components/ui/MetricCard';
 import { useApps } from '../hooks/useApps';
-import { useTasks } from '../hooks/useTasks';
+import { useTareas } from '../hooks/useTareas';
 import { useNotifications } from '../hooks/useNotifications';
 import { supabase } from '../lib/supabase';
 
@@ -24,6 +24,13 @@ const IconInfo = () => (
     <circle cx="12" cy="12" r="10"></circle>
     <line x1="12" y1="16" x2="12" y2="12"></line>
     <line x1="12" y1="8" x2="12.01" y2="8"></line>
+  </svg>
+);
+
+const IconRocket = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M4.5 16.5c-1.5-1.5-2-3.5-2-5.5 0-4.5 3.5-8 8-8s8 3.5 8 8-3.5 8-8 8c-2 0-4-0.5-5.5-2"></path>
+    <polyline points="12 4 12 12 9 12"></polyline>
   </svg>
 );
 
@@ -58,6 +65,12 @@ function formatRelativeDate(dateString) {
   return formatDate(dateString);
 }
 
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
 const StatusBadge = ({ status }) => {
   const badgeConfig = {
     development: { bg: '#1C1C26', text: '#999' },
@@ -68,91 +81,127 @@ const StatusBadge = ({ status }) => {
   const config = badgeConfig[status] || badgeConfig.development;
 
   return (
-    <span
-      className="text-xs px-2 py-1 rounded"
-      style={{ backgroundColor: config.bg, color: config.text }}
-    >
+    <span style={{ backgroundColor: config.bg, color: config.text, fontSize: '10px', padding: '4px 8px', borderRadius: '4px' }}>
       {status}
     </span>
   );
 };
 
-const MarketBadge = ({ market }) => (
-  <span
-    className="text-xs px-2 py-1 rounded"
-    style={{ backgroundColor: 'rgba(100, 150, 255, 0.2)', color: '#6496FF' }}
-  >
-    {market}
-  </span>
-);
+const RunStatusBadge = ({ estado }) => {
+  const config = {
+    running: { bg: 'rgba(100, 150, 255, 0.2)', color: '#6496FF' },
+    completado: { bg: 'rgba(0, 229, 160, 0.2)', color: '#00E5A0' },
+    error: { bg: 'rgba(255, 77, 79, 0.2)', color: '#FF4D4F' },
+    ensamblando: { bg: 'rgba(255, 180, 0, 0.2)', color: '#FFB400' },
+  };
+  const style = config[estado] || config.running;
+
+  return (
+    <span style={{ backgroundColor: style.bg, color: style.color, fontSize: '11px', padding: '4px 8px', borderRadius: '4px', fontWeight: '600', textTransform: 'capitalize' }}>
+      {estado}
+    </span>
+  );
+};
 
 export default function Home() {
-  const { apps, loading: appsLoading } = useApps();
-  const { tasks, loading: tasksLoading } = useTasks();
-  const { notifications, unreadCount } = useNotifications();
+  const { apps } = useApps();
+  const { tareas, bloques } = useTareas();
+  const { notifications } = useNotifications();
 
   // Métricas
-  const [mar, setMar] = useState('—');
+  const [revenue, setRevenue] = useState('—');
   const [activeAppsCount, setActiveAppsCount] = useState(0);
-  const [pendingTasksCount, setPendingTasksCount] = useState(0);
-  const [worstCrashRate, setWorstCrashRate] = useState('—');
+  const [pipelineStatus, setPipelineStatus] = useState(null);
+  const [pendingTareasCount, setPendingTareasCount] = useState(0);
 
+  // Pipeline polling
+  const [activeRun, setActiveRun] = useState(null);
+  const [timer, setTimer] = useState(0);
+
+  // Fetch revenue última mes (AdMob)
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        // MAR: ingresos último mes / apps activas
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
         const { data: metricsData } = await supabase
           .from('metrics')
-          .select('ingresos, app_id')
+          .select('ingresos')
           .gte('fecha', thirtyDaysAgo.toISOString());
 
-        const totalIngresos = (metricsData || []).reduce((sum, m) => sum + (m.ingresos || 0), 0);
-        const activeApps = apps.filter(a => a.status === 'published' || a.status === 'testing').length;
-        const mar_value = activeApps > 0 ? (totalIngresos / activeApps).toFixed(2) : '0.00';
-        setMar(`$${mar_value}`);
+        const totalRevenue = (metricsData || []).reduce((sum, m) => sum + (m.ingresos || 0), 0);
+        setRevenue(totalRevenue > 0 ? `$${totalRevenue.toFixed(2)}` : '$0.00');
 
         // Apps activas
-        setActiveAppsCount(activeApps);
-
-        // Tareas pendientes
-        setPendingTasksCount(tasks.length);
-
-        // Worst crash rate
-        const { data: crashData } = await supabase
-          .from('metrics')
-          .select('crash_rate')
-          .gte('fecha', thirtyDaysAgo.toISOString())
-          .order('crash_rate', { ascending: false })
-          .limit(1);
-
-        if (crashData && crashData.length > 0) {
-          const crashRate = (crashData[0].crash_rate * 100).toFixed(2);
-          setWorstCrashRate(`${crashRate}%`);
-        } else {
-          setWorstCrashRate('—');
-        }
+        const active = apps.filter(a => a.estado === 'published' || a.estado === 'testing' || a.status === 'published' || a.status === 'testing').length;
+        setActiveAppsCount(active);
       } catch (err) {
         console.error('Error fetching metrics:', err);
       }
     };
 
-    if (apps.length > 0 || tasks.length >= 0) {
+    if (apps.length > 0) {
       fetchMetrics();
     }
-  }, [apps, tasks]);
+  }, [apps]);
+
+  // Tareas pendientes
+  useEffect(() => {
+    const pending = tareas.filter(t => !t.completada && t.estado !== 'completada').length;
+    setPendingTareasCount(pending);
+  }, [tareas]);
+
+  // Polling para pipeline activo cada 10 segundos
+  useEffect(() => {
+    const fetchActiveRun = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('pipeline_runs')
+          .select('*')
+          .in('estado', ['running', 'ensamblando'])
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          throw error;
+        }
+
+        setActiveRun(data || null);
+        setPipelineStatus(data ? `${data.estado}` : null);
+      } catch (err) {
+        if (err.code !== 'PGRST116') {
+          console.error('Error fetching active run:', err);
+        }
+        setActiveRun(null);
+      }
+    };
+
+    fetchActiveRun();
+    const interval = setInterval(fetchActiveRun, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Timer para run activo
+  useEffect(() => {
+    if (!activeRun) return;
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - new Date(activeRun.created_at).getTime()) / 1000);
+      setTimer(elapsed);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [activeRun]);
 
   return (
-    <div className="p-6" style={{ backgroundColor: '#0A0A0F', minHeight: '100vh' }}>
-      {/* Sección 1: Métricas */}
-      <section className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        {/* FILA 1: Métricas */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }}>
           <MetricCard
-            label="MAR"
-            value={mar}
-            sub={`${activeAppsCount} apps`}
+            label="Revenue (AdMob)"
+            value={revenue}
+            sub="último mes"
             subColor="neutral"
           />
           <MetricCard
@@ -162,152 +211,253 @@ export default function Home() {
             subColor="green"
           />
           <MetricCard
-            label="Tareas pendientes"
-            value={pendingTasksCount}
-            sub={pendingTasksCount === 0 ? '¡Todo hecho!' : 'sin completar'}
-            subColor={pendingTasksCount === 0 ? 'green' : 'neutral'}
+            label="Pipeline activo"
+            value={pipelineStatus ? '🔄 Ejecutando' : '—'}
+            sub={pipelineStatus || 'nada corriendo'}
+            subColor={pipelineStatus ? 'blue' : 'neutral'}
           />
           <MetricCard
-            label="Crash rate peor"
-            value={worstCrashRate}
-            sub="últimos 7 días"
-            subColor={worstCrashRate !== '—' && parseFloat(worstCrashRate) > 1 ? 'red' : 'neutral'}
+            label="Tareas pendientes"
+            value={pendingTareasCount}
+            sub={pendingTareasCount === 0 ? '¡Todo hecho!' : 'sin completar'}
+            subColor={pendingTareasCount === 0 ? 'green' : 'neutral'}
           />
         </div>
-      </section>
 
-      {/* Sección 2: Apps del portfolio */}
-      <section className="mb-6">
-        <h2 className="text-lg font-medium text-white mb-4">Apps del portfolio</h2>
-        {appsLoading ? (
-          <div style={{ color: '#999' }}>Cargando...</div>
-        ) : apps.length === 0 ? (
-          <div
-            className="text-center py-8 rounded-[10px] border"
-            style={{
-              backgroundColor: '#13131A',
-              borderColor: 'rgba(255,255,255,0.08)',
-            }}
-          >
-            <div style={{ color: '#999' }} className="mb-4">
-              No hay apps todavía
-            </div>
-            <button
-              className="px-4 py-2 rounded-lg transition-colors"
-              style={{
-                backgroundColor: '#00E5A0',
-                color: '#0A0A0F',
-                fontWeight: '500',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.8';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
-              }}
-            >
-              Agregar app
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {apps.map((app) => (
-              <div
-                key={app.id}
-                className="flex items-center gap-4 p-4 rounded-[10px] border"
-                style={{
-                  backgroundColor: '#13131A',
-                  borderColor: 'rgba(255,255,255,0.08)',
-                }}
-              >
-                {/* Ícono con iniciales */}
-                <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{
-                    backgroundColor: '#1C1C26',
-                    color: '#00E5A0',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                  }}
-                >
-                  {getInitials(app.nombre || app.name || 'App')}
-                </div>
-
-                {/* Nombre */}
-                <div className="flex-1">
-                  <div className="text-white font-medium">{app.nombre || app.name}</div>
-                </div>
-
-                {/* Status badge */}
-                <StatusBadge status={app.status || 'development'} />
-
-                {/* Market badge */}
-                {app.mercado && <MarketBadge market={app.mercado} />}
-
-                {/* Fecha */}
-                <div style={{ color: '#999', fontSize: '14px' }}>
-                  {formatDate(app.created_at)}
-                </div>
+        {/* FILA 2: Apps (izq) + Pipeline (der) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
+          {/* Apps del portfolio (compacto) */}
+          <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '20px' }}>
+            <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
+              📱 Apps del Portfolio
+            </h3>
+            {apps.length === 0 ? (
+              <div style={{ color: '#999', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
+                No hay apps aún
               </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Sección 3: Alertas */}
-      <section>
-        <h2 className="text-lg font-medium text-white mb-4">Alertas</h2>
-        {unreadCount === 0 && notifications.length === 0 ? (
-          <div
-            className="text-center py-8 rounded-[10px] border"
-            style={{
-              backgroundColor: '#13131A',
-              borderColor: 'rgba(255,255,255,0.08)',
-              color: '#00E5A0',
-            }}
-          >
-            Todo en orden
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {notifications.map((notif) => {
-              const iconColor =
-                notif.tipo === 'error'
-                  ? '#FF4D4F'
-                  : notif.tipo === 'warning'
-                    ? '#FFEB3B'
-                    : '#6496FF';
-
-              return (
-                <div
-                  key={notif.id}
-                  className="flex items-center gap-3 p-4 rounded-[10px] border"
-                  style={{
-                    backgroundColor: '#13131A',
-                    borderColor: 'rgba(255,255,255,0.08)',
-                  }}
-                >
-                  <div style={{ color: iconColor, flexShrink: 0 }}>
-                    {notif.tipo === 'error' ? (
-                      <IconAlert />
-                    ) : notif.tipo === 'warning' ? (
-                      <IconAlert />
-                    ) : (
-                      <IconInfo />
-                    )}
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto' }}>
+                {apps.slice(0, 5).map((app) => (
+                  <div
+                    key={app.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px',
+                      backgroundColor: '#0A0A0F',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '6px',
+                        backgroundColor: '#1C1C26',
+                        color: '#00E5A0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '10px',
+                        fontWeight: '600',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {getInitials(app.nombre || app.name || 'App')}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ color: 'white', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {app.nombre || app.name}
+                      </div>
+                      <div style={{ color: '#999', fontSize: '11px' }}>
+                        {formatDate(app.created_at)}
+                      </div>
+                    </div>
+                    <StatusBadge status={app.estado || app.status || 'development'} />
                   </div>
-                  <div className="flex-1">
-                    <div className="text-white">{notif.titulo || notif.title}</div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Pipeline activo (derecha) */}
+          <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '20px' }}>
+            <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <IconRocket style={{ color: '#00E5A0' }} />
+              Pipeline
+            </h3>
+            {activeRun ? (
+              <div style={{ display: 'grid', gap: '12px' }}>
+                <div>
+                  <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
+                    App
                   </div>
-                  <div style={{ color: '#999', fontSize: '12px', flexShrink: 0 }}>
-                    {formatRelativeDate(notif.created_at)}
+                  <div style={{ color: 'white', fontSize: '13px', fontWeight: '500' }}>
+                    {activeRun.nombre}
                   </div>
                 </div>
-              );
-            })}
+
+                <div>
+                  <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
+                    Estado
+                  </div>
+                  <RunStatusBadge estado={activeRun.estado} />
+                </div>
+
+                {activeRun.paso_actual && (
+                  <div>
+                    <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
+                      Paso
+                    </div>
+                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>
+                      {activeRun.paso_actual}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
+                    Tiempo
+                  </div>
+                  <div style={{ color: '#00E5A0', fontSize: '16px', fontWeight: '600', fontFamily: 'DM Mono, monospace' }}>
+                    {formatTime(timer)}
+                  </div>
+                </div>
+
+                {activeRun.estado === 'completado' && activeRun.repo_url && (
+                  <a
+                    href={activeRun.repo_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block',
+                      marginTop: '8px',
+                      padding: '8px 12px',
+                      backgroundColor: 'rgba(0, 229, 160, 0.1)',
+                      border: '1px solid #00E5A0',
+                      color: '#00E5A0',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    📦 Abrir repo
+                  </a>
+                )}
+              </div>
+            ) : (
+              <div style={{ color: '#999', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
+                Nada ejecutando
+              </div>
+            )}
           </div>
-        )}
-      </section>
+        </div>
+
+        {/* FILA 3: Tareas (izq) + Alertas (der) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          {/* Tareas pendientes */}
+          <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '20px' }}>
+            <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
+              ✓ Tareas Pendientes
+            </h3>
+            {tareas.filter(t => !t.completada && t.estado !== 'completada').length === 0 ? (
+              <div style={{ color: '#00E5A0', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
+                ¡Todo completado! 🎉
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {tareas
+                  .filter(t => !t.completada && t.estado !== 'completada')
+                  .slice(0, 3)
+                  .map((tarea) => {
+                    const bloque = bloques.find(b => b.id === tarea.bloque_id);
+                    return (
+                      <div
+                        key={tarea.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '12px',
+                          padding: '12px',
+                          backgroundColor: '#0A0A0F',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '3px',
+                            backgroundColor: bloque?.color || '#666',
+                            flexShrink: 0,
+                            marginTop: '2px',
+                          }}
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ color: 'white', fontSize: '13px', fontWeight: '500', marginBottom: '4px' }}>
+                            {tarea.titulo}
+                          </div>
+                          <div style={{ color: '#999', fontSize: '11px' }}>
+                            {bloque?.nombre} • {tarea.tiempo_estimado ? `${tarea.tiempo_estimado}h` : '—'}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+
+          {/* Alertas */}
+          <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '20px' }}>
+            <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
+              🔔 Alertas
+            </h3>
+            {notifications.length === 0 ? (
+              <div style={{ color: '#00E5A0', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
+                Todo en orden
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto' }}>
+                {notifications.slice(0, 4).map((notif) => {
+                  const iconColor = notif.tipo === 'error' ? '#FF4D4F' : notif.tipo === 'warning' ? '#FFEB3B' : '#6496FF';
+
+                  return (
+                    <div
+                      key={notif.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '10px',
+                        padding: '12px',
+                        backgroundColor: '#0A0A0F',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                      }}
+                    >
+                      <div style={{ color: iconColor, flexShrink: 0, marginTop: '2px' }}>
+                        {notif.tipo === 'error' || notif.tipo === 'warning' ? <IconAlert /> : <IconInfo />}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: 'white', fontSize: '12px', marginBottom: '2px' }}>
+                          {notif.titulo || notif.title}
+                        </div>
+                        <div style={{ color: '#999', fontSize: '11px' }}>
+                          {formatRelativeDate(notif.created_at)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

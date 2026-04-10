@@ -71,8 +71,11 @@ const parseField = (val) => {
       if (match) {
         try {
           return JSON.parse(match[0]);
-        } catch (e2) {}
+        } catch (e2) {
+          return val;
+        }
       }
+      return val;
     }
   }
 
@@ -199,7 +202,7 @@ const ResearchSection = ({ data }) => {
     try {
       parsedData = JSON.parse(data);
     } catch (e) {
-      return <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>{data}</div>;
+      return <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>Error al parsear datos: {data}</div>;
     }
   }
 
@@ -211,7 +214,14 @@ const ResearchSection = ({ data }) => {
 
         // ASO especial: {titulo, keywords[], descripcion_corta}
         if (key === 'aso' && typeof value === 'object') {
-          const aso = typeof value === 'string' ? JSON.parse(value) : value;
+          let aso = value;
+          if (typeof value === 'string') {
+            try {
+              aso = JSON.parse(value);
+            } catch (e) {
+              aso = value;
+            }
+          }
           return (
             <div key={key} style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
               <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
@@ -236,7 +246,14 @@ const ResearchSection = ({ data }) => {
 
         // DISEÑO especial: {paleta[], tipografia_display, estilo}
         if (key === 'diseno' && typeof value === 'object') {
-          const diseno = typeof value === 'string' ? JSON.parse(value) : value;
+          let diseno = value;
+          if (typeof value === 'string') {
+            try {
+              diseno = JSON.parse(value);
+            } catch (e) {
+              diseno = value;
+            }
+          }
           return (
             <div key={key} style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
               <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
@@ -265,7 +282,14 @@ const ResearchSection = ({ data }) => {
 
         // MONETIZACIÓN especial: {modelo, revenue_estimado_mensual_usd}
         if (key === 'monetizacion' && typeof value === 'object') {
-          const monetizacion = typeof value === 'string' ? JSON.parse(value) : value;
+          let monetizacion = value;
+          if (typeof value === 'string') {
+            try {
+              monetizacion = JSON.parse(value);
+            } catch (e) {
+              monetizacion = value;
+            }
+          }
           return (
             <div key={key} style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
               <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
@@ -312,14 +336,23 @@ export default function IdeaDetail() {
   const [editingFields, setEditingFields] = useState({});
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [lastRun, setLastRun] = useState(null);
+  const [loadingRun, setLoadingRun] = useState(false);
+  const [generatingGraphic, setGeneratingGraphic] = useState(false);
 
-  const tabs = ['info', 'research', 'specs', 'pipeline'];
+  const tabs = ['info', 'research', 'specs', 'pipeline', 'calidad', 'publicacion', 'screenshots'];
+
+  const hasCompletedRun = lastRun?.estado === 'completado';
+  const calidadAprobada = idea?.checklist_calidad && Object.values(idea.checklist_calidad).filter(Boolean).length === 6;
 
   const hasContent = {
     info: true,
     research: !!idea?.research_mercado || !!idea?.research,
     specs: !!(idea?.specs_pantallas || idea?.specs_flujos || idea?.specs_apis || idea?.complejidad),
-    pipeline: !!idea?.paso_agente >= 2,
+    pipeline: true,
+    calidad: hasCompletedRun,
+    publicacion: calidadAprobada,
+    screenshots: hasCompletedRun,
   };
 
   const handleTouchStart = (e) => {
@@ -355,6 +388,12 @@ export default function IdeaDetail() {
     fetchIdea();
   }, [id]);
 
+  useEffect(() => {
+    if (idea?.id) {
+      fetchLastRun();
+    }
+  }, [idea?.id]);
+
   const fetchIdea = async () => {
     try {
       setLoading(true);
@@ -374,6 +413,28 @@ export default function IdeaDetail() {
       setTimeout(() => navigate('/ideas'), 2000);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLastRun = async () => {
+    try {
+      setLoadingRun(true);
+      const { data, error } = await supabase
+        .from('pipeline_runs')
+        .select('*')
+        .eq('idea_id', idea.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        setLastRun(data[0]);
+      }
+    } catch (err) {
+      console.error('Error fetching last run:', err);
+    } finally {
+      setLoadingRun(false);
     }
   };
 
@@ -508,15 +569,24 @@ export default function IdeaDetail() {
     }
   };
 
-  const handleSendToPipeline = async () => {
+  const handleLanzarPipeline = async () => {
     setSendingPipeline(true);
     try {
+      const r = idea.research;
+      const s = idea.specs;
+
+      const descripcionCompleta = [
+        idea.descripcion,
+        r ? `\nRESEARCH:\n- Propuesta de valor: ${r.propuesta_valor}\n- Público: ${r.publico_objetivo}\n- Paleta: ${r.diseno?.paleta?.join(', ')}\n- Tipografía: ${r.diseno?.tipografia_display}\n- Estilo: ${r.diseno?.estilo}\n- Monetización: ${r.monetizacion?.modelo}\n- APIs: ${r.apis_sugeridas?.map(a => a.nombre + ' (' + a.url + ')').join(', ')}` : '',
+        s ? `\nSPECS:\n- Pantallas: ${s.pantallas?.map(p => p.nombre).join(', ')}\n- APIs: ${s.apis?.map(a => a.nombre + ': ' + a.endpoint).join(', ')}\n- Notas: ${s.notas_tecnicas}` : ''
+      ].filter(Boolean).join('');
+
       const response = await fetch('http://localhost:3001/pipeline', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nombre: idea.titulo,
-          descripcion: idea.descripcion,
+          descripcion: descripcionCompleta,
           publico: idea.publico || 'Usuarios argentinos',
           categoria: idea.categoria || 'utilidad-global',
           mercado: idea.mercado || '',
@@ -551,6 +621,114 @@ export default function IdeaDetail() {
     }
   };
 
+  const handleChecklistUpdate = async (field, key, value) => {
+    try {
+      const currentChecklist = idea[field] || {};
+      const updatedChecklist = { ...currentChecklist, [key]: value };
+
+      const { error } = await supabase
+        .from('ideas')
+        .update({ [field]: updatedChecklist })
+        .eq('id', idea.id);
+
+      if (error) throw error;
+
+      setIdea(prev => ({ ...prev, [field]: updatedChecklist }));
+      setToast({ message: '✓ Guardado', type: 'success' });
+    } catch (err) {
+      setToast({ message: 'Error al guardar: ' + err.message, type: 'error' });
+    }
+  };
+
+  const handleConvertirEnApp = async () => {
+    try {
+      const slug = idea.titulo.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const packageName = 'com.nztech.' + slug.replace(/-/g, '');
+
+      const { error: insertError } = await supabase
+        .from('apps')
+        .insert({
+          nombre: idea.titulo,
+          descripcion: idea.descripcion,
+          package_name: packageName,
+          estado: 'published',
+          idea_id: idea.id,
+          repo_url: lastRun?.repo_url || '',
+          categoria: idea.categoria,
+        });
+
+      if (insertError) throw insertError;
+
+      const { error: updateError } = await supabase
+        .from('ideas')
+        .update({ estado: 'publicada' })
+        .eq('id', idea.id);
+
+      if (updateError) throw updateError;
+
+      setToast({ message: '✓ App creada exitosamente', type: 'success' });
+      setTimeout(() => navigate('/apps'), 1500);
+    } catch (err) {
+      setToast({ message: 'Error: ' + err.message, type: 'error' });
+    }
+  };
+
+  const handleGenerateFeatureGraphic = async () => {
+    try {
+      setGeneratingGraphic(true);
+      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+      if (!apiKey) {
+        throw new Error('API key no configurada. Agrega VITE_ANTHROPIC_API_KEY al .env.local');
+      }
+
+      const palette = idea.research?.diseno?.paleta || ['#00E5A0', '#0A0A0F', '#13131A'];
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1024,
+          messages: [
+            {
+              role: 'user',
+              content: `Genera un JSON con especificaciones de diseño para un feature graphic de Play Store (1024x500px) para la app "${idea.titulo}".
+
+Requisitos:
+- Usar estos colores: ${palette.join(', ')}
+- El JSON debe tener: background_color, text_color, headline (máx 25 caracteres), subheadline (máx 80 caracteres), layout_description
+- Sé creativo pero profesional
+- El headline debe captar atención rápidamente
+
+Devuelve SOLO el JSON válido, sin explicación.`,
+            },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error?.message || 'Error al conectar con Claude API');
+      }
+
+      const result = await response.json();
+      const content = result.content[0].text;
+      let graphicSpec = JSON.parse(content);
+
+      setIdea(prev => ({ ...prev, feature_graphic_spec: graphicSpec }));
+      setToast({ message: '✓ Feature graphic generado', type: 'success' });
+    } catch (err) {
+      console.error('Error generating feature graphic:', err);
+      setToast({ message: 'Error: ' + err.message, type: 'error' });
+    } finally {
+      setGeneratingGraphic(false);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -569,7 +747,14 @@ export default function IdeaDetail() {
     );
   }
 
-  const researchData = idea.research || (idea.research_mercado ? JSON.parse(idea.research_mercado) : null);
+  let researchData = idea.research;
+  if (!researchData && idea.research_mercado) {
+    try {
+      researchData = JSON.parse(idea.research_mercado);
+    } catch (e) {
+      researchData = null;
+    }
+  }
   const specsData = idea.specs || {
     pantallas: parseField(idea.specs_pantallas),
     flujos: parseField(idea.specs_flujos),
@@ -630,7 +815,7 @@ export default function IdeaDetail() {
         boxSizing: 'border-box',
       }}>
         {/* Tabs Navigation */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', overflow: 'auto' }}>
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
           {tabs.map((tab) => (
             <button
               key={tab}
@@ -651,7 +836,7 @@ export default function IdeaDetail() {
                 whiteSpace: 'nowrap',
               }}
             >
-              {tab === 'info' ? 'Info' : tab === 'research' ? 'Research' : tab === 'specs' ? 'Specs' : 'Pipeline'}
+              {tab === 'info' ? 'Info' : tab === 'research' ? 'Research' : tab === 'specs' ? 'Specs' : tab === 'pipeline' ? 'Pipeline' : tab === 'calidad' ? 'Calidad' : tab === 'publicacion' ? 'Publicación' : 'Screenshots'}
             </button>
           ))}
         </div>
@@ -663,10 +848,6 @@ export default function IdeaDetail() {
           style={{
             position: 'relative',
             flex: 1,
-            minHeight: 0,
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            paddingRight: '4px',
           }}
         >
           {/* Info Tab */}
@@ -678,7 +859,6 @@ export default function IdeaDetail() {
               pointerEvents: activeTab === 'info' ? 'auto' : 'none',
               position: activeTab === 'info' ? 'relative' : 'absolute',
               width: '100%',
-              maxHeight: '100%',
             }}
           >
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '24px' }}>
@@ -927,7 +1107,6 @@ export default function IdeaDetail() {
               pointerEvents: activeTab === 'research' ? 'auto' : 'none',
               position: activeTab === 'research' ? 'relative' : 'absolute',
               width: '100%',
-              maxHeight: '100%',
             }}
           >
             {researchData ? (
@@ -948,7 +1127,6 @@ export default function IdeaDetail() {
               pointerEvents: activeTab === 'specs' ? 'auto' : 'none',
               position: activeTab === 'specs' ? 'relative' : 'absolute',
               width: '100%',
-              maxHeight: '100%',
             }}
           >
             {idea.specs_pantallas || idea.specs_flujos || idea.specs_apis || idea.complejidad ? (
@@ -1073,46 +1251,393 @@ export default function IdeaDetail() {
               pointerEvents: activeTab === 'pipeline' ? 'auto' : 'none',
               position: activeTab === 'pipeline' ? 'relative' : 'absolute',
               width: '100%',
-              maxHeight: '100%',
             }}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ backgroundColor: '#13131A', padding: '20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <h2 style={{ color: '#7C6AFF', fontSize: '14px', fontWeight: '600', marginBottom: '12px', margin: '0 0 12px 0', textTransform: 'uppercase' }}>
-                  Estado del pipeline
-                </h2>
-                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', lineHeight: '1.6' }}>
-                  {idea.estado === 'aprobada' ? (
-                    <p style={{ color: '#00E5A0', margin: 0 }}>✓ Idea ya enviada al pipeline</p>
-                  ) : (
-                    <p style={{ margin: 0 }}>Listo para enviar al pipeline cuando se complete el análisis</p>
-                  )}
-                </div>
-              </div>
+            <div>
+              <h3 style={{ color: 'white', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Pipeline</h3>
 
-              {idea.paso_agente >= 2 && idea.estado !== 'aprobada' && (
+              {/* Último Run */}
+              {loadingRun ? (
+                <div style={{ color: '#999', padding: '20px', textAlign: 'center' }}>Cargando último run...</div>
+              ) : lastRun ? (
+                <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', marginBottom: '24px' }}>
+                  <h4 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 12px 0' }}>Último Run</h4>
+
+                  <div style={{ display: 'grid', gap: '12px', marginBottom: '16px' }}>
+                    <div>
+                      <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
+                        Estado
+                      </div>
+                      <span
+                        style={{
+                          backgroundColor: lastRun.estado === 'completado' ? 'rgba(0, 229, 160, 0.2)' : lastRun.estado === 'running' ? 'rgba(255, 180, 0, 0.2)' : 'rgba(255, 77, 79, 0.2)',
+                          color: lastRun.estado === 'completado' ? '#00E5A0' : lastRun.estado === 'running' ? '#FFB400' : '#FF4D4F',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          padding: '6px 12px',
+                          borderRadius: '4px',
+                          display: 'inline-block',
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {lastRun.estado}
+                      </span>
+                    </div>
+
+                    {lastRun.paso_actual && (
+                      <div>
+                        <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
+                          Paso Actual
+                        </div>
+                        <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>
+                          {lastRun.paso_actual}
+                        </div>
+                      </div>
+                    )}
+
+                    {lastRun.created_at && (
+                      <div>
+                        <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
+                          Iniciado
+                        </div>
+                        <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>
+                          {new Date(lastRun.created_at).toLocaleDateString('es-ES')} a las {new Date(lastRun.created_at).toLocaleTimeString('es-ES')}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    {lastRun.repo_url && (
+                      <a
+                        href={lastRun.repo_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '10px 16px',
+                          backgroundColor: 'transparent',
+                          border: '1px solid #00E5A0',
+                          color: '#00E5A0',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          textDecoration: 'none',
+                        }}
+                      >
+                        📦 Abrir repo en GitHub
+                      </a>
+                    )}
+
+                    <button
+                      onClick={() => navigate('/pipeline')}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '10px 16px',
+                        backgroundColor: 'rgba(0, 229, 160, 0.1)',
+                        border: '1px solid #00E5A0',
+                        color: '#00E5A0',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        transition: 'all 200ms ease',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.2)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.1)'}
+                    >
+                      🚀 Ver en Pipeline
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', marginBottom: '24px', textAlign: 'center', color: '#999' }}>
+                  No hay runs aún para esta idea
+                </div>
+              )}
+
+              <button
+                onClick={handleLanzarPipeline}
+                disabled={sendingPipeline}
+                style={{
+                  padding: '16px 32px',
+                  backgroundColor: '#00E5A0',
+                  border: 'none',
+                  color: '#0A0A0F',
+                  borderRadius: '8px',
+                  cursor: sendingPipeline ? 'not-allowed' : 'pointer',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  opacity: sendingPipeline ? 0.6 : 1,
+                  transition: 'all 200ms ease',
+                }}
+              >
+                {sendingPipeline ? 'Lanzando...' : '🚀 Lanzar Pipeline'}
+              </button>
+            </div>
+          </div>
+
+          {/* Calidad Tab */}
+          <div
+            style={{
+              opacity: activeTab === 'calidad' ? 1 : 0,
+              transform: activeTab === 'calidad' ? 'translateX(0)' : 'translateX(20px)',
+              transition: 'all 200ms ease',
+              pointerEvents: activeTab === 'calidad' ? 'auto' : 'none',
+              position: activeTab === 'calidad' ? 'relative' : 'absolute',
+              width: '100%',
+            }}
+          >
+            <div>
+              <h3 style={{ color: 'white', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Control de Calidad</h3>
+
+              {!hasCompletedRun ? (
+                <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: '#999' }}>
+                  Completa un pipeline exitosamente para desbloquear este tab
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gap: '12px', marginBottom: '24px' }}>
+                  {[
+                    { key: 'html_funciona', label: 'El HTML carga sin errores en el emulador' },
+                    { key: 'datos_reales', label: 'Los datos vienen de APIs reales (no mockeados)' },
+                    { key: 'diseno_correcto', label: 'El diseño usa la paleta y tipografía correcta' },
+                    { key: 'sin_errores_js', label: 'No hay errores de JavaScript en la consola' },
+                    { key: 'navegacion_ok', label: 'Todas las tabs navegan correctamente' },
+                    { key: 'error_handling', label: 'Los errores de red muestran mensaje amigable' },
+                  ].map(item => (
+                    <label
+                      key={item.key}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        backgroundColor: '#13131A',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        cursor: 'pointer',
+                        transition: 'all 200ms ease',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.08)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#13131A'}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={idea.checklist_calidad?.[item.key] || false}
+                        onChange={(e) => handleChecklistUpdate('checklist_calidad', item.key, e.target.checked)}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#00E5A0' }}
+                      />
+                      <span style={{ color: idea.checklist_calidad?.[item.key] ? '#999' : '#DDD', fontSize: '14px', textDecoration: idea.checklist_calidad?.[item.key] ? 'line-through' : 'none' }}>
+                        {item.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {calidadAprobada && (
                 <button
-                  onClick={handleSendToPipeline}
-                  disabled={sendingPipeline}
+                  onClick={() => setActiveTab('publicacion')}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    padding: '12px 32px',
+                    width: '100%',
+                    padding: '16px 32px',
                     backgroundColor: '#00E5A0',
                     border: 'none',
                     color: '#0A0A0F',
                     borderRadius: '8px',
-                    cursor: sendingPipeline ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
+                    cursor: 'pointer',
+                    fontSize: '16px',
                     fontWeight: '600',
-                    opacity: sendingPipeline ? 0.6 : 1,
+                    transition: 'all 200ms ease',
                   }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
-                  <IconRocket />
-                  {sendingPipeline ? 'Enviando...' : 'Enviar a Pipeline →'}
+                  ✓ Calidad aprobada — ir a Publicación
                 </button>
+              )}
+            </div>
+          </div>
+
+          {/* Publicación Tab */}
+          <div
+            style={{
+              opacity: activeTab === 'publicacion' ? 1 : 0,
+              transform: activeTab === 'publicacion' ? 'translateX(0)' : 'translateX(20px)',
+              transition: 'all 200ms ease',
+              pointerEvents: activeTab === 'publicacion' ? 'auto' : 'none',
+              position: activeTab === 'publicacion' ? 'relative' : 'absolute',
+              width: '100%',
+            }}
+          >
+            <div>
+              <h3 style={{ color: 'white', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Publicación</h3>
+
+              {!calidadAprobada ? (
+                <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: '#999' }}>
+                  Completa el control de calidad primero
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '24px' }}>
+                    <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                      <h4 style={{ color: 'white', margin: 0, fontSize: '14px', fontWeight: '600' }}>Setup Técnico</h4>
+                      <span style={{ color: '#999', fontSize: '11px' }}>
+                        {Object.values(idea.checklist_publicacion || {}).slice(0, 5).filter(Boolean).length}/5
+                      </span>
+                    </div>
+                    <div style={{ display: 'grid', gap: '12px' }}>
+                      {[
+                        { key: 'google_services', label: 'google-services.json copiado a app/' },
+                        { key: 'admob_app_id', label: 'App ID de AdMob en AndroidManifest.xml' },
+                        { key: 'admob_unit_id', label: 'Unit ID de banner en activity_main.xml' },
+                        { key: 'release_build', label: 'Build release generado sin errores' },
+                        { key: 'firma_apk', label: 'APK firmado con keystore' },
+                      ].map(item => (
+                        <label key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={idea.checklist_publicacion?.[item.key] || false} onChange={(e) => handleChecklistUpdate('checklist_publicacion', item.key, e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#00E5A0' }} />
+                          <span style={{ color: idea.checklist_publicacion?.[item.key] ? '#999' : '#DDD', fontSize: '12px', textDecoration: idea.checklist_publicacion?.[item.key] ? 'line-through' : 'none' }}>{item.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '24px' }}>
+                    <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                      <h4 style={{ color: 'white', margin: 0, fontSize: '14px', fontWeight: '600' }}>Play Store</h4>
+                      <span style={{ color: '#999', fontSize: '11px' }}>
+                        {Object.values(idea.checklist_publicacion || {}).slice(5, 10).filter(Boolean).length}/5
+                      </span>
+                    </div>
+                    <div style={{ display: 'grid', gap: '12px' }}>
+                      {[
+                        { key: 'screenshots', label: 'Screenshots subidos (mínimo 2)' },
+                        { key: 'descripcion_aso', label: 'Descripción ASO cargada en Play Console' },
+                        { key: 'politica_privacidad', label: 'URL de política de privacidad configurada' },
+                        { key: 'clasificacion', label: 'Clasificación de contenido completada' },
+                        { key: 'datos_seguridad', label: 'Cuestionario de seguridad de datos completado' },
+                      ].map(item => (
+                        <label key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={idea.checklist_publicacion?.[item.key] || false} onChange={(e) => handleChecklistUpdate('checklist_publicacion', item.key, e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#00E5A0' }} />
+                          <span style={{ color: idea.checklist_publicacion?.[item.key] ? '#999' : '#DDD', fontSize: '12px', textDecoration: idea.checklist_publicacion?.[item.key] ? 'line-through' : 'none' }}>{item.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '24px' }}>
+                    <div style={{ height: '4px', backgroundColor: '#1C1C26', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', backgroundColor: '#00E5A0', width: `${(Object.values(idea.checklist_publicacion || {}).filter(Boolean).length / 10) * 100}%`, transition: 'width 0.3s ease' }} />
+                    </div>
+                  </div>
+
+                  {Object.values(idea.checklist_publicacion || {}).filter(Boolean).length === 10 && (
+                    <button
+                      onClick={handleConvertirEnApp}
+                      style={{
+                        width: '100%',
+                        padding: '20px 32px',
+                        backgroundColor: '#00E5A0',
+                        border: 'none',
+                        color: '#0A0A0F',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '18px',
+                        fontWeight: '700',
+                        transition: 'all 200ms ease',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                      onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                    >
+                      🚀 Convertir en App
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Screenshots Tab */}
+          <div
+            style={{
+              opacity: activeTab === 'screenshots' ? 1 : 0,
+              transform: activeTab === 'screenshots' ? 'translateX(0)' : 'translateX(20px)',
+              transition: 'all 200ms ease',
+              pointerEvents: activeTab === 'screenshots' ? 'auto' : 'none',
+              position: activeTab === 'screenshots' ? 'relative' : 'absolute',
+              width: '100%',
+            }}
+          >
+            <div>
+              <h3 style={{ color: 'white', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Screenshots</h3>
+
+              {!hasCompletedRun ? (
+                <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: '#999' }}>
+                  Completa un pipeline exitosamente para desbloquear este tab
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '24px' }}>
+                    <h4 style={{ color: 'white', fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Feature Graphic Generator</h4>
+                    <button
+                      onClick={handleGenerateFeatureGraphic}
+                      disabled={generatingGraphic}
+                      style={{
+                        padding: '12px 24px',
+                        backgroundColor: '#7C6AFF',
+                        border: 'none',
+                        color: 'white',
+                        borderRadius: '8px',
+                        cursor: generatingGraphic ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        opacity: generatingGraphic ? 0.6 : 1,
+                        transition: 'all 200ms ease',
+                      }}
+                    >
+                      {generatingGraphic ? 'Generando...' : '✨ Generar Feature Graphic (Claude)'}
+                    </button>
+                    {idea.feature_graphic_spec && (
+                      <div style={{ marginTop: '16px', backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{
+                          width: '100%',
+                          height: '100%',
+                          backgroundColor: idea.feature_graphic_spec.background_color,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          textAlign: 'center',
+                          color: idea.feature_graphic_spec.text_color,
+                          padding: '20px',
+                          boxSizing: 'border-box',
+                        }}>
+                          <div style={{ fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>
+                            {idea.feature_graphic_spec.headline}
+                          </div>
+                          <div style={{ fontSize: '14px', opacity: 0.8 }}>
+                            {idea.feature_graphic_spec.subheadline}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <h4 style={{ color: 'white', fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Screenshots</h4>
+                    <p style={{ color: '#999', fontSize: '12px', marginBottom: '12px' }}>
+                      Nota: La carga de archivos requiere una solución de storage (Supabase Storage o similar)
+                    </p>
+                    <div style={{ backgroundColor: '#13131A', border: '2px dashed rgba(0, 229, 160, 0.3)', borderRadius: '8px', padding: '40px', textAlign: 'center', color: '#999' }}>
+                      <p>📸 Sube screenshots aquí (implementar storage)</p>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </div>

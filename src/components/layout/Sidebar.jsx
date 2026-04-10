@@ -10,8 +10,9 @@ const navItems = [
   { path: '/agentes', label: 'Agentes', icon: 'robot' },
   { path: '/calendario', label: 'Calendario', icon: 'calendar' },
   { path: '/pipeline', label: 'Pipeline', icon: 'rocket' },
-  { path: '/reportes', label: 'Reportes', icon: 'document' },
+  { path: '/tareas', label: 'Tareas', icon: 'checklist' },
   { path: '/ideas', label: 'Ideas', icon: 'lightbulb' },
+  { path: '/reportes', label: 'Reportes', icon: 'document' },
 ]
 
 const IconHome = () => (
@@ -76,6 +77,17 @@ const IconDocument = () => (
   </svg>
 )
 
+const IconChecklist = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="10" y1="6" x2="21" y2="6"></line>
+    <line x1="10" y1="12" x2="21" y2="12"></line>
+    <line x1="10" y1="18" x2="21" y2="18"></line>
+    <polyline points="3 6 4 7 6 5"></polyline>
+    <polyline points="3 12 4 13 6 11"></polyline>
+    <polyline points="3 18 4 19 6 17"></polyline>
+  </svg>
+)
+
 const IconLightbulb = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -102,6 +114,8 @@ const getIcon = (iconName) => {
       return <IconDocument />
     case 'lightbulb':
       return <IconLightbulb />
+    case 'checklist':
+      return <IconChecklist />
     default:
       return null
   }
@@ -122,41 +136,57 @@ export function Sidebar() {
     return parts.map((p) => p[0]).join('').toUpperCase().slice(0, 2)
   }
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
     <aside
-      className="flex flex-col h-screen fixed left-0 top-0 border-r"
+      className="flex fixed border-r"
       style={{
-        width: '220px',
+        width: isMobile ? '100%' : '220px',
+        height: isMobile ? 'auto' : '100vh',
         backgroundColor: '#0A0A0F',
-        borderRightColor: 'rgba(255,255,255,0.08)',
+        borderRightColor: isMobile ? 'transparent' : 'rgba(255,255,255,0.08)',
+        borderTopColor: isMobile ? 'rgba(255,255,255,0.08)' : 'transparent',
+        borderTop: isMobile ? '1px solid rgba(255,255,255,0.08)' : 'none',
+        left: 0,
+        top: isMobile ? 'auto' : 0,
+        bottom: isMobile ? 0 : 'auto',
+        zIndex: isMobile ? 50 : 'auto',
+        flexDirection: isMobile ? 'row' : 'column',
       }}
     >
       {/* Logo */}
-      <div className="px-6 py-8 border-b" style={{ borderBottomColor: 'rgba(255,255,255,0.08)' }}>
-        <div className="flex items-baseline gap-1">
-          <span style={{ color: '#00E5A0' }} className="text-2xl font-bold">
-            NZ
-          </span>
-          <span style={{ color: 'white' }} className="text-2xl font-bold">
-            Tech
-          </span>
+      {!isMobile && (
+        <div className="px-6 py-8 border-b" style={{ borderBottomColor: 'rgba(255,255,255,0.08)' }}>
+          <div className="flex items-baseline gap-1">
+            <span style={{ color: '#00E5A0' }} className="text-2xl font-bold">
+              NZ
+            </span>
+            <span style={{ color: 'white' }} className="text-2xl font-bold">
+              Tech
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6">
-        <ul className="space-y-2">
+      <nav className={isMobile ? 'flex flex-1' : 'flex-1 px-4 py-6'}>
+        <ul className={isMobile ? 'flex w-full' : 'space-y-2'} style={{ justifyContent: isMobile ? 'space-around' : undefined }}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path
             const showBadge = item.path === '/agentes' && pendingCount > 0
             return (
-              <li key={item.path}>
+              <li key={item.path} style={{ flex: isMobile ? 1 : undefined }}>
                 <Link
                   to={item.path}
                   className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group"
                   style={{
                     color: isActive ? '#00E5A0' : 'white',
                     backgroundColor: isActive ? 'rgba(0,229,160,0.08)' : 'transparent',
+                    justifyContent: isMobile ? 'center' : undefined,
+                    padding: isMobile ? '12px 0' : '12px 16px',
+                    gap: isMobile ? 0 : '12px',
+                    position: 'relative',
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
@@ -170,16 +200,21 @@ export function Sidebar() {
                   }}
                 >
                   <span>{getIcon(item.icon)}</span>
-                  <span className="text-sm font-medium">{item.label}</span>
+                  {!isMobile && <span className="text-sm font-medium">{item.label}</span>}
                   {showBadge && (
                     <span style={{
-                      marginLeft: 'auto',
+                      marginLeft: isMobile ? 'auto' : 'auto',
+                      position: isMobile ? 'absolute' : 'relative',
+                      top: isMobile ? '-8px' : undefined,
+                      right: isMobile ? '0px' : undefined,
                       backgroundColor: '#FF4D4F',
                       color: 'white',
-                      fontSize: '11px',
+                      fontSize: '10px',
                       fontWeight: '600',
-                      padding: '2px 6px',
+                      padding: '2px 4px',
                       borderRadius: '10px',
+                      minWidth: isMobile ? '16px' : undefined,
+                      textAlign: isMobile ? 'center' : undefined,
                     }}>
                       {pendingCount}
                     </span>
@@ -192,43 +227,45 @@ export function Sidebar() {
       </nav>
 
       {/* User Footer */}
-      <div className="p-4 border-t space-y-3" style={{ borderTopColor: 'rgba(255,255,255,0.08)' }}>
-        <div className="flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold"
+      {!isMobile && (
+        <div className="p-4 border-t space-y-3" style={{ borderTopColor: 'rgba(255,255,255,0.08)' }}>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold"
+              style={{
+                backgroundColor: '#1C1C26',
+                color: '#00E5A0',
+              }}
+            >
+              {getInitials(user?.email)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p style={{ color: 'rgba(255,255,255,0.45)' }} className="text-xs truncate">
+                {user?.email || 'Usuario'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             style={{
-              backgroundColor: '#1C1C26',
-              color: '#00E5A0',
+              backgroundColor: 'transparent',
+              color: 'rgba(255,255,255,0.45)',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'
+              e.currentTarget.style.color = 'white'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+              e.currentTarget.style.color = 'rgba(255,255,255,0.45)'
             }}
           >
-            {getInitials(user?.email)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p style={{ color: 'rgba(255,255,255,0.45)' }} className="text-xs truncate">
-              {user?.email || 'Usuario'}
-            </p>
-          </div>
+            Salir
+          </button>
         </div>
-        <button
-          onClick={handleLogout}
-          className="w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-          style={{
-            backgroundColor: 'transparent',
-            color: 'rgba(255,255,255,0.45)',
-            border: '1px solid rgba(255,255,255,0.12)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'
-            e.currentTarget.style.color = 'white'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.color = 'rgba(255,255,255,0.45)'
-          }}
-        >
-          Salir
-        </button>
-      </div>
+      )}
     </aside>
   )
 }

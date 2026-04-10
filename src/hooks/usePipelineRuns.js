@@ -3,6 +3,36 @@ import { supabase } from '../lib/supabase';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
+export function useRealtimeRun(runId) {
+  const [run, setRun] = useState(null);
+
+  useEffect(() => {
+    if (!runId) return;
+
+    const channel = supabase
+      .channel(`pipeline-run-${runId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pipeline_runs',
+          filter: `id=eq.${runId}`,
+        },
+        (payload) => {
+          setRun(payload.new);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [runId]);
+
+  return run;
+}
+
 export function usePipelineRuns() {
   const [runs, setRuns] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -71,26 +101,5 @@ export function usePipelineRuns() {
     }
   };
 
-  const useRealtimeRun = (runId) => {
-    const [run, setRun] = useState(null);
-
-    useEffect(() => {
-      if (!runId) return;
-
-      const subscription = supabase
-        .from(`pipeline_runs:id=eq.${runId}`)
-        .on('*', (payload) => {
-          setRun(payload.new);
-        })
-        .subscribe();
-
-      return () => {
-        subscription.unsubscribe();
-      };
-    }, [runId]);
-
-    return run;
-  };
-
-  return { runs, loading, error, fetchRuns, createRun, cancelRun, useRealtimeRun };
+  return { runs, loading, error, fetchRuns, createRun, cancelRun };
 }

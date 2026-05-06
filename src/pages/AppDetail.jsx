@@ -10,7 +10,7 @@ import MetricsTable from '../components/metrics/MetricsTable';
 import ToastNotification from '../components/ui/ToastNotification';
 import DatePicker from '../components/ui/DatePicker';
 import { useApps } from '../hooks/useApps';
-import { useTasksForApp } from '../hooks/useTasksForApp';
+import { useTareas } from '../hooks/useTareas';
 import { useMetrics } from '../hooks/useMetrics';
 import { useAsoTracker } from '../hooks/useAsoTracker';
 import { useVersionLog } from '../hooks/useVersionLog';
@@ -106,7 +106,10 @@ export default function AppDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { apps } = useApps();
-  const { tasks, deleteTask, updateTask, createTask } = useTasksForApp(id);
+  const { tareas, bloques, addTarea, updateTarea, deleteTarea } = useTareas();
+  const appNombre = app?.nombre || app?.name || '';
+  const appBloqueIds = bloques.filter(b => b.nombre === appNombre).map(b => b.id);
+  const tasks = tareas.filter(t => appBloqueIds.includes(t.bloque_id) || t.titulo?.includes(appNombre));
   const { keywords, addKeyword, deleteKeyword } = useAsoTracker(id);
   const { versions, addVersion, deleteVersion } = useVersionLog(id);
 
@@ -141,7 +144,7 @@ export default function AppDetail() {
 
   const handleAddTask = async (estado, taskData) => {
     try {
-      await createTask({
+      await addTarea({
         titulo: taskData.titulo,
         tipo: taskData.tipo || 'pipeline',
         prioridad: taskData.prioridad || 3,
@@ -244,7 +247,7 @@ export default function AppDetail() {
           <h2 style={{ color: 'white', fontSize: '16px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>
             Tareas
           </h2>
-          <KanbanBoard tasks={tasks} onUpdateTask={updateTask} onDeleteTask={deleteTask} onAddTask={handleAddTask} />
+          <KanbanBoard tasks={tasks} onUpdateTask={updateTarea} onDeleteTask={deleteTarea} onAddTask={handleAddTask} />
         </div>
       )}
 

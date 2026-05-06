@@ -339,11 +339,18 @@ export default function IdeaDetail() {
   const [lastRun, setLastRun] = useState(null);
   const [loadingRun, setLoadingRun] = useState(false);
   const [generatingGraphic, setGeneratingGraphic] = useState(false);
+  const [helpModal, setHelpModal] = useState(null);
+  const [helpModalFirebaseAdMob, setHelpModalFirebaseAdMob] = useState(null);
+  const [allRuns, setAllRuns] = useState([]);
+  const [loadingAllRuns, setLoadingAllRuns] = useState(false);
 
   const tabs = ['info', 'research', 'specs', 'pipeline', 'calidad', 'publicacion', 'screenshots'];
 
   const hasCompletedRun = lastRun?.estado === 'completado';
-  const calidadAprobada = idea?.checklist_calidad && Object.values(idea.checklist_calidad).filter(Boolean).length === 6;
+  const calidadAprobada = idea?.checklist_calidad && Object.values(idea.checklist_calidad).filter(item => {
+    // Handle both old boolean format and new { ok, nota } format
+    return typeof item === 'boolean' ? item : item?.ok === true;
+  }).length === 6;
 
   const hasContent = {
     info: true,
@@ -353,6 +360,84 @@ export default function IdeaDetail() {
     calidad: hasCompletedRun,
     publicacion: calidadAprobada,
     screenshots: hasCompletedRun,
+  };
+
+  const publicacionHelp = {
+    google_services: {
+      title: 'google-services.json',
+      description: 'Ir a console.firebase.google.com → Crear proyecto → Agregar app Android con package name com.nztech.{slug} → Descargar google-services.json → Copiar el archivo a la carpeta app/ del proyecto clonado en Android Studio'
+    },
+    admob_app_id: {
+      title: 'App ID de AdMob',
+      description: 'Ir a admob.google.com → Crear app → Copiar el App ID (formato ca-app-pub-XXXXXXXX~XXXXXXXXXX) → Pegarlo en AndroidManifest.xml reemplazando REEMPLAZAR_CON_APP_ID_ADMOB'
+    },
+    admob_unit_id: {
+      title: 'Unit ID de banner',
+      description: 'En AdMob → tu app → Unidades de anuncios → Crear unidad Banner → Copiar el Unit ID (formato ca-app-pub-XXXXXXXX/XXXXXXXXXX) → Pegarlo en activity_main.xml reemplazando REEMPLAZAR_CON_AD_UNIT_ID_REAL'
+    },
+    release_build: {
+      title: 'Build release',
+      description: 'En Android Studio → Build → Generate Signed Bundle/APK → APK → Crear o seleccionar keystore → Build release → El APK queda en app/release/'
+    },
+    firma_apk: {
+      title: 'Firma del APK',
+      description: 'El APK firmado se genera automáticamente al hacer release build con un keystore. Guardar el keystore en lugar seguro — sin él no podés actualizar la app'
+    },
+    screenshots: {
+      title: 'Screenshots',
+      description: 'Tomar al menos 2 screenshots del emulador o dispositivo con las funciones principales de la app. Formato: PNG, mínimo 320px, máximo 3840px. Subir en Play Console → Presencia en la tienda → Screenshots de teléfono'
+    },
+    descripcion_aso: {
+      title: 'Descripción ASO',
+      description: 'En Play Console → Presencia en la tienda → Descripción principal (4000 chars). Incluir keyword principal en las primeras líneas. Terminar con "NZTech — Apps simples para Argentina"'
+    },
+    politica_privacidad: {
+      title: 'Política de privacidad',
+      description: 'Publicar en GitHub Pages: crear repo nztechapps.github.io/privacy/{slug}/index.html con la política generada. Luego en Play Console → Política de privacidad → pegar la URL'
+    },
+    clasificacion: {
+      title: 'Clasificación de contenido',
+      description: 'Play Console → Clasificación de contenido → Completar cuestionario → La mayoría de apps NZTech califican como "Para todos"'
+    },
+    datos_seguridad: {
+      title: 'Seguridad de datos',
+      description: 'Play Console → Seguridad de los datos → Declarar: recopila Identificadores de dispositivo (AdMob), Datos de uso y diagnóstico (Firebase). No recopila datos personales del usuario'
+    },
+  };
+
+  const firebaseAdMobHelp = {
+    firebase_proyecto: {
+      title: 'Crear proyecto en Firebase',
+      description: 'Ir a console.firebase.google.com → Click en "Agregar proyecto" → Elegir nombre → Desactivar Google Analytics si no lo necesitás → Crear proyecto'
+    },
+    firebase_registrar: {
+      title: 'Registrar app Android',
+      description: 'En tu proyecto Firebase → Agregar app → Ícono Android → Ingresar el package name exacto → Apodo opcional → Registrar app'
+    },
+    firebase_descargar: {
+      title: 'Descargar google-services.json',
+      description: 'Después de registrar la app → Descargar el archivo google-services.json → NO compartir este archivo públicamente'
+    },
+    firebase_copiar: {
+      title: 'Copiar google-services.json',
+      description: 'Copiar google-services.json a la carpeta app/ del proyecto Android en Android Studio. Debe quedar en la misma carpeta que build.gradle.kts'
+    },
+    admob_app: {
+      title: 'Crear app en AdMob',
+      description: 'Ir a admob.google.com → Apps → Agregar app → Seleccionar Android → Buscar en Play Store (si ya está publicada) o ingresar manualmente → Agregar'
+    },
+    admob_appid: {
+      title: 'Configurar App ID de AdMob',
+      description: 'En AdMob → tu app → Información de la app → Copiar el App ID (formato ca-app-pub-XXXXXXXX~XXXXXXXXXX) → En Android Studio abrir AndroidManifest.xml → Reemplazar REEMPLAZAR_CON_APP_ID_ADMOB por el ID copiado'
+    },
+    admob_unit: {
+      title: 'Crear unidad de banner',
+      description: 'En AdMob → tu app → Unidades de anuncios → Crear unidad de anuncio → Seleccionar Banner → Ponerle nombre → Crear unidad de anuncio'
+    },
+    admob_unitid: {
+      title: 'Configurar Unit ID de AdMob',
+      description: 'Copiar el Unit ID generado (formato ca-app-pub-XXXXXXXX/XXXXXXXXXX) → En Android Studio abrir app/src/main/res/layout/activity_main.xml → Reemplazar REEMPLAZAR_CON_AD_UNIT_ID_REAL por el ID copiado'
+    },
   };
 
   const handleTouchStart = (e) => {
@@ -419,22 +504,26 @@ export default function IdeaDetail() {
   const fetchLastRun = async () => {
     try {
       setLoadingRun(true);
-      const { data, error } = await supabase
+      setLoadingAllRuns(true);
+
+      // Fetch all runs
+      const { data: allRunsData, error: allRunsError } = await supabase
         .from('pipeline_runs')
         .select('*')
         .eq('idea_id', idea.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (allRunsError) throw allRunsError;
 
-      if (data && data.length > 0) {
-        setLastRun(data[0]);
+      if (allRunsData && allRunsData.length > 0) {
+        setAllRuns(allRunsData);
+        setLastRun(allRunsData[0]);
       }
     } catch (err) {
-      console.error('Error fetching last run:', err);
+      console.error('Error fetching runs:', err);
     } finally {
       setLoadingRun(false);
+      setLoadingAllRuns(false);
     }
   };
 
@@ -621,10 +710,83 @@ export default function IdeaDetail() {
     }
   };
 
+  const getPackageName = () => {
+    if (!idea?.titulo) return '';
+    const slug = idea.titulo.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    return 'com.nztech.' + slug.replace(/-/g, '');
+  };
+
+  const getLastCompletedRun = () => {
+    return allRuns.find(run => run.estado === 'completado');
+  };
+
+  const handleChecklistFirebaseAdMob = async (key) => {
+    const lastCompletedRun = getLastCompletedRun();
+    if (!lastCompletedRun) return;
+
+    const currentChecklist = lastCompletedRun.checklist_firebase_admob || {};
+    const currentValue = currentChecklist[key] || false;
+
+    // Toggle normal
+    const updated = { ...currentChecklist, [key]: !currentValue };
+
+    try {
+      const { error } = await supabase
+        .from('pipeline_runs')
+        .update({ checklist_firebase_admob: updated })
+        .eq('id', lastCompletedRun.id);
+
+      if (error) throw error;
+
+      // Update local state
+      const updatedAllRuns = allRuns.map(run =>
+        run.id === lastCompletedRun.id ? { ...run, checklist_firebase_admob: updated } : run
+      );
+      setAllRuns(updatedAllRuns);
+      setToast({ message: '✓ Guardado', type: 'success' });
+    } catch (err) {
+      setToast({ message: 'Error al guardar: ' + err.message, type: 'error' });
+    }
+  };
+
+  const handleChecklistPublicacion = async (key) => {
+    const currentChecklist = idea.checklist_publicacion || {};
+    const currentValue = currentChecklist[key] || false;
+
+    // Toggle normal
+    const updated = { ...currentChecklist, [key]: !currentValue };
+
+    try {
+      const { error } = await supabase
+        .from('ideas')
+        .update({ checklist_publicacion: updated })
+        .eq('id', idea.id);
+
+      if (error) throw error;
+
+      setIdea(prev => ({ ...prev, checklist_publicacion: updated }));
+      setToast({ message: '✓ Guardado', type: 'success' });
+    } catch (err) {
+      setToast({ message: 'Error al guardar: ' + err.message, type: 'error' });
+    }
+  };
+
   const handleChecklistUpdate = async (field, key, value) => {
     try {
       const currentChecklist = idea[field] || {};
-      const updatedChecklist = { ...currentChecklist, [key]: value };
+      let updatedValue = value;
+
+      // Convert old boolean structure to new { ok, nota } structure
+      if (typeof value === 'boolean' || typeof currentChecklist[key] === 'boolean') {
+        updatedValue = {
+          ok: typeof value === 'boolean' ? value : value.ok || false,
+          nota: typeof currentChecklist[key] === 'object' ? currentChecklist[key].nota || '' : '',
+        };
+      } else if (typeof value === 'object' && value !== null) {
+        updatedValue = value;
+      }
+
+      const updatedChecklist = { ...currentChecklist, [key]: updatedValue };
 
       const { error } = await supabase
         .from('ideas')
@@ -1256,115 +1418,12 @@ Devuelve SOLO el JSON válido, sin explicación.`,
             <div>
               <h3 style={{ color: 'white', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Pipeline</h3>
 
-              {/* Último Run */}
-              {loadingRun ? (
-                <div style={{ color: '#999', padding: '20px', textAlign: 'center' }}>Cargando último run...</div>
-              ) : lastRun ? (
-                <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', marginBottom: '24px' }}>
-                  <h4 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 12px 0' }}>Último Run</h4>
-
-                  <div style={{ display: 'grid', gap: '12px', marginBottom: '16px' }}>
-                    <div>
-                      <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
-                        Estado
-                      </div>
-                      <span
-                        style={{
-                          backgroundColor: lastRun.estado === 'completado' ? 'rgba(0, 229, 160, 0.2)' : lastRun.estado === 'running' ? 'rgba(255, 180, 0, 0.2)' : 'rgba(255, 77, 79, 0.2)',
-                          color: lastRun.estado === 'completado' ? '#00E5A0' : lastRun.estado === 'running' ? '#FFB400' : '#FF4D4F',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          padding: '6px 12px',
-                          borderRadius: '4px',
-                          display: 'inline-block',
-                          textTransform: 'capitalize',
-                        }}
-                      >
-                        {lastRun.estado}
-                      </span>
-                    </div>
-
-                    {lastRun.paso_actual && (
-                      <div>
-                        <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
-                          Paso Actual
-                        </div>
-                        <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>
-                          {lastRun.paso_actual}
-                        </div>
-                      </div>
-                    )}
-
-                    {lastRun.created_at && (
-                      <div>
-                        <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
-                          Iniciado
-                        </div>
-                        <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>
-                          {new Date(lastRun.created_at).toLocaleDateString('es-ES')} a las {new Date(lastRun.created_at).toLocaleTimeString('es-ES')}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    {lastRun.repo_url && (
-                      <a
-                        href={lastRun.repo_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          padding: '10px 16px',
-                          backgroundColor: 'transparent',
-                          border: '1px solid #00E5A0',
-                          color: '#00E5A0',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontSize: '13px',
-                          fontWeight: '600',
-                          textDecoration: 'none',
-                        }}
-                      >
-                        📦 Abrir repo en GitHub
-                      </a>
-                    )}
-
-                    <button
-                      onClick={() => navigate('/pipeline')}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '10px 16px',
-                        backgroundColor: 'rgba(0, 229, 160, 0.1)',
-                        border: '1px solid #00E5A0',
-                        color: '#00E5A0',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        transition: 'all 200ms ease',
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.2)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.1)'}
-                    >
-                      🚀 Ver en Pipeline
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', marginBottom: '24px', textAlign: 'center', color: '#999' }}>
-                  No hay runs aún para esta idea
-                </div>
-              )}
-
+              {/* 1. BOTÓN LANZAR PIPELINE */}
               <button
                 onClick={handleLanzarPipeline}
                 disabled={sendingPipeline}
                 style={{
+                  width: '100%',
                   padding: '16px 32px',
                   backgroundColor: '#00E5A0',
                   border: 'none',
@@ -1375,10 +1434,267 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                   fontWeight: '600',
                   opacity: sendingPipeline ? 0.6 : 1,
                   transition: 'all 200ms ease',
+                  marginBottom: '32px',
                 }}
               >
                 {sendingPipeline ? 'Lanzando...' : '🚀 Lanzar Pipeline'}
               </button>
+
+              {/* 2. HISTORIAL DE RUNS */}
+              <div style={{ marginBottom: '32px' }}>
+                <h4 style={{ color: 'white', fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Historial de Runs</h4>
+
+                {loadingAllRuns ? (
+                  <div style={{ color: '#999', padding: '20px', textAlign: 'center' }}>Cargando runs...</div>
+                ) : allRuns.length > 0 ? (
+                  <div style={{ display: 'grid', gap: '12px' }}>
+                    {allRuns.map((run, index) => (
+                      <div
+                        key={run.id}
+                        style={{
+                          backgroundColor: '#13131A',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: '8px',
+                          padding: '16px',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: 'white' }}>
+                            #{allRuns.length - index}
+                          </div>
+                          <span
+                            style={{
+                              backgroundColor: run.estado === 'completado' ? 'rgba(0, 229, 160, 0.2)' : run.estado === 'running' ? 'rgba(100, 150, 255, 0.2)' : 'rgba(255, 77, 79, 0.2)',
+                              color: run.estado === 'completado' ? '#00E5A0' : run.estado === 'running' ? '#6496FF' : '#FF4D4F',
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              display: 'inline-block',
+                              textTransform: 'capitalize',
+                            }}
+                          >
+                            {run.estado}
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'grid', gap: '8px', fontSize: '13px', color: '#DDD' }}>
+                          {run.created_at && (
+                            <div>
+                              <span style={{ color: '#999' }}>Fecha:</span> {new Date(run.created_at).toLocaleDateString('es-ES')} a las {new Date(run.created_at).toLocaleTimeString('es-ES')}
+                            </div>
+                          )}
+
+                          {run.paso_actual && (
+                            <div>
+                              <span style={{ color: '#999' }}>Paso actual:</span> {run.paso_actual}
+                            </div>
+                          )}
+
+                          {run.duracion_segundos && (
+                            <div>
+                              <span style={{ color: '#999' }}>Duración:</span> {run.duracion_segundos}s
+                            </div>
+                          )}
+
+                          {run.estado === 'error' && run.error && (
+                            <div style={{ color: '#FF4D4F' }}>
+                              <span style={{ color: '#999' }}>Error:</span> {run.error}
+                            </div>
+                          )}
+                        </div>
+
+                        {run.repo_url && (
+                          <div style={{ marginTop: '12px' }}>
+                            <a
+                              href={run.repo_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '8px 12px',
+                                backgroundColor: 'transparent',
+                                border: '1px solid #00E5A0',
+                                color: '#00E5A0',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                textDecoration: 'none',
+                                transition: 'all 200ms ease',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.1)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
+                            >
+                              📦 Ver repo
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: '#999' }}>
+                    No hay runs aún para esta idea
+                  </div>
+                )}
+              </div>
+
+              {/* 3. SETUP CHECKLIST */}
+              {getLastCompletedRun() ? (
+                <div>
+                  <h4 style={{ color: 'white', fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Setup: Firebase + AdMob</h4>
+
+                  <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
+                    <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px' }}>Package Name (copiable):</div>
+                    <div
+                      onClick={() => {
+                        navigator.clipboard.writeText(getPackageName());
+                        setToast({ message: '✓ Copiado al portapapeles', type: 'success' });
+                      }}
+                      style={{
+                        padding: '12px',
+                        backgroundColor: '#0A0A0F',
+                        border: '1px solid rgba(0, 229, 160, 0.3)',
+                        borderRadius: '6px',
+                        fontFamily: 'monospace',
+                        fontSize: '13px',
+                        color: '#00E5A0',
+                        cursor: 'pointer',
+                        transition: 'all 200ms ease',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.borderColor = 'rgba(0, 229, 160, 0.6)'}
+                      onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(0, 229, 160, 0.3)'}
+                    >
+                      {getPackageName()}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gap: '12px' }}>
+                    <div>
+                      <h5 style={{ color: '#00E5A0', fontSize: '13px', fontWeight: '600', marginBottom: '8px', margin: '0 0 8px 0' }}>Firebase</h5>
+                      <div style={{ display: 'grid', gap: '8px' }}>
+                        {[
+                          { key: 'firebase_proyecto', label: 'Crear proyecto en console.firebase.google.com' },
+                          { key: 'firebase_registrar', label: 'Registrar app con ' + getPackageName() },
+                          { key: 'firebase_descargar', label: 'Descargar google-services.json' },
+                          { key: 'firebase_copiar', label: 'Copiar google-services.json a app/' },
+                        ].map(item => {
+                          const lastCompletedRun = getLastCompletedRun();
+                          const isChecked = lastCompletedRun?.checklist_firebase_admob?.[item.key] || false;
+                          return (
+                            <label
+                              key={item.key}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                padding: '12px',
+                                backgroundColor: '#0A0A0F',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                transition: 'all 200ms ease',
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.08)'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0A0A0F'}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => handleChecklistFirebaseAdMob(item.key)}
+                                style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#00E5A0', flexShrink: 0 }}
+                              />
+                              <span style={{ color: isChecked ? '#999' : '#DDD', fontSize: '13px', textDecoration: isChecked ? 'line-through' : 'none', flex: 1 }}>
+                                {item.label}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setHelpModalFirebaseAdMob({ key: item.key, ...firebaseAdMobHelp[item.key] });
+                                }}
+                                style={{ padding: '4px 8px', backgroundColor: 'transparent', border: 'none', color: '#00E5A0', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', transition: 'all 200ms ease', flexShrink: 0 }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.15)'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                title="Ayuda"
+                              >
+                                ⓘ
+                              </button>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h5 style={{ color: '#00E5A0', fontSize: '13px', fontWeight: '600', marginBottom: '8px', margin: '0 0 8px 0' }}>AdMob</h5>
+                      <div style={{ display: 'grid', gap: '8px' }}>
+                        {[
+                          { key: 'admob_app', label: 'Crear app en admob.google.com' },
+                          { key: 'admob_appid', label: 'Copiar App ID → AndroidManifest.xml' },
+                          { key: 'admob_unit', label: 'Crear unidad de banner' },
+                          { key: 'admob_unitid', label: 'Copiar Unit ID → activity_main.xml' },
+                        ].map(item => {
+                          const lastCompletedRun = getLastCompletedRun();
+                          const isChecked = lastCompletedRun?.checklist_firebase_admob?.[item.key] || false;
+                          return (
+                            <label
+                              key={item.key}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                padding: '12px',
+                                backgroundColor: '#0A0A0F',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                transition: 'all 200ms ease',
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.08)'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0A0A0F'}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => handleChecklistFirebaseAdMob(item.key)}
+                                style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#00E5A0', flexShrink: 0 }}
+                              />
+                              <span style={{ color: isChecked ? '#999' : '#DDD', fontSize: '13px', textDecoration: isChecked ? 'line-through' : 'none', flex: 1 }}>
+                                {item.label}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setHelpModalFirebaseAdMob({ key: item.key, ...firebaseAdMobHelp[item.key] });
+                                }}
+                                style={{ padding: '4px 8px', backgroundColor: 'transparent', border: 'none', color: '#00E5A0', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', transition: 'all 200ms ease', flexShrink: 0 }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.15)'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                title="Ayuda"
+                              >
+                                ⓘ
+                              </button>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: '#999' }}>
+                  Completa un pipeline exitosamente para desbloquear el Setup Checklist
+                </div>
+              )}
             </div>
           </div>
 
@@ -1409,34 +1725,78 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                     { key: 'sin_errores_js', label: 'No hay errores de JavaScript en la consola' },
                     { key: 'navegacion_ok', label: 'Todas las tabs navegan correctamente' },
                     { key: 'error_handling', label: 'Los errores de red muestran mensaje amigable' },
-                  ].map(item => (
-                    <label
-                      key={item.key}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        backgroundColor: '#13131A',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        cursor: 'pointer',
-                        transition: 'all 200ms ease',
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.08)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#13131A'}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={idea.checklist_calidad?.[item.key] || false}
-                        onChange={(e) => handleChecklistUpdate('checklist_calidad', item.key, e.target.checked)}
-                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#00E5A0' }}
-                      />
-                      <span style={{ color: idea.checklist_calidad?.[item.key] ? '#999' : '#DDD', fontSize: '14px', textDecoration: idea.checklist_calidad?.[item.key] ? 'line-through' : 'none' }}>
-                        {item.label}
-                      </span>
-                    </label>
-                  ))}
+                  ].map(item => {
+                    const itemData = idea.checklist_calidad?.[item.key];
+                    const isChecked = typeof itemData === 'boolean' ? itemData : itemData?.ok === true;
+                    const nota = typeof itemData === 'object' ? itemData?.nota || '' : '';
+                    const hasNota = nota.trim().length > 0;
+                    const shouldShowNota = isChecked || hasNota;
+
+                    return (
+                      <div key={item.key} style={{ display: 'grid', gap: '8px' }}>
+                        <label
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            backgroundColor: '#13131A',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '8px',
+                            padding: '16px',
+                            cursor: 'pointer',
+                            transition: 'all 200ms ease',
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.08)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#13131A'}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => handleChecklistUpdate('checklist_calidad', item.key, { ok: e.target.checked, nota })}
+                            style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#00E5A0', flexShrink: 0 }}
+                          />
+                          <span style={{ color: isChecked ? '#999' : '#DDD', fontSize: '14px', textDecoration: isChecked ? 'line-through' : 'none' }}>
+                            {item.label}
+                          </span>
+                        </label>
+                        {shouldShowNota && (
+                          <textarea
+                            value={nota}
+                            onChange={(e) => {
+                              // Update state locally without saving yet
+                              const tempChecklist = { ...idea.checklist_calidad };
+                              tempChecklist[item.key] = { ok: isChecked, nota: e.target.value };
+                              setIdea(prev => ({ ...prev, checklist_calidad: { ...prev.checklist_calidad, ...tempChecklist } }));
+                            }}
+                            onBlur={(e) => {
+                              e.currentTarget.style.borderColor = 'rgba(0, 229, 160, 0.3)';
+                              // Save on blur
+                              if (e.target.value.trim() !== nota.trim()) {
+                                handleChecklistUpdate('checklist_calidad', item.key, { ok: isChecked, nota: e.target.value });
+                              }
+                            }}
+                            onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(0, 229, 160, 0.6)'}
+                            placeholder="Observaciones..."
+                            style={{
+                              width: '100%',
+                              minHeight: '80px',
+                              padding: '12px',
+                              backgroundColor: '#13131A',
+                              border: '1px solid rgba(0, 229, 160, 0.3)',
+                              borderRadius: '6px',
+                              color: '#DDD',
+                              fontFamily: 'inherit',
+                              fontSize: '13px',
+                              lineHeight: '1.5',
+                              resize: 'vertical',
+                              boxSizing: 'border-box',
+                              transition: 'all 200ms ease',
+                            }}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -1500,8 +1860,21 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                         { key: 'firma_apk', label: 'APK firmado con keystore' },
                       ].map(item => (
                         <label key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px', cursor: 'pointer' }}>
-                          <input type="checkbox" checked={idea.checklist_publicacion?.[item.key] || false} onChange={(e) => handleChecklistUpdate('checklist_publicacion', item.key, e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#00E5A0' }} />
-                          <span style={{ color: idea.checklist_publicacion?.[item.key] ? '#999' : '#DDD', fontSize: '12px', textDecoration: idea.checklist_publicacion?.[item.key] ? 'line-through' : 'none' }}>{item.label}</span>
+                          <input type="checkbox" checked={idea.checklist_publicacion?.[item.key] || false} onChange={() => handleChecklistPublicacion(item.key)} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#00E5A0' }} />
+                          <span style={{ color: idea.checklist_publicacion?.[item.key] ? '#999' : '#DDD', fontSize: '12px', textDecoration: idea.checklist_publicacion?.[item.key] ? 'line-through' : 'none', flex: 1 }}>{item.label}</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setHelpModal({ key: item.key, ...publicacionHelp[item.key] });
+                            }}
+                            style={{ padding: '4px 8px', backgroundColor: 'transparent', border: 'none', color: '#00E5A0', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '50%', transition: 'all 200ms ease' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.15)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            title="Ayuda"
+                          >
+                            ⓘ
+                          </button>
                         </label>
                       ))}
                     </div>
@@ -1523,8 +1896,21 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                         { key: 'datos_seguridad', label: 'Cuestionario de seguridad de datos completado' },
                       ].map(item => (
                         <label key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px', cursor: 'pointer' }}>
-                          <input type="checkbox" checked={idea.checklist_publicacion?.[item.key] || false} onChange={(e) => handleChecklistUpdate('checklist_publicacion', item.key, e.target.checked)} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#00E5A0' }} />
-                          <span style={{ color: idea.checklist_publicacion?.[item.key] ? '#999' : '#DDD', fontSize: '12px', textDecoration: idea.checklist_publicacion?.[item.key] ? 'line-through' : 'none' }}>{item.label}</span>
+                          <input type="checkbox" checked={idea.checklist_publicacion?.[item.key] || false} onChange={() => handleChecklistPublicacion(item.key)} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#00E5A0' }} />
+                          <span style={{ color: idea.checklist_publicacion?.[item.key] ? '#999' : '#DDD', fontSize: '12px', textDecoration: idea.checklist_publicacion?.[item.key] ? 'line-through' : 'none', flex: 1 }}>{item.label}</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setHelpModal({ key: item.key, ...publicacionHelp[item.key] });
+                            }}
+                            style={{ padding: '4px 8px', backgroundColor: 'transparent', border: 'none', color: '#00E5A0', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '50%', transition: 'all 200ms ease' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.15)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            title="Ayuda"
+                          >
+                            ⓘ
+                          </button>
                         </label>
                       ))}
                     </div>
@@ -1643,6 +2029,120 @@ Devuelve SOLO el JSON válido, sin explicación.`,
           </div>
         </div>
       </div>
+
+      {helpModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => setHelpModal(null)}
+        >
+          <div
+            style={{
+              backgroundColor: '#13131A',
+              border: '1px solid rgba(0, 229, 160, 0.3)',
+              borderRadius: '12px',
+              padding: '32px',
+              maxWidth: '500px',
+              width: '90%',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ color: '#00E5A0', fontSize: '18px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>
+              {helpModal.title}
+            </h3>
+            <p style={{ color: '#DDD', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px', whiteSpace: 'pre-wrap' }}>
+              {helpModal.description}
+            </p>
+            <button
+              onClick={() => setHelpModal(null)}
+              style={{
+                width: '100%',
+                padding: '12px 24px',
+                backgroundColor: '#00E5A0',
+                border: 'none',
+                color: '#0A0A0F',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                transition: 'all 200ms ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {helpModalFirebaseAdMob && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => setHelpModalFirebaseAdMob(null)}
+        >
+          <div
+            style={{
+              backgroundColor: '#13131A',
+              border: '1px solid rgba(0, 229, 160, 0.3)',
+              borderRadius: '12px',
+              padding: '32px',
+              maxWidth: '500px',
+              width: '90%',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ color: '#00E5A0', fontSize: '18px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>
+              {helpModalFirebaseAdMob.title}
+            </h3>
+            <p style={{ color: '#DDD', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px', whiteSpace: 'pre-wrap' }}>
+              {helpModalFirebaseAdMob.description}
+            </p>
+            <button
+              onClick={() => setHelpModalFirebaseAdMob(null)}
+              style={{
+                width: '100%',
+                padding: '12px 24px',
+                backgroundColor: '#00E5A0',
+                border: 'none',
+                color: '#0A0A0F',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                transition: 'all 200ms ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />

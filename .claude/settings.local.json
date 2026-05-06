@@ -4,11 +4,23 @@
       "Bash(npm run:*)",
       "mcp__ide__getDiagnostics",
       "Bash(node:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "mcp__code-review-graph__semantic_search_nodes_tool",
+      "Bash(cd C:\\\\\\\\Users\\\\\\\\FedeN\\\\\\\\nztech-code\\\\\\\\nztech-dashboard)",
+      "Bash(curl -s http://localhost:5175)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(Get-ChildItem -Path src -Recurse -Name \"*.jsx\" -o \"*.js\")",
+      "Bash(Select-Object -Unique)",
+      "Bash(Measure-Object)",
+      "Bash(Select-Object Count)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(Remove-Item \"C:\\\\Users\\\\FedeN\\\\nztech-code\\\\nztech-dashboard\\\\src\\\\hooks\\\\useTasks.js\" -Force)",
+      "Bash(Remove-Item \"C:\\\\Users\\\\FedeN\\\\nztech-code\\\\nztech-dashboard\\\\src\\\\hooks\\\\useTasksForApp.js\" -Force)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "code-review-graph"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

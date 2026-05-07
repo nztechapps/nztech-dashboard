@@ -170,15 +170,16 @@ function NavItem({ item, isActive, showBadge, pendingCount, isMobile }) {
         to={item.path}
         className="flex items-center gap-3 rounded-lg transition-colors"
         style={{
-          color: isActive ? '#00E5A0' : 'rgba(255,255,255,0.75)',
-          backgroundColor: isActive ? 'rgba(0,229,160,0.08)' : 'transparent',
+          color: isActive ? '#111827' : '#374151',
+          backgroundColor: isActive ? '#F3F4F6' : 'transparent',
+          borderLeft: isActive && !isMobile ? '3px solid #00E5A0' : '3px solid transparent',
           justifyContent: isMobile ? 'center' : undefined,
           padding: isMobile ? '12px 0' : '8px 12px',
           gap: isMobile ? 0 : '10px',
           position: 'relative',
         }}
         onMouseEnter={(e) => {
-          if (!isActive) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'
+          if (!isActive) e.currentTarget.style.backgroundColor = '#F9FAFB'
         }}
         onMouseLeave={(e) => {
           if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'
@@ -232,10 +233,10 @@ export function Sidebar() {
       style={{
         width: isMobile ? '100%' : '220px',
         height: isMobile ? 'auto' : '100vh',
-        backgroundColor: '#0A0A0F',
-        borderRightColor: isMobile ? 'transparent' : 'rgba(255,255,255,0.08)',
-        borderTopColor: isMobile ? 'rgba(255,255,255,0.08)' : 'transparent',
-        borderTop: isMobile ? '1px solid rgba(255,255,255,0.08)' : 'none',
+        backgroundColor: '#FFFFFF',
+        borderRightColor: isMobile ? 'transparent' : 'rgba(0,0,0,0.08)',
+        borderTopColor: isMobile ? 'rgba(0,0,0,0.08)' : 'transparent',
+        borderTop: isMobile ? '1px solid rgba(0,0,0,0.08)' : 'none',
         left: 0,
         top: isMobile ? 'auto' : 0,
         bottom: isMobile ? 0 : 'auto',
@@ -245,10 +246,10 @@ export function Sidebar() {
     >
       {/* Logo */}
       {!isMobile && (
-        <div className="px-6 py-8 border-b" style={{ borderBottomColor: 'rgba(255,255,255,0.08)' }}>
+        <div className="px-6 py-8 border-b" style={{ borderBottomColor: 'rgba(0,0,0,0.08)' }}>
           <div className="flex items-baseline gap-1">
             <span style={{ color: '#00E5A0' }} className="text-2xl font-bold">NZ</span>
-            <span style={{ color: 'white' }} className="text-2xl font-bold">Tech</span>
+            <span style={{ color: '#111827' }} className="text-2xl font-bold">Tech</span>
           </div>
         </div>
       )}
@@ -276,16 +277,16 @@ export function Sidebar() {
               {group.label && (
                 <div className="flex items-center gap-2 px-2 mb-2" style={{ marginTop: groupIndex > 0 ? '4px' : '0' }}>
                   <span style={{
-                    color: 'rgba(255,255,255,0.3)',
-                    fontSize: '10px',
-                    fontWeight: '600',
-                    letterSpacing: '0.08em',
+                    color: '#9CA3AF',
+                    fontSize: '11px',
+                    fontWeight: '500',
+                    letterSpacing: '0.05em',
                     textTransform: 'uppercase',
                     whiteSpace: 'nowrap',
                   }}>
                     {group.label}
                   </span>
-                  <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.06)' }} />
+                  <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,0,0,0.06)' }} />
                 </div>
               )}
               <ul className="space-y-0.5">
@@ -307,16 +308,16 @@ export function Sidebar() {
 
       {/* User Footer */}
       {!isMobile && (
-        <div className="p-4 border-t space-y-3" style={{ borderTopColor: 'rgba(255,255,255,0.08)' }}>
+        <div className="p-4 border-t space-y-3" style={{ borderTopColor: 'rgba(0,0,0,0.08)' }}>
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold"
-              style={{ backgroundColor: '#1C1C26', color: '#00E5A0' }}
+              style={{ backgroundColor: '#F3F4F6', color: '#00E5A0' }}
             >
               {getInitials(user?.email)}
             </div>
             <div className="flex-1 min-w-0">
-              <p style={{ color: 'rgba(255,255,255,0.45)' }} className="text-xs truncate">
+              <p style={{ color: '#6B7280' }} className="text-xs truncate">
                 {user?.email || 'Usuario'}
               </p>
             </div>
@@ -326,16 +327,16 @@ export function Sidebar() {
             className="w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             style={{
               backgroundColor: 'transparent',
-              color: 'rgba(255,255,255,0.45)',
-              border: '1px solid rgba(255,255,255,0.12)',
+              color: '#6B7280',
+              border: '1px solid rgba(0,0,0,0.12)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'
-              e.currentTarget.style.color = 'white'
+              e.currentTarget.style.backgroundColor = '#F3F4F6'
+              e.currentTarget.style.color = '#111827'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = 'rgba(255,255,255,0.45)'
+              e.currentTarget.style.color = '#6B7280'
             }}
           >
             Salir

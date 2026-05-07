@@ -73,10 +73,10 @@ function formatTime(seconds) {
 
 const StatusBadge = ({ status }) => {
   const badgeConfig = {
-    development: { bg: '#1C1C26', text: '#999' },
-    testing: { bg: '#323200', text: '#FFEB3B' },
-    published: { bg: '#003300', text: '#00E5A0' },
-    deprecated: { bg: '#330000', text: '#FF4D4F' },
+    development: { bg: '#F3F4F6', text: '#6B7280' },
+    testing: { bg: '#FEFCE8', text: '#92400E' },
+    published: { bg: '#ECFDF5', text: '#065F46' },
+    deprecated: { bg: '#FEF2F2', text: '#991B1B' },
   };
   const config = badgeConfig[status] || badgeConfig.development;
 
@@ -162,7 +162,7 @@ export default function Home() {
           .in('estado', ['running', 'ensamblando'])
           .order('created_at', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (error && error.code !== 'PGRST116') {
           throw error;
@@ -194,7 +194,7 @@ export default function Home() {
   }, [activeRun]);
 
   return (
-    <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px' }}>
+    <div style={{ backgroundColor: '#F9FAFB', minHeight: '100vh', padding: '24px' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         {/* FILA 1: Métricas */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }}>
@@ -227,12 +227,12 @@ export default function Home() {
         {/* FILA 2: Apps (izq) + Pipeline (der) */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
           {/* Apps del portfolio (compacto) */}
-          <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '20px' }}>
-            <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '10px', padding: '20px' }}>
+            <h3 style={{ color: '#111827', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
               📱 Apps del Portfolio
             </h3>
             {apps.length === 0 ? (
-              <div style={{ color: '#999', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
+              <div style={{ color: '#6B7280', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
                 No hay apps aún
               </div>
             ) : (
@@ -245,7 +245,7 @@ export default function Home() {
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
-                      backgroundColor: '#0A0A0F',
+                      backgroundColor: '#F9FAFB',
                       borderRadius: '6px',
                       fontSize: '12px',
                     }}
@@ -255,7 +255,7 @@ export default function Home() {
                         width: '28px',
                         height: '28px',
                         borderRadius: '6px',
-                        backgroundColor: '#1C1C26',
+                        backgroundColor: '#F3F4F6',
                         color: '#00E5A0',
                         display: 'flex',
                         alignItems: 'center',
@@ -268,10 +268,10 @@ export default function Home() {
                       {getInitials(app.nombre || app.name || 'App')}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ color: 'white', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ color: '#111827', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {app.nombre || app.name}
                       </div>
-                      <div style={{ color: '#999', fontSize: '11px' }}>
+                      <div style={{ color: '#6B7280', fontSize: '11px' }}>
                         {formatDate(app.created_at)}
                       </div>
                     </div>
@@ -283,24 +283,24 @@ export default function Home() {
           </div>
 
           {/* Pipeline activo (derecha) */}
-          <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '20px' }}>
-            <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '10px', padding: '20px' }}>
+            <h3 style={{ color: '#111827', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <IconRocket style={{ color: '#00E5A0' }} />
               Pipeline
             </h3>
             {activeRun ? (
               <div style={{ display: 'grid', gap: '12px' }}>
                 <div>
-                  <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
+                  <div style={{ color: '#6B7280', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
                     App
                   </div>
-                  <div style={{ color: 'white', fontSize: '13px', fontWeight: '500' }}>
+                  <div style={{ color: '#111827', fontSize: '13px', fontWeight: '500' }}>
                     {activeRun.nombre}
                   </div>
                 </div>
 
                 <div>
-                  <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
+                  <div style={{ color: '#6B7280', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
                     Estado
                   </div>
                   <RunStatusBadge estado={activeRun.estado} />
@@ -308,17 +308,17 @@ export default function Home() {
 
                 {activeRun.paso_actual && (
                   <div>
-                    <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
+                    <div style={{ color: '#6B7280', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
                       Paso
                     </div>
-                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>
+                    <div style={{ color: '#374151', fontSize: '12px' }}>
                       {activeRun.paso_actual}
                     </div>
                   </div>
                 )}
 
                 <div>
-                  <div style={{ color: '#999', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
+                  <div style={{ color: '#6B7280', fontSize: '11px', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase' }}>
                     Tiempo
                   </div>
                   <div style={{ color: '#00E5A0', fontSize: '16px', fontWeight: '600', fontFamily: 'DM Mono, monospace' }}>
@@ -349,7 +349,7 @@ export default function Home() {
                 )}
               </div>
             ) : (
-              <div style={{ color: '#999', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
+              <div style={{ color: '#6B7280', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
                 Nada ejecutando
               </div>
             )}
@@ -359,8 +359,8 @@ export default function Home() {
         {/* FILA 3: Tareas (izq) + Alertas (der) */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
           {/* Tareas pendientes */}
-          <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '20px' }}>
-            <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '10px', padding: '20px' }}>
+            <h3 style={{ color: '#111827', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
               ✓ Tareas Pendientes
             </h3>
             {tareas.filter(t => !t.completada && t.estado !== 'completada').length === 0 ? (
@@ -398,10 +398,10 @@ export default function Home() {
                           }}
                         />
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ color: 'white', fontSize: '13px', fontWeight: '500', marginBottom: '4px' }}>
+                          <div style={{ color: '#111827', fontSize: '13px', fontWeight: '500', marginBottom: '4px' }}>
                             {tarea.titulo}
                           </div>
-                          <div style={{ color: '#999', fontSize: '11px' }}>
+                          <div style={{ color: '#6B7280', fontSize: '11px' }}>
                             {bloque?.nombre} • {tarea.tiempo_estimado ? `${tarea.tiempo_estimado}h` : '—'}
                           </div>
                         </div>
@@ -413,8 +413,8 @@ export default function Home() {
           </div>
 
           {/* Alertas */}
-          <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '20px' }}>
-            <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '10px', padding: '20px' }}>
+            <h3 style={{ color: '#111827', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
               🔔 Alertas
             </h3>
             {notifications.length === 0 ? (
@@ -443,10 +443,10 @@ export default function Home() {
                         {notif.tipo === 'error' || notif.tipo === 'warning' ? <IconAlert /> : <IconInfo />}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ color: 'white', fontSize: '12px', marginBottom: '2px' }}>
+                        <div style={{ color: '#111827', fontSize: '12px', marginBottom: '2px' }}>
                           {notif.titulo || notif.title}
                         </div>
-                        <div style={{ color: '#999', fontSize: '11px' }}>
+                        <div style={{ color: '#6B7280', fontSize: '11px' }}>
                           {formatRelativeDate(notif.created_at)}
                         </div>
                       </div>

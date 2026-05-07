@@ -17,13 +17,13 @@ export function TopBar({ title = 'Dashboard' }) {
       className="fixed top-0 left-0 right-0 border-b flex items-center justify-between px-6"
       style={{
         height: '56px',
-        backgroundColor: '#0A0A0F',
-        borderBottomColor: 'rgba(255,255,255,0.08)',
+        backgroundColor: '#FFFFFF',
+        borderBottomColor: 'rgba(0,0,0,0.08)',
         marginLeft: isMobile ? 0 : '220px',
         right: '0',
       }}
     >
-      <h1 style={{ color: 'white' }} className="text-lg font-medium">
+      <h1 style={{ color: '#111827' }} className="text-lg font-medium">
         {title}
       </h1>
 
@@ -34,7 +34,7 @@ export function TopBar({ title = 'Dashboard' }) {
           color: '#00E5A0',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'
+          e.currentTarget.style.backgroundColor = '#F3F4F6'
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent'

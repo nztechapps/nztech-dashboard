@@ -2,17 +2,49 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useAgentInbox } from '../../hooks/useAgentInbox'
 
-const navItems = [
+const navGroups = [
+  {
+    label: null,
+    items: [
+      { path: '/', label: 'Home', icon: 'home' },
+      { path: '/ideas', label: 'Ideas', icon: 'lightbulb' },
+      { path: '/apps', label: 'Apps', icon: 'grid' },
+      { path: '/pipeline', label: 'Pipeline', icon: 'rocket' },
+    ],
+  },
+  {
+    label: 'Contenido',
+    items: [
+      { path: '/guiones', label: 'Guiones', icon: 'document' },
+      { path: '/social', label: 'Social', icon: 'share' },
+    ],
+  },
+  {
+    label: 'Sistema',
+    items: [
+      { path: '/manuales', label: 'Manuales', icon: 'book' },
+      { path: '/productividad', label: 'Productividad', icon: 'zap' },
+    ],
+  },
+  {
+    label: 'Gestión',
+    items: [
+      { path: '/tareas', label: 'Tareas', icon: 'checklist' },
+      { path: '/finanzas', label: 'Finanzas', icon: 'chart' },
+      { path: '/calendario', label: 'Calendario', icon: 'calendar' },
+      { path: '/agentes', label: 'Agentes', icon: 'robot' },
+    ],
+  },
+]
+
+// Keep mobile nav flat (only most-used items)
+const mobileNavItems = [
   { path: '/', label: 'Home', icon: 'home' },
+  { path: '/ideas', label: 'Ideas', icon: 'lightbulb' },
   { path: '/apps', label: 'Apps', icon: 'grid' },
-  { path: '/finanzas', label: 'Finanzas', icon: 'chart' },
-  { path: '/notificaciones', label: 'Notificaciones', icon: 'bell' },
-  { path: '/agentes', label: 'Agentes', icon: 'robot' },
-  { path: '/calendario', label: 'Calendario', icon: 'calendar' },
   { path: '/pipeline', label: 'Pipeline', icon: 'rocket' },
   { path: '/tareas', label: 'Tareas', icon: 'checklist' },
-  { path: '/ideas', label: 'Ideas', icon: 'lightbulb' },
-  { path: '/reportes', label: 'Reportes', icon: 'document' },
+  { path: '/agentes', label: 'Agentes', icon: 'robot' },
 ]
 
 const IconHome = () => (
@@ -35,13 +67,6 @@ const IconChart = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <line x1="12" y1="5" x2="12" y2="19"></line>
     <polyline points="19 12 12 19 5 12"></polyline>
-  </svg>
-)
-
-const IconBell = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
   </svg>
 )
 
@@ -90,35 +115,98 @@ const IconChecklist = () => (
 
 const IconLightbulb = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    <circle cx="12" cy="10" r="3"></circle>
+    <path d="M12 2a8 8 0 0 1 6.93 12l-1.27 2H6.34l-1.27-2A8 8 0 0 1 12 2z"></path>
+    <line x1="9" y1="21" x2="15" y2="21"></line>
+    <line x1="10" y1="23" x2="14" y2="23"></line>
+  </svg>
+)
+
+const IconShare = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="18" cy="5" r="3"></circle>
+    <circle cx="6" cy="12" r="3"></circle>
+    <circle cx="18" cy="19" r="3"></circle>
+    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+  </svg>
+)
+
+const IconBook = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+  </svg>
+)
+
+const IconZap = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
   </svg>
 )
 
 const getIcon = (iconName) => {
   switch (iconName) {
-    case 'home':
-      return <IconHome />
-    case 'grid':
-      return <IconGrid />
-    case 'chart':
-      return <IconChart />
-    case 'bell':
-      return <IconBell />
-    case 'robot':
-      return <IconRobot />
-    case 'calendar':
-      return <IconCalendar />
-    case 'rocket':
-      return <IconRocket />
-    case 'document':
-      return <IconDocument />
-    case 'lightbulb':
-      return <IconLightbulb />
-    case 'checklist':
-      return <IconChecklist />
-    default:
-      return null
+    case 'home': return <IconHome />
+    case 'grid': return <IconGrid />
+    case 'chart': return <IconChart />
+    case 'robot': return <IconRobot />
+    case 'calendar': return <IconCalendar />
+    case 'rocket': return <IconRocket />
+    case 'document': return <IconDocument />
+    case 'lightbulb': return <IconLightbulb />
+    case 'checklist': return <IconChecklist />
+    case 'share': return <IconShare />
+    case 'book': return <IconBook />
+    case 'zap': return <IconZap />
+    default: return null
   }
+}
+
+function NavItem({ item, isActive, showBadge, pendingCount, isMobile }) {
+  return (
+    <li style={{ flex: isMobile ? 1 : undefined }}>
+      <Link
+        to={item.path}
+        className="flex items-center gap-3 rounded-lg transition-colors"
+        style={{
+          color: isActive ? '#00E5A0' : 'rgba(255,255,255,0.75)',
+          backgroundColor: isActive ? 'rgba(0,229,160,0.08)' : 'transparent',
+          justifyContent: isMobile ? 'center' : undefined,
+          padding: isMobile ? '12px 0' : '8px 12px',
+          gap: isMobile ? 0 : '10px',
+          position: 'relative',
+        }}
+        onMouseEnter={(e) => {
+          if (!isActive) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'
+        }}
+      >
+        <span style={{ opacity: isActive ? 1 : 0.7 }}>{getIcon(item.icon)}</span>
+        {!isMobile && <span className="text-sm font-medium">{item.label}</span>}
+        {showBadge && (
+          <span style={{
+            position: isMobile ? 'absolute' : 'relative',
+            top: isMobile ? '-8px' : undefined,
+            right: isMobile ? '0px' : undefined,
+            marginLeft: isMobile ? undefined : 'auto',
+            backgroundColor: '#FF4D4F',
+            color: 'white',
+            fontSize: '10px',
+            fontWeight: '600',
+            padding: '2px 4px',
+            borderRadius: '10px',
+            minWidth: '16px',
+            textAlign: 'center',
+          }}>
+            {pendingCount}
+          </span>
+        )}
+      </Link>
+    </li>
+  )
 }
 
 export function Sidebar() {
@@ -136,7 +224,7 @@ export function Sidebar() {
     return parts.map((p) => p[0]).join('').toUpperCase().slice(0, 2)
   }
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
 
   return (
     <aside
@@ -159,72 +247,63 @@ export function Sidebar() {
       {!isMobile && (
         <div className="px-6 py-8 border-b" style={{ borderBottomColor: 'rgba(255,255,255,0.08)' }}>
           <div className="flex items-baseline gap-1">
-            <span style={{ color: '#00E5A0' }} className="text-2xl font-bold">
-              NZ
-            </span>
-            <span style={{ color: 'white' }} className="text-2xl font-bold">
-              Tech
-            </span>
+            <span style={{ color: '#00E5A0' }} className="text-2xl font-bold">NZ</span>
+            <span style={{ color: 'white' }} className="text-2xl font-bold">Tech</span>
           </div>
         </div>
       )}
 
       {/* Navigation */}
-      <nav className={isMobile ? 'flex flex-1' : 'flex-1 px-4 py-6'}>
-        <ul className={isMobile ? 'flex w-full' : 'space-y-2'} style={{ justifyContent: isMobile ? 'space-around' : undefined }}>
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path
-            const showBadge = item.path === '/agentes' && pendingCount > 0
-            return (
-              <li key={item.path} style={{ flex: isMobile ? 1 : undefined }}>
-                <Link
-                  to={item.path}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group"
-                  style={{
-                    color: isActive ? '#00E5A0' : 'white',
-                    backgroundColor: isActive ? 'rgba(0,229,160,0.08)' : 'transparent',
-                    justifyContent: isMobile ? 'center' : undefined,
-                    padding: isMobile ? '12px 0' : '12px 16px',
-                    gap: isMobile ? 0 : '12px',
-                    position: 'relative',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'transparent'
-                    }
-                  }}
-                >
-                  <span>{getIcon(item.icon)}</span>
-                  {!isMobile && <span className="text-sm font-medium">{item.label}</span>}
-                  {showBadge && (
-                    <span style={{
-                      marginLeft: isMobile ? 'auto' : 'auto',
-                      position: isMobile ? 'absolute' : 'relative',
-                      top: isMobile ? '-8px' : undefined,
-                      right: isMobile ? '0px' : undefined,
-                      backgroundColor: '#FF4D4F',
-                      color: 'white',
-                      fontSize: '10px',
-                      fontWeight: '600',
-                      padding: '2px 4px',
-                      borderRadius: '10px',
-                      minWidth: isMobile ? '16px' : undefined,
-                      textAlign: isMobile ? 'center' : undefined,
-                    }}>
-                      {pendingCount}
-                    </span>
-                  )}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </nav>
+      {isMobile ? (
+        <nav className="flex flex-1">
+          <ul className="flex w-full" style={{ justifyContent: 'space-around' }}>
+            {mobileNavItems.map((item) => (
+              <NavItem
+                key={item.path}
+                item={item}
+                isActive={location.pathname === item.path}
+                showBadge={item.path === '/agentes' && pendingCount > 0}
+                pendingCount={pendingCount}
+                isMobile={true}
+              />
+            ))}
+          </ul>
+        </nav>
+      ) : (
+        <nav className="flex-1 px-3 py-4 overflow-y-auto">
+          {navGroups.map((group, groupIndex) => (
+            <div key={groupIndex} className={groupIndex > 0 ? 'mt-4' : ''}>
+              {group.label && (
+                <div className="flex items-center gap-2 px-2 mb-2" style={{ marginTop: groupIndex > 0 ? '4px' : '0' }}>
+                  <span style={{
+                    color: 'rgba(255,255,255,0.3)',
+                    fontSize: '10px',
+                    fontWeight: '600',
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {group.label}
+                  </span>
+                  <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.06)' }} />
+                </div>
+              )}
+              <ul className="space-y-0.5">
+                {group.items.map((item) => (
+                  <NavItem
+                    key={item.path}
+                    item={item}
+                    isActive={location.pathname === item.path}
+                    showBadge={item.path === '/agentes' && pendingCount > 0}
+                    pendingCount={pendingCount}
+                    isMobile={false}
+                  />
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      )}
 
       {/* User Footer */}
       {!isMobile && (
@@ -232,10 +311,7 @@ export function Sidebar() {
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold"
-              style={{
-                backgroundColor: '#1C1C26',
-                color: '#00E5A0',
-              }}
+              style={{ backgroundColor: '#1C1C26', color: '#00E5A0' }}
             >
               {getInitials(user?.email)}
             </div>

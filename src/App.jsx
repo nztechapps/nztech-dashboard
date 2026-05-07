@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
 import { Login } from './pages/Login'
 import Home from './pages/Home'
 import Apps from './pages/Apps'
@@ -15,6 +16,11 @@ import Tareas from './pages/Tareas'
 import { AuthGuard } from './components/layout/AuthGuard'
 import { Sidebar } from './components/layout/Sidebar'
 import { TopBar } from './components/layout/TopBar'
+
+const Guiones = lazy(() => import('./pages/Guiones'))
+const Social = lazy(() => import('./pages/Social'))
+const KnowledgeBase = lazy(() => import('./pages/KnowledgeBase'))
+const Productividad = lazy(() => import('./pages/Productividad'))
 
 
 // Layout wrapper para rutas protegidas
@@ -165,6 +171,46 @@ export default function App() {
             <AuthGuard>
               <ProtectedLayout title="Detalle de la Idea">
                 <IdeaDetail />
+              </ProtectedLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/guiones"
+          element={
+            <AuthGuard>
+              <ProtectedLayout title="Guiones">
+                <Suspense fallback={null}><Guiones /></Suspense>
+              </ProtectedLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/social"
+          element={
+            <AuthGuard>
+              <ProtectedLayout title="Social">
+                <Suspense fallback={null}><Social /></Suspense>
+              </ProtectedLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/manuales"
+          element={
+            <AuthGuard>
+              <ProtectedLayout title="Manuales">
+                <Suspense fallback={null}><KnowledgeBase /></Suspense>
+              </ProtectedLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/productividad"
+          element={
+            <AuthGuard>
+              <ProtectedLayout title="Productividad">
+                <Suspense fallback={null}><Productividad /></Suspense>
               </ProtectedLayout>
             </AuthGuard>
           }

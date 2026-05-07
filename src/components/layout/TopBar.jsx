@@ -8,35 +8,46 @@ const IconBell = () => (
   </svg>
 )
 
-export function TopBar({ title = 'Dashboard' }) {
+const IconMenu = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+)
+
+export function TopBar({ title = 'Dashboard', onMenuClick }) {
   const { unreadCount } = useNotifications()
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   return (
     <header
-      className="border-b flex items-center justify-between px-6 flex-shrink-0"
+      className="border-b flex items-center justify-between px-4 flex-shrink-0"
       style={{
         height: '56px',
         backgroundColor: '#FFFFFF',
         borderBottomColor: 'rgba(0,0,0,0.08)',
       }}
     >
-      <h1 style={{ color: '#111827' }} className="text-lg font-medium">
-        {title}
-      </h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button
+          className="md:hidden p-2 rounded-lg transition-colors"
+          onClick={onMenuClick}
+          style={{ backgroundColor: 'transparent', border: 'none', color: '#6B7280', cursor: 'pointer', display: 'flex' }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F3F4F6' }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+        >
+          <IconMenu />
+        </button>
+        <h1 style={{ color: '#111827' }} className="text-lg font-medium">
+          {title}
+        </h1>
+      </div>
 
       <button
         className="relative p-2 rounded-lg transition-colors"
-        style={{
-          backgroundColor: 'transparent',
-          color: '#00E5A0',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#F3F4F6'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent'
-        }}
+        style={{ backgroundColor: 'transparent', color: '#00E5A0', border: 'none', cursor: 'pointer' }}
+        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F3F4F6' }}
+        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
       >
         <IconBell />
         {unreadCount > 0 && (

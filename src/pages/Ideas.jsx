@@ -39,18 +39,13 @@ const IconSpinner = () => (
   </svg>
 );
 
-const getStatusColor = (estado) => {
+const getStatusBg = (estado) => {
   switch (estado) {
-    case 'idea':
-      return '#999';
-    case 'investigando':
-      return '#6496FF';
-    case 'aprobada':
-      return '#00E5A0';
-    case 'descartada':
-      return '#FF4D4F';
-    default:
-      return '#999';
+    case 'idea': return { bg: '#EFF6FF', color: '#1E40AF' };
+    case 'investigando': return { bg: '#EFF6FF', color: '#1E40AF' };
+    case 'aprobada': return { bg: '#ECFDF5', color: '#065F46' };
+    case 'descartada': return { bg: '#FEF2F2', color: '#991B1B' };
+    default: return { bg: '#EFF6FF', color: '#1E40AF' };
   }
 };
 
@@ -95,66 +90,33 @@ function DeleteConfirmModal({ field, isOpen, onConfirm, onCancel }) {
   return createPortal(
     <div
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        zIndex: 1001,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1001,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
       }}
       onClick={onCancel}
     >
       <div
         style={{
-          backgroundColor: '#13131A',
-          borderRadius: '12px',
-          border: '1px solid rgba(255,255,255,0.08)',
-          padding: '24px',
-          maxWidth: '400px',
-          width: '100%',
+          backgroundColor: '#FFFFFF', borderRadius: '12px',
+          border: '1px solid rgba(0,0,0,0.08)', padding: '24px',
+          maxWidth: '400px', width: '100%', boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 style={{ color: 'white', margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
+        <h3 style={{ color: '#111827', margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
           ¿Borrar este campo?
         </h3>
-        <p style={{ color: '#999', fontSize: '13px', margin: '0 0 24px 0', lineHeight: '1.5' }}>
+        <p style={{ color: '#6B7280', fontSize: '13px', margin: '0 0 24px 0', lineHeight: '1.5' }}>
           El contenido generado se perderá y tendrás que regenerarlo.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-          <button
-            onClick={onCancel}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: 'transparent',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: '#999',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: '600',
-            }}
-          >
+          <button onClick={onCancel}
+            style={{ padding: '8px 16px', backgroundColor: '#F3F4F6', border: 'none', color: '#374151', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
             Cancelar
           </button>
-          <button
-            onClick={onConfirm}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#FF4D4F',
-              border: 'none',
-              color: 'white',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: '600',
-            }}
-          >
+          <button onClick={onConfirm}
+            style={{ padding: '8px 16px', backgroundColor: '#FEF2F2', border: '1px solid #FCA5A5', color: '#DC2626', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
             Borrar
           </button>
         </div>
@@ -387,12 +349,13 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
       {/* Modal */}
       <div
         style={{
-          backgroundColor: '#13131A',
+          backgroundColor: '#FFFFFF',
           borderRadius: window.innerWidth < 768 ? 0 : '12px',
           maxWidth: window.innerWidth < 768 ? '100vw' : '640px',
-          width: window.innerWidth < 768 ? '100%' : '100%',
+          width: '100%',
           height: window.innerWidth < 768 ? '100vh' : 'min(85vh, 600px)',
-          border: window.innerWidth < 768 ? 'none' : '1px solid rgba(255,255,255,0.08)',
+          border: window.innerWidth < 768 ? 'none' : '1px solid rgba(0,0,0,0.08)',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
@@ -402,23 +365,23 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
         {/* Header con X */}
         <div
           style={{
-            padding: '24px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            padding: '20px 24px',
+            borderBottom: '1px solid rgba(0,0,0,0.08)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
             position: 'sticky',
             top: 0,
-            backgroundColor: '#13131A',
+            backgroundColor: '#FFFFFF',
             zIndex: 10,
           }}
         >
-          <h2 style={{ color: 'white', margin: 0, fontSize: '18px', fontWeight: '600' }}>
+          <h2 style={{ color: '#111827', margin: 0, fontSize: '18px', fontWeight: '600' }}>
             {idea.titulo}
           </h2>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', padding: 0, marginLeft: '12px' }}
+            style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer', padding: 0, marginLeft: '12px' }}
           >
             <IconX />
           </button>
@@ -427,8 +390,8 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
         {/* Stepper */}
         <div
           style={{
-            padding: '20px 24px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            padding: '16px 24px',
+            borderBottom: '1px solid rgba(0,0,0,0.08)',
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
@@ -455,21 +418,21 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                     activeStep === step.id
                       ? '#00E5A0'
                       : step.completed
-                        ? 'rgba(0,229,160,0.2)'
-                        : 'rgba(255,255,255,0.08)',
+                        ? 'rgba(0,229,160,0.15)'
+                        : '#F3F4F6',
                   color:
                     activeStep === step.id
-                      ? '#0A0A0F'
+                      ? '#003D2B'
                       : step.completed
-                        ? '#00E5A0'
-                        : '#666',
+                        ? '#059669'
+                        : '#9CA3AF',
                   opacity: step.id > pasoAgente && step.id !== 0 ? 0.5 : 1,
                 }}
               >
                 {step.completed && step.id !== activeStep ? <IconCheck /> : step.id}
               </button>
               {idx < steps.length - 1 && (
-                <span style={{ color: '#444', fontSize: '18px', margin: '0 -4px', display: window.innerWidth < 768 ? 'none' : 'block' }}>→</span>
+                <span style={{ color: '#D1D5DB', fontSize: '18px', margin: '0 -4px', display: window.innerWidth < 768 ? 'none' : 'block' }}>→</span>
               )}
             </div>
           ))}
@@ -539,11 +502,11 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                   onBlur={(e) => handleFieldBlur('titulo', e.target.value)}
                   style={{
                     width: '100%',
-                    backgroundColor: '#0A0A0F',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    backgroundColor: '#F9FAFB',
+                    border: '1px solid rgba(0,0,0,0.12)',
                     borderRadius: '6px',
                     padding: '10px 12px',
-                    color: 'white',
+                    color: '#111827',
                     fontSize: '13px',
                     boxSizing: 'border-box',
                   }}
@@ -559,11 +522,11 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                   onBlur={(e) => handleFieldBlur('descripcion', e.target.value)}
                   style={{
                     width: '100%',
-                    backgroundColor: '#0A0A0F',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    backgroundColor: '#F9FAFB',
+                    border: '1px solid rgba(0,0,0,0.12)',
                     borderRadius: '6px',
                     padding: '10px 12px',
-                    color: 'white',
+                    color: '#111827',
                     fontSize: '13px',
                     boxSizing: 'border-box',
                     minHeight: '80px',
@@ -584,11 +547,11 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                     onBlur={(e) => handleFieldBlur('mercado', e.target.value)}
                     style={{
                       width: '100%',
-                      backgroundColor: '#0A0A0F',
-                      border: '1px solid rgba(255,255,255,0.08)',
+                      backgroundColor: '#F9FAFB',
+                      border: '1px solid rgba(0,0,0,0.12)',
                       borderRadius: '6px',
                       padding: '10px 12px',
-                      color: 'white',
+                      color: '#111827',
                       fontSize: '13px',
                       boxSizing: 'border-box',
                     }}
@@ -605,11 +568,11 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                     onBlur={(e) => handleFieldBlur('categoria', e.target.value)}
                     style={{
                       width: '100%',
-                      backgroundColor: '#0A0A0F',
-                      border: '1px solid rgba(255,255,255,0.08)',
+                      backgroundColor: '#F9FAFB',
+                      border: '1px solid rgba(0,0,0,0.12)',
                       borderRadius: '6px',
                       padding: '10px 12px',
-                      color: 'white',
+                      color: '#111827',
                       fontSize: '13px',
                       boxSizing: 'border-box',
                     }}
@@ -639,7 +602,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                   padding: '12px 20px',
                   backgroundColor: '#00E5A0',
                   border: 'none',
-                  color: '#0A0A0F',
+                  color: '#003D2B',
                   borderRadius: '6px',
                   cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
                   fontSize: '13px',
@@ -691,11 +654,11 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                       onBlur={(e) => handleFieldBlur('research_mercado', e.target.value)}
                       style={{
                         width: '100%',
-                        backgroundColor: '#0A0A0F',
-                        border: '1px solid rgba(255,255,255,0.08)',
+                        backgroundColor: '#F9FAFB',
+                        border: '1px solid rgba(0,0,0,0.08)',
                         borderRadius: '6px',
                         padding: '12px',
-                        color: 'rgba(255,255,255,0.7)',
+                        color: '#374151',
                         fontSize: '13px',
                         boxSizing: 'border-box',
                         minHeight: '150px',
@@ -740,7 +703,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         flex: 1,
                         padding: '10px 16px',
                         backgroundColor: 'transparent',
-                        border: '1px solid rgba(255,255,255,0.12)',
+                        border: '1px solid rgba(0,0,0,0.10)',
                         color: '#999',
                         borderRadius: '6px',
                         cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
@@ -759,7 +722,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         padding: '10px 16px',
                         backgroundColor: '#00E5A0',
                         border: 'none',
-                        color: '#0A0A0F',
+                        color: '#003D2B',
                         borderRadius: '6px',
                         cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
                         fontSize: '13px',
@@ -816,11 +779,11 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         onBlur={(e) => handleFieldBlur('specs_pantallas', e.target.value)}
                         style={{
                           width: '100%',
-                          backgroundColor: '#0A0A0F',
-                          border: '1px solid rgba(255,255,255,0.08)',
+                          backgroundColor: '#F9FAFB',
+                          border: '1px solid rgba(0,0,0,0.08)',
                           borderRadius: '6px',
                           padding: '10px 12px',
-                          color: 'rgba(255,255,255,0.7)',
+                          color: '#374151',
                           fontSize: '12px',
                           boxSizing: 'border-box',
                           height: '120px',
@@ -869,11 +832,11 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         onBlur={(e) => handleFieldBlur('specs_flujos', e.target.value)}
                         style={{
                           width: '100%',
-                          backgroundColor: '#0A0A0F',
-                          border: '1px solid rgba(255,255,255,0.08)',
+                          backgroundColor: '#F9FAFB',
+                          border: '1px solid rgba(0,0,0,0.08)',
                           borderRadius: '6px',
                           padding: '10px 12px',
-                          color: 'rgba(255,255,255,0.7)',
+                          color: '#374151',
                           fontSize: '12px',
                           boxSizing: 'border-box',
                           height: '120px',
@@ -922,11 +885,11 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         onBlur={(e) => handleFieldBlur('specs_apis', e.target.value)}
                         style={{
                           width: '100%',
-                          backgroundColor: '#0A0A0F',
-                          border: '1px solid rgba(255,255,255,0.08)',
+                          backgroundColor: '#F9FAFB',
+                          border: '1px solid rgba(0,0,0,0.08)',
                           borderRadius: '6px',
                           padding: '10px 12px',
-                          color: 'rgba(255,255,255,0.7)',
+                          color: '#374151',
                           fontSize: '12px',
                           boxSizing: 'border-box',
                           height: '120px',
@@ -977,11 +940,11 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         placeholder="baja | media | alta"
                         style={{
                           width: '100%',
-                          backgroundColor: '#0A0A0F',
-                          border: '1px solid rgba(255,255,255,0.08)',
+                          backgroundColor: '#F9FAFB',
+                          border: '1px solid rgba(0,0,0,0.08)',
                           borderRadius: '6px',
                           padding: '10px 12px',
-                          color: 'rgba(255,255,255,0.7)',
+                          color: '#374151',
                           fontSize: '13px',
                           boxSizing: 'border-box',
                         }}
@@ -1024,7 +987,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         flex: 1,
                         padding: '10px 16px',
                         backgroundColor: 'transparent',
-                        border: '1px solid rgba(255,255,255,0.12)',
+                        border: '1px solid rgba(0,0,0,0.10)',
                         color: '#999',
                         borderRadius: '6px',
                         cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
@@ -1043,7 +1006,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         padding: '10px 16px',
                         backgroundColor: '#00E5A0',
                         border: 'none',
-                        color: '#0A0A0F',
+                        color: '#003D2B',
                         borderRadius: '6px',
                         cursor: sendingPipeline || isProcessingNow || processingStep !== null ? 'not-allowed' : 'pointer',
                         fontSize: '13px',
@@ -1141,24 +1104,25 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
     >
       <div
         style={{
-          backgroundColor: '#13131A',
+          backgroundColor: '#FFFFFF',
           borderRadius: '12px',
           padding: '24px',
           maxWidth: '500px',
           width: '100%',
           maxHeight: '80vh',
           overflow: 'auto',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid rgba(0,0,0,0.08)',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ color: 'white', margin: 0, fontSize: '18px', fontWeight: '600' }}>
+          <h2 style={{ color: '#111827', margin: 0, fontSize: '18px', fontWeight: '600' }}>
             Nueva idea
           </h2>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', padding: 0 }}
+            style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer', padding: 0 }}
           >
             <IconX />
           </button>
@@ -1177,7 +1141,7 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
               style={{
                 width: '100%',
                 backgroundColor: '#0A0A0F',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid rgba(0,0,0,0.08)',
                 borderRadius: '6px',
                 padding: '10px 12px',
                 color: 'white',
@@ -1198,7 +1162,7 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
               style={{
                 width: '100%',
                 backgroundColor: '#0A0A0F',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid rgba(0,0,0,0.08)',
                 borderRadius: '6px',
                 padding: '10px 12px',
                 color: 'white',
@@ -1222,8 +1186,8 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
                 placeholder="Ej: desarrolladores"
                 style={{
                   width: '100%',
-                  backgroundColor: '#0A0A0F',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  backgroundColor: '#F9FAFB',
+                  border: '1px solid rgba(0,0,0,0.08)',
                   borderRadius: '6px',
                   padding: '10px 12px',
                   color: 'white',
@@ -1244,8 +1208,8 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
                 placeholder="Ej: argentina"
                 style={{
                   width: '100%',
-                  backgroundColor: '#0A0A0F',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  backgroundColor: '#F9FAFB',
+                  border: '1px solid rgba(0,0,0,0.08)',
                   borderRadius: '6px',
                   padding: '10px 12px',
                   color: 'white',
@@ -1268,7 +1232,7 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
               style={{
                 width: '100%',
                 backgroundColor: '#0A0A0F',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid rgba(0,0,0,0.08)',
                 borderRadius: '6px',
                 padding: '10px 12px',
                 color: 'white',
@@ -1296,7 +1260,7 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
               style={{
                 width: '100%',
                 backgroundColor: '#0A0A0F',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid rgba(0,0,0,0.08)',
                 borderRadius: '6px',
                 padding: '10px 12px',
                 color: 'white',
@@ -1316,8 +1280,8 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
                 flex: 1,
                 padding: '10px',
                 backgroundColor: 'transparent',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: '#999',
+                border: '1px solid rgba(0,0,0,0.10)',
+                color: '#6B7280',
                 borderRadius: '6px',
                 cursor: 'pointer',
                 fontSize: '13px',
@@ -1334,7 +1298,7 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
                 padding: '10px',
                 backgroundColor: '#00E5A0',
                 border: 'none',
-                color: '#0A0A0F',
+                color: '#003D2B',
                 borderRadius: '6px',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 fontSize: '13px',
@@ -1524,16 +1488,15 @@ export default function Ideas() {
   const mercados = [...new Set(ideas.map((i) => i.mercado).filter(Boolean))];
 
   return (
-    <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px' }}>
+    <div style={{ backgroundColor: '#F9FAFB', minHeight: '100%', padding: '24px' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexDirection: window.innerWidth < 768 ? 'column' : 'row', alignItems: window.innerWidth < 768 ? 'flex-start' : 'center', gap: window.innerWidth < 768 ? '12px' : '0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <IconLightbulb style={{ color: '#00E5A0' }} />
-              <h1 style={{ color: 'white', fontSize: window.innerWidth < 768 ? '24px' : '28px', fontWeight: '600', margin: 0 }}>
-                Ideas
-              </h1>
+              <p style={{ color: '#6B7280', fontSize: '14px', margin: 0 }}>
+                Gestiona todas tus ideas para futuras apps
+              </p>
             </div>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', width: window.innerWidth < 768 ? '100%' : 'auto' }}>
               <input
@@ -1557,7 +1520,7 @@ export default function Ideas() {
                   gap: '8px',
                   padding: '10px 20px',
                   backgroundColor: 'transparent',
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  border: '1px solid rgba(0,0,0,0.10)',
                   color: '#999',
                   borderRadius: '6px',
                   cursor: 'pointer',
@@ -1575,7 +1538,7 @@ export default function Ideas() {
                   gap: '8px',
                   padding: '10px 20px',
                   backgroundColor: 'transparent',
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  border: '1px solid rgba(0,0,0,0.10)',
                   color: '#999',
                   borderRadius: '6px',
                   cursor: 'pointer',
@@ -1594,7 +1557,7 @@ export default function Ideas() {
                   padding: '10px 20px',
                   backgroundColor: '#00E5A0',
                   border: 'none',
-                  color: '#0A0A0F',
+                  color: '#003D2B',
                   borderRadius: '6px',
                   cursor: 'pointer',
                   fontSize: '13px',
@@ -1605,9 +1568,6 @@ export default function Ideas() {
               </button>
             </div>
           </div>
-          <p style={{ color: '#999', fontSize: '13px', margin: 0 }}>
-            Gestiona todas tus ideas para futuras apps
-          </p>
         </div>
 
         {/* Búsqueda */}
@@ -1620,10 +1580,10 @@ export default function Ideas() {
             style={{
               width: '100%',
               padding: '10px 12px',
-              backgroundColor: '#13131A',
-              border: '1px solid rgba(255,255,255,0.08)',
+              backgroundColor: '#FFFFFF',
+              border: '1px solid rgba(0,0,0,0.08)',
               borderRadius: '6px',
-              color: 'white',
+              color: '#111827',
               fontSize: '13px',
               boxSizing: 'border-box',
             }}
@@ -1641,11 +1601,11 @@ export default function Ideas() {
               onChange={(e) => setFilterEstado(e.target.value)}
               style={{
                 width: '100%',
-                backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
+                backgroundColor: '#FFFFFF',
+                border: '1px solid rgba(0,0,0,0.08)',
                 borderRadius: '6px',
                 padding: '10px 12px',
-                color: 'white',
+                color: '#111827',
                 fontSize: '13px',
               }}
             >
@@ -1667,8 +1627,8 @@ export default function Ideas() {
                 onChange={(e) => setFilterCategoria(e.target.value)}
                 style={{
                   width: '100%',
-                  backgroundColor: '#13131A',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid rgba(0,0,0,0.08)',
                   borderRadius: '6px',
                   padding: '10px 12px',
                   color: 'white',
@@ -1695,8 +1655,8 @@ export default function Ideas() {
                 onChange={(e) => setFilterMercado(e.target.value)}
                 style={{
                   width: '100%',
-                  backgroundColor: '#13131A',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid rgba(0,0,0,0.08)',
                   borderRadius: '6px',
                   padding: '10px 12px',
                   color: 'white',
@@ -1722,8 +1682,8 @@ export default function Ideas() {
         ) : filteredIdeas.length === 0 ? (
           <div
             style={{
-              backgroundColor: '#13131A',
-              border: '1px dashed rgba(255,255,255,0.12)',
+              backgroundColor: '#FFFFFF',
+              border: '1px dashed rgba(0,0,0,0.12)',
               borderRadius: '10px',
               padding: '40px 20px',
               textAlign: 'center',
@@ -1737,7 +1697,7 @@ export default function Ideas() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
               gap: '16px',
             }}
           >
@@ -1750,7 +1710,7 @@ export default function Ideas() {
                     top: '12px',
                     left: '12px',
                     backgroundColor: '#00E5A0',
-                    color: '#0A0A0F',
+                    color: '#003D2B',
                     width: '40px',
                     height: '40px',
                     borderRadius: '50%',
@@ -1770,32 +1730,34 @@ export default function Ideas() {
                   style={{
                     width: '100%',
                     background: 'none',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(0,0,0,0.08)',
                     borderRadius: '8px',
                     padding: '16px',
                     paddingTop: '56px',
-                    backgroundColor: '#13131A',
+                    backgroundColor: '#FFFFFF',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.2s',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#1C1C26';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
+                    e.currentTarget.style.backgroundColor = '#FFFFFF';
+                    e.currentTarget.style.borderColor = 'rgba(139,92,246,0.3)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(139,92,246,0.08)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#13131A';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                    e.currentTarget.style.backgroundColor = '#FFFFFF';
+                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)';
+                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
                   }}
                 >
-                <h3 style={{ color: 'white', margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
+                <h3 style={{ color: '#111827', margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
                   {idea.titulo}
                 </h3>
 
                 {idea.descripcion && (
                   <p
                     style={{
-                      color: 'rgba(255,255,255,0.6)',
+                      color: '#6B7280',
                       margin: '0 0 12px 0',
                       fontSize: '12px',
                       display: '-webkit-box',
@@ -1809,29 +1771,13 @@ export default function Ideas() {
                 )}
 
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                  <span
-                    style={{
-                      backgroundColor: 'rgba(0,229,160,0.12)',
-                      color: getStatusColor(idea.estado),
-                      fontSize: '10px',
-                      fontWeight: '600',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                    }}
-                  >
-                    {idea.estado || 'idea'}
-                  </span>
+                  {(() => { const s = getStatusBg(idea.estado || 'idea'); return (
+                    <span style={{ backgroundColor: s.bg, color: s.color, fontSize: '10px', fontWeight: '600', padding: '3px 8px', borderRadius: '20px' }}>
+                      {idea.estado || 'idea'}
+                    </span>
+                  ); })()}
                   {idea.categoria && (
-                    <span
-                      style={{
-                        backgroundColor: 'rgba(124,106,255,0.12)',
-                        color: '#7C6AFF',
-                        fontSize: '10px',
-                        fontWeight: '600',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                      }}
-                    >
+                    <span style={{ backgroundColor: '#F5F3FF', color: '#7C3AED', fontSize: '10px', fontWeight: '600', padding: '3px 8px', borderRadius: '20px' }}>
                       {idea.categoria}
                     </span>
                   )}
@@ -1855,9 +1801,9 @@ export default function Ideas() {
                     right: '12px',
                     width: '32px',
                     height: '32px',
-                    backgroundColor: 'rgba(100,150,255,0.1)',
-                    border: '1px solid rgba(100,150,255,0.3)',
-                    color: '#6496FF',
+                    backgroundColor: '#F5F3FF',
+                    border: '1px solid #EDE9FE',
+                    color: '#7C3AED',
                     borderRadius: '6px',
                     cursor: 'pointer',
                     display: 'flex',

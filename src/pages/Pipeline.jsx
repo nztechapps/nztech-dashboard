@@ -2,41 +2,37 @@ import { useState, useEffect } from 'react';
 import { usePipelineRuns, useRealtimeRun } from '../hooks/usePipelineRuns';
 import { supabase } from '../lib/supabase';
 import ToastNotification from '../components/ui/ToastNotification';
+import Badge from '../components/ui/Badge';
 
-const IconRocket = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M4.5 16.5c-1.5-1.5-2-3.5-2-5.5 0-4.5 3.5-8 8-8s8 3.5 8 8-3.5 8-8 8c-2 0-4-0.5-5.5-2"></path>
-    <polyline points="12 4 12 12 9 12"></polyline>
-  </svg>
-);
+const inputStyle = {
+  width: '100%',
+  backgroundColor: '#F9FAFB',
+  border: '1px solid rgba(0,0,0,0.12)',
+  borderRadius: '6px',
+  padding: '10px 12px',
+  color: '#111827',
+  fontSize: '13px',
+  boxSizing: 'border-box',
+};
+
+const card = {
+  backgroundColor: '#FFFFFF',
+  border: '1px solid rgba(0,0,0,0.06)',
+  borderRadius: '12px',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+  padding: '20px',
+};
 
 const IconPlay = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <polygon points="5 3 19 12 5 21 5 3"></polygon>
   </svg>
 );
-
 const IconSquare = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <rect x="3" y="3" width="18" height="18"></rect>
   </svg>
 );
-
-const IconCheckCircle = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-  </svg>
-);
-
-const IconAlertCircle = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10"></circle>
-    <line x1="12" y1="8" x2="12" y2="12"></line>
-    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-  </svg>
-);
-
 const IconCopy = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
@@ -44,29 +40,12 @@ const IconCopy = () => (
   </svg>
 );
 
-const IconCheck = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <polyline points="20 6 9 17 4 12"></polyline>
-  </svg>
-);
-
-const IconAssembly = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="1"></circle>
-    <circle cx="19" cy="12" r="1"></circle>
-    <circle cx="5" cy="12" r="1"></circle>
-    <line x1="6" y1="12" x2="18" y2="12"></line>
-  </svg>
-);
+const sectionTitle = { fontSize: '13px', fontWeight: '600', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', marginTop: 0 };
 
 export default function Pipeline() {
   const { runs, loading, createRun, cancelRun } = usePipelineRuns();
   const [formData, setFormData] = useState({
-    nombre: '',
-    descripcion: '',
-    publico: '',
-    mercado: 'argentina',
-    categoria: 'utilidad-global',
+    nombre: '', descripcion: '', publico: '', mercado: 'argentina', categoria: 'utilidad-global',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
@@ -76,23 +55,17 @@ export default function Pipeline() {
   const realtimeRun = useRealtimeRun(activeRun?.id || null);
   const displayRun = realtimeRun || activeRun;
 
-  // Timer para run activo
   useEffect(() => {
     if (!displayRun) return;
     const interval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - new Date(displayRun.created_at).getTime()) / 1000);
-      setTimer(elapsed);
+      setTimer(Math.floor((Date.now() - new Date(displayRun.created_at).getTime()) / 1000));
     }, 1000);
     return () => clearInterval(interval);
   }, [displayRun]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.nombre.trim()) {
-      setToast({ message: 'El nombre es requerido', type: 'error' });
-      return;
-    }
-
+    if (!formData.nombre.trim()) { setToast({ message: 'El nombre es requerido', type: 'error' }); return; }
     try {
       setIsSubmitting(true);
       await createRun(formData);
@@ -107,12 +80,8 @@ export default function Pipeline() {
 
   const handleCancel = async () => {
     if (!displayRun) return;
-    try {
-      await cancelRun(displayRun.id);
-      setToast({ message: 'Pipeline cancelado', type: 'success' });
-    } catch (err) {
-      setToast({ message: err.message, type: 'error' });
-    }
+    try { await cancelRun(displayRun.id); setToast({ message: 'Pipeline cancelado', type: 'success' }); }
+    catch (err) { setToast({ message: err.message, type: 'error' }); }
   };
 
   const formatTime = (seconds) => {
@@ -130,20 +99,8 @@ export default function Pipeline() {
     try {
       const run = runs.find(r => r.id === runId);
       if (!run) return;
-
-      const currentChecklist = run.checklist_firebase_admob || {};
-      const updatedChecklist = { ...currentChecklist, [key]: value };
-
-      const { error } = await supabase
-        .from('pipeline_runs')
-        .update({ checklist_firebase_admob: updatedChecklist })
-        .eq('id', runId);
-
-      if (error) throw error;
-
-      // Actualizar el run local
-      const updatedRun = { ...run, checklist_firebase_admob: updatedChecklist };
-      // Aquí React re-renderizará porque los runs cambian
+      const updatedChecklist = { ...(run.checklist_firebase_admob || {}), [key]: value };
+      await supabase.from('pipeline_runs').update({ checklist_firebase_admob: updatedChecklist }).eq('id', runId);
     } catch (err) {
       setToast({ message: 'Error al actualizar checklist: ' + err.message, type: 'error' });
     }
@@ -154,177 +111,37 @@ export default function Pipeline() {
     setToast({ message: 'Copiado al portapapeles', type: 'success' });
   };
 
-  const getStatusColor = (estado) => {
-    switch (estado) {
-      case 'running':
-        return '#6496FF';
-      case 'ensamblando':
-        return '#FFB400';
-      case 'completado':
-        return '#00E5A0';
-      case 'error':
-        return '#FF4D4F';
-      default:
-        return '#999';
-    }
-  };
-
-  const getStatusIcon = (estado) => {
-    switch (estado) {
-      case 'running':
-        return <IconPlay />;
-      case 'ensamblando':
-        return <IconAssembly />;
-      case 'completado':
-        return <IconCheckCircle />;
-      case 'error':
-        return <IconAlertCircle />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusDescription = (estado) => {
-    switch (estado) {
-      case 'running':
-        return '🔵 Generando archivos...';
-      case 'ensamblando':
-        return '🟡 Ensamblando repo Android...';
-      case 'completado':
-        return '🟢 Completado';
-      case 'error':
-        return '🔴 Error';
-      default:
-        return estado;
-    }
-  };
-
   return (
-    <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px' }}>
+    <div style={{ backgroundColor: '#F9FAFB', minHeight: '100%', padding: '24px' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ marginBottom: '32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <IconRocket style={{ color: '#00E5A0' }} />
-            <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '600', margin: 0 }}>
-              Pipeline
-            </h1>
-          </div>
-          <p style={{ color: '#999', fontSize: '13px', margin: 0 }}>
-            Ejecuta la generación automática de nuevas apps
-          </p>
-        </div>
 
         {/* Form Nueva App */}
         <div style={{ marginBottom: '32px' }}>
-          <h2 style={{ color: 'white', fontSize: '16px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>
-            Nueva app
-          </h2>
+          <h2 style={sectionTitle}>Nueva app</h2>
           <form
             onSubmit={handleSubmit}
-            style={{
-              backgroundColor: '#13131A',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '10px',
-              padding: '20px',
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '16px',
-            }}
+            style={{ ...card, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}
           >
             <div style={{ gridColumn: '1 / -1' }}>
-              <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
-                Nombre *
-              </label>
-              <input
-                type="text"
-                value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                placeholder="Nombre de la app"
-                disabled={isSubmitting || !!displayRun}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#0A0A0F',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '6px',
-                  padding: '10px 12px',
-                  color: 'white',
-                  fontSize: '13px',
-                  boxSizing: 'border-box',
-                  opacity: isSubmitting || displayRun ? 0.5 : 1,
-                }}
-              />
+              <label style={{ display: 'block', color: '#6B7280', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>Nombre *</label>
+              <input type="text" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                placeholder="Nombre de la app" disabled={isSubmitting || !!displayRun} style={{ ...inputStyle, opacity: isSubmitting || displayRun ? 0.5 : 1 }} />
             </div>
-
             <div style={{ gridColumn: '1 / -1' }}>
-              <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
-                Descripción
-              </label>
-              <textarea
-                value={formData.descripcion}
-                onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                placeholder="Describe brevemente qué hace la app"
-                disabled={isSubmitting || !!displayRun}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#0A0A0F',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '6px',
-                  padding: '10px 12px',
-                  color: 'white',
-                  fontSize: '13px',
-                  boxSizing: 'border-box',
-                  minHeight: '80px',
-                  fontFamily: 'DM Mono, monospace',
-                  opacity: isSubmitting || displayRun ? 0.5 : 1,
-                }}
-              />
+              <label style={{ display: 'block', color: '#6B7280', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>Descripción</label>
+              <textarea value={formData.descripcion} onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                placeholder="Describe brevemente qué hace la app" disabled={isSubmitting || !!displayRun}
+                style={{ ...inputStyle, minHeight: '80px', fontFamily: 'DM Mono, monospace', resize: 'vertical', opacity: isSubmitting || displayRun ? 0.5 : 1 }} />
             </div>
-
             <div>
-              <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
-                Público
-              </label>
-              <input
-                type="text"
-                value={formData.publico}
-                onChange={(e) => setFormData({ ...formData, publico: e.target.value })}
-                placeholder="Ej: diseñadores"
-                disabled={isSubmitting || !!displayRun}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#0A0A0F',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '6px',
-                  padding: '10px 12px',
-                  color: 'white',
-                  fontSize: '13px',
-                  boxSizing: 'border-box',
-                  opacity: isSubmitting || displayRun ? 0.5 : 1,
-                }}
-              />
+              <label style={{ display: 'block', color: '#6B7280', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>Público</label>
+              <input type="text" value={formData.publico} onChange={(e) => setFormData({ ...formData, publico: e.target.value })}
+                placeholder="Ej: diseñadores" disabled={isSubmitting || !!displayRun} style={{ ...inputStyle, opacity: isSubmitting || displayRun ? 0.5 : 1 }} />
             </div>
-
             <div>
-              <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
-                Mercado
-              </label>
-              <select
-                value={formData.mercado}
-                onChange={(e) => setFormData({ ...formData, mercado: e.target.value })}
-                disabled={isSubmitting || !!displayRun}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#0A0A0F',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '6px',
-                  padding: '10px 12px',
-                  color: 'white',
-                  fontSize: '13px',
-                  boxSizing: 'border-box',
-                  opacity: isSubmitting || displayRun ? 0.5 : 1,
-                }}
-              >
+              <label style={{ display: 'block', color: '#6B7280', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>Mercado</label>
+              <select value={formData.mercado} onChange={(e) => setFormData({ ...formData, mercado: e.target.value })}
+                disabled={isSubmitting || !!displayRun} style={{ ...inputStyle, opacity: isSubmitting || displayRun ? 0.5 : 1 }}>
                 <option value="argentina">Argentina</option>
                 <option value="mexico">México</option>
                 <option value="chile">Chile</option>
@@ -333,27 +150,10 @@ export default function Pipeline() {
                 <option value="global">Global</option>
               </select>
             </div>
-
             <div>
-              <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
-                Categoría
-              </label>
-              <select
-                value={formData.categoria}
-                onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                disabled={isSubmitting || !!displayRun}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#0A0A0F',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '6px',
-                  padding: '10px 12px',
-                  color: 'white',
-                  fontSize: '13px',
-                  boxSizing: 'border-box',
-                  opacity: isSubmitting || displayRun ? 0.5 : 1,
-                }}
-              >
+              <label style={{ display: 'block', color: '#6B7280', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>Categoría</label>
+              <select value={formData.categoria} onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
+                disabled={isSubmitting || !!displayRun} style={{ ...inputStyle, opacity: isSubmitting || displayRun ? 0.5 : 1 }}>
                 <option value="datos-gubernamentales-ar">Datos Gubernamentales AR</option>
                 <option value="finanzas-ar">Finanzas AR</option>
                 <option value="utilidad-global">Utilidad Global</option>
@@ -362,25 +162,15 @@ export default function Pipeline() {
                 <option value="info-ar">Info AR</option>
               </select>
             </div>
-
-            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button
-                type="submit"
-                disabled={isSubmitting || !!displayRun}
+            <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
+              <button type="submit" disabled={isSubmitting || !!displayRun}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 20px',
-                  backgroundColor: isSubmitting || displayRun ? '#999' : '#00E5A0',
-                  border: 'none',
-                  color: '#0A0A0F',
-                  borderRadius: '6px',
-                  cursor: isSubmitting || displayRun ? 'not-allowed' : 'pointer',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                }}
-              >
+                  display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px',
+                  backgroundColor: isSubmitting || displayRun ? '#E5E7EB' : '#00E5A0',
+                  color: isSubmitting || displayRun ? '#9CA3AF' : '#003D2B',
+                  border: 'none', borderRadius: '8px', cursor: isSubmitting || displayRun ? 'not-allowed' : 'pointer',
+                  fontSize: '14px', fontWeight: '600',
+                }}>
                 <IconPlay /> {isSubmitting ? 'Iniciando...' : 'Generar app'}
               </button>
             </div>
@@ -390,90 +180,37 @@ export default function Pipeline() {
         {/* Run Activo */}
         {displayRun && (
           <div style={{ marginBottom: '32px' }}>
-            <h2 style={{ color: 'white', fontSize: '16px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>
-              Pipeline activo
-            </h2>
-            <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '20px' }}>
+            <h2 style={sectionTitle}>Pipeline activo</h2>
+            <div style={{ ...card, borderLeft: '3px solid #8B5CF6' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                 <div>
-                  <h3 style={{ color: 'white', margin: '0 0 6px 0', fontSize: '15px', fontWeight: '600' }}>
-                    {displayRun.nombre}
-                  </h3>
-                  <p style={{ color: '#999', margin: 0, fontSize: '12px' }}>
-                    Paso: {displayRun.paso_actual || 'iniciando...'}
-                  </p>
+                  <h3 style={{ color: '#111827', margin: '0 0 6px 0', fontSize: '15px', fontWeight: '600' }}>{displayRun.nombre}</h3>
+                  <p style={{ color: '#6B7280', margin: 0, fontSize: '12px' }}>Paso: {displayRun.paso_actual || 'iniciando...'}</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ color: '#00E5A0', fontSize: '18px', fontWeight: '600', fontFamily: 'DM Mono, monospace' }}>
-                    {formatTime(timer)}
-                  </div>
-                  <div style={{ color: '#999', fontSize: '11px', marginTop: '4px' }}>
-                    Tiempo transcurrido
-                  </div>
+                  <div style={{ color: '#00E5A0', fontSize: '18px', fontWeight: '600', fontFamily: 'DM Mono, monospace' }}>{formatTime(timer)}</div>
+                  <div style={{ color: '#9CA3AF', fontSize: '11px', marginTop: '4px' }}>Tiempo transcurrido</div>
                 </div>
               </div>
-
-              <div style={{ marginBottom: '16px' }}>
-                <div
-                  style={{
-                    height: '4px',
-                    backgroundColor: '#1C1C26',
-                    borderRadius: '2px',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div
-                    style={{
-                      height: '100%',
-                      backgroundColor: '#00E5A0',
-                      animation: 'pulse 1.5s infinite',
-                      width: '30%',
-                    }}
-                  />
-                </div>
+              <div style={{ marginBottom: '16px', height: '4px', backgroundColor: '#E5E7EB', borderRadius: '2px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', backgroundColor: '#8B5CF6', animation: 'pulse 1.5s infinite', width: '30%' }} />
               </div>
-
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button
-                  onClick={handleCancel}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: 'transparent',
-                    border: '1px solid #FF4D4F',
-                    color: '#FF4D4F',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                  }}
-                >
-                  <IconSquare style={{ marginRight: '6px' }} /> Cancelar
-                </button>
-              </div>
-
-              <style>{`
-                @keyframes pulse {
-                  0%, 100% { opacity: 1; }
-                  50% { opacity: 0.6; }
-                }
-              `}</style>
+              <button onClick={handleCancel}
+                style={{ padding: '6px 14px', backgroundColor: '#FEF2F2', border: '1px solid #FCA5A5', color: '#DC2626', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <IconSquare /> Cancelar
+              </button>
+              <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }`}</style>
             </div>
           </div>
         )}
 
         {/* Historial */}
         <div>
-          <h2 style={{ color: 'white', fontSize: '16px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>
-            Historial
-          </h2>
+          <h2 style={sectionTitle}>Historial</h2>
           {loading ? (
-            <div style={{ color: '#999', textAlign: 'center', padding: '40px 0' }}>
-              Cargando...
-            </div>
+            <div style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>Cargando...</div>
           ) : runs.length === 0 ? (
-            <div style={{ color: '#666', textAlign: 'center', padding: '40px 0' }}>
-              No hay runs aún
-            </div>
+            <div style={{ color: '#9CA3AF', textAlign: 'center', padding: '40px 0' }}>No hay runs aún</div>
           ) : (
             <div style={{ display: 'grid', gap: '12px' }}>
               {runs.map((run) => {
@@ -493,120 +230,32 @@ export default function Pipeline() {
 
                 return (
                   <div key={run.id}>
-                    <div
-                      style={{
-                        backgroundColor: '#13131A',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
+                    <div style={{ ...card, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                          <h3 style={{ color: 'white', margin: 0, fontSize: '14px', fontWeight: '600' }}>
-                            {run.nombre}
-                          </h3>
-                          <span
-                            style={{
-                              backgroundColor: getStatusColor(run.estado),
-                              color: run.estado === 'completado' ? '#0A0A0F' : 'white',
-                              fontSize: '10px',
-                              fontWeight: '600',
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                            }}
-                          >
-                            {getStatusIcon(run.estado)}
-                            {run.estado === 'ensamblando' ? 'ensamblando' : run.estado}
-                          </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                          <h3 style={{ color: '#111827', margin: 0, fontSize: '14px', fontWeight: '600' }}>{run.nombre}</h3>
+                          <Badge status={run.estado} />
                         </div>
-
-                        <div style={{ color: '#00E5A0', fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>
-                          {getStatusDescription(run.estado)}
-                        </div>
-
                         {run.paso_actual && (
-                          <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px', padding: '8px', backgroundColor: 'rgba(0, 229, 160, 0.05)', borderRadius: '4px', borderLeft: '2px solid #00E5A0' }}>
-                            <span style={{ color: '#666', fontSize: '10px', textTransform: 'uppercase', fontWeight: '600' }}>Paso actual:</span>
-                            <div style={{ color: '#DDD', marginTop: '4px' }}>
-                              {run.paso_actual}
-                            </div>
+                          <div style={{ color: '#6B7280', fontSize: '12px', marginBottom: '8px', padding: '8px', backgroundColor: '#F5F3FF', borderRadius: '6px', borderLeft: '2px solid #8B5CF6' }}>
+                            <span style={{ color: '#9CA3AF', fontSize: '10px', textTransform: 'uppercase', fontWeight: '600' }}>Paso actual:</span>
+                            <div style={{ color: '#374151', marginTop: '4px' }}>{run.paso_actual}</div>
                           </div>
                         )}
-
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '6px' }}>
-                          <span style={{ color: '#999', fontSize: '11px' }}>
-                            {run.categoria} • {run.created_at && !isNaN(new Date(run.created_at)) ? new Date(run.created_at).toLocaleDateString('es-ES') : '—'}
-                          </span>
+                        <div style={{ color: '#9CA3AF', fontSize: '11px', marginBottom: '6px' }}>
+                          {run.categoria} • {run.created_at && !isNaN(new Date(run.created_at)) ? new Date(run.created_at).toLocaleDateString('es-ES') : '—'}
                         </div>
-
                         {run.estado === 'completado' && (
                           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                             {run.repo_url && (
-                              <a
-                                href={run.repo_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  padding: '6px 12px',
-                                  backgroundColor: 'rgba(0, 229, 160, 0.1)',
-                                  border: '1px solid rgba(0, 229, 160, 0.3)',
-                                  color: '#00E5A0',
-                                  fontSize: '11px',
-                                  fontWeight: '600',
-                                  borderRadius: '4px',
-                                  textDecoration: 'none',
-                                  transition: 'all 200ms ease',
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.2)';
-                                  e.currentTarget.style.borderColor = 'rgba(0, 229, 160, 0.6)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.1)';
-                                  e.currentTarget.style.borderColor = 'rgba(0, 229, 160, 0.3)';
-                                }}
-                              >
+                              <a href={run.repo_url} target="_blank" rel="noopener noreferrer"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', backgroundColor: '#ECFDF5', border: '1px solid #6EE7B7', color: '#065F46', fontSize: '11px', fontWeight: '600', borderRadius: '6px', textDecoration: 'none' }}>
                                 📦 Abrir repo
                               </a>
                             )}
                             {run.github_url && (
-                              <a
-                                href={run.github_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  padding: '6px 12px',
-                                  backgroundColor: 'rgba(100, 150, 255, 0.1)',
-                                  border: '1px solid rgba(100, 150, 255, 0.3)',
-                                  color: '#6496FF',
-                                  fontSize: '11px',
-                                  fontWeight: '600',
-                                  borderRadius: '4px',
-                                  textDecoration: 'none',
-                                  transition: 'all 200ms ease',
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'rgba(100, 150, 255, 0.2)';
-                                  e.currentTarget.style.borderColor = 'rgba(100, 150, 255, 0.6)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'rgba(100, 150, 255, 0.1)';
-                                  e.currentTarget.style.borderColor = 'rgba(100, 150, 255, 0.3)';
-                                }}
-                              >
+                              <a href={run.github_url} target="_blank" rel="noopener noreferrer"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', backgroundColor: '#EFF6FF', border: '1px solid #93C5FD', color: '#1E40AF', fontSize: '11px', fontWeight: '600', borderRadius: '6px', textDecoration: 'none' }}>
                                 📁 Ver output
                               </a>
                             )}
@@ -614,61 +263,23 @@ export default function Pipeline() {
                         )}
                       </div>
                       {run.pipeline_output_path && (
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(run.pipeline_output_path);
-                          }}
-                          title="Copiar prompt"
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#00E5A0',
-                            cursor: 'pointer',
-                            padding: '4px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            marginLeft: '16px',
-                          }}
-                        >
+                        <button onClick={() => navigator.clipboard.writeText(run.pipeline_output_path)}
+                          style={{ background: 'none', border: 'none', color: '#00E5A0', cursor: 'pointer', padding: '4px', display: 'flex', marginLeft: '16px' }}>
                           <IconCopy />
                         </button>
                       )}
                     </div>
 
                     {run.estado === 'completado' && (
-                      <div style={{ marginTop: '12px', backgroundColor: 'rgba(0, 229, 160, 0.05)', border: '1px solid rgba(0, 229, 160, 0.1)', borderRadius: '8px', padding: '16px' }}>
+                      <div style={{ marginTop: '8px', backgroundColor: '#FFFFFF', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ marginBottom: '12px' }}>
-                          <h4 style={{ color: 'white', margin: '0 0 8px 0', fontSize: '13px', fontWeight: '600' }}>
-                            Package Name
-                          </h4>
+                          <h4 style={{ color: '#111827', margin: '0 0 8px 0', fontSize: '13px', fontWeight: '600' }}>Package Name</h4>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <code
-                              style={{
-                                backgroundColor: '#0A0A0F',
-                                border: '1px solid rgba(255,255,255,0.08)',
-                                borderRadius: '4px',
-                                padding: '8px 12px',
-                                color: '#00E5A0',
-                                fontSize: '12px',
-                                fontFamily: 'DM Mono, monospace',
-                                flex: 1,
-                                minWidth: 0,
-                              }}
-                            >
+                            <code style={{ backgroundColor: '#F5F3FF', border: '1px solid #EDE9FE', borderRadius: '6px', padding: '8px 12px', color: '#7C3AED', fontSize: '12px', fontFamily: 'DM Mono, monospace', flex: 1, minWidth: 0 }}>
                               {packageName}
                             </code>
-                            <button
-                              onClick={() => copyToClipboard(packageName)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                color: '#00E5A0',
-                                cursor: 'pointer',
-                                padding: '4px',
-                                display: 'flex',
-                                alignItems: 'center',
-                              }}
-                            >
+                            <button onClick={() => copyToClipboard(packageName)}
+                              style={{ background: 'none', border: 'none', color: '#7C3AED', cursor: 'pointer', padding: '4px', display: 'flex' }}>
                               <IconCopy />
                             </button>
                           </div>
@@ -676,68 +287,27 @@ export default function Pipeline() {
 
                         <div style={{ marginBottom: '12px' }}>
                           <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h4 style={{ color: 'white', margin: 0, fontSize: '13px', fontWeight: '600' }}>
-                              Setup Checklist
-                            </h4>
-                            <span style={{ color: '#999', fontSize: '11px' }}>
-                              {completedCount}/{checklistItems.length}
-                            </span>
+                            <h4 style={{ color: '#111827', margin: 0, fontSize: '13px', fontWeight: '600' }}>Setup Checklist</h4>
+                            <span style={{ color: '#6B7280', fontSize: '11px' }}>{completedCount}/{checklistItems.length}</span>
                           </div>
-                          <div
-                            style={{
-                              height: '4px',
-                              backgroundColor: '#1C1C26',
-                              borderRadius: '2px',
-                              overflow: 'hidden',
-                              marginBottom: '12px',
-                            }}
-                          >
-                            <div
-                              style={{
-                                height: '100%',
-                                backgroundColor: '#00E5A0',
-                                width: `${(completedCount / checklistItems.length) * 100}%`,
-                                transition: 'width 0.3s ease',
-                              }}
-                            />
+                          <div style={{ height: '4px', backgroundColor: '#E5E7EB', borderRadius: '2px', overflow: 'hidden', marginBottom: '12px' }}>
+                            <div style={{ height: '100%', backgroundColor: '#00E5A0', width: `${(completedCount / checklistItems.length) * 100}%`, transition: 'width 0.3s ease' }} />
                           </div>
                         </div>
 
                         {['Firebase', 'AdMob'].map((category) => (
                           <div key={category} style={{ marginBottom: '12px' }}>
-                            <h5 style={{ color: '#999', margin: '0 0 8px 0', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                              {category}
-                            </h5>
+                            <h5 style={{ color: '#9CA3AF', margin: '0 0 8px 0', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{category}</h5>
                             <div style={{ display: 'grid', gap: '6px' }}>
                               {checklistItems.filter(item => item.category === category).map((item) => (
-                                <label
-                                  key={item.key}
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    gap: '10px',
-                                    cursor: 'pointer',
-                                    padding: '8px',
-                                    borderRadius: '4px',
-                                    transition: 'background-color 0.2s',
-                                  }}
-                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.1)'}
-                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={checklist[item.key] || false}
+                                <label key={item.key}
+                                  style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', padding: '6px', borderRadius: '6px', transition: 'background-color 0.2s' }}
+                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F5F3FF'}
+                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                                  <input type="checkbox" checked={checklist[item.key] || false}
                                     onChange={(e) => handleChecklistUpdate(run.id, item.key, e.target.checked)}
-                                    style={{
-                                      width: '16px',
-                                      height: '16px',
-                                      margin: '2px 0 0 0',
-                                      cursor: 'pointer',
-                                      accentColor: '#00E5A0',
-                                      flexShrink: 0,
-                                    }}
-                                  />
-                                  <span style={{ color: checklist[item.key] ? '#999' : '#DDD', fontSize: '12px', textDecoration: checklist[item.key] ? 'line-through' : 'none' }}>
+                                    style={{ width: '16px', height: '16px', margin: '2px 0 0 0', cursor: 'pointer', accentColor: '#00E5A0', flexShrink: 0 }} />
+                                  <span style={{ color: checklist[item.key] ? '#9CA3AF' : '#374151', fontSize: '12px', textDecoration: checklist[item.key] ? 'line-through' : 'none' }}>
                                     {item.label}
                                   </span>
                                 </label>
@@ -755,9 +325,7 @@ export default function Pipeline() {
         </div>
       </div>
 
-      {toast && (
-        <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />
-      )}
+      {toast && <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 }

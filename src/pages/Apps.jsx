@@ -8,6 +8,14 @@ import ToastNotification from '../components/ui/ToastNotification';
 import { supabase } from '../lib/supabase';
 import React, { useState, useEffect } from 'react';
 
+const card = {
+  background: '#FFFFFF',
+  borderRadius: '12px',
+  border: '1px solid rgba(0,0,0,0.06)',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+  padding: '16px',
+  marginBottom: '8px',
+};
 
 const IconPlus = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -41,18 +49,15 @@ export default function Apps() {
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, appId: null, appName: '' });
   const [toast, setToast] = useState(null);
 
-  // Fetch monthly revenue for each app
   useEffect(() => {
     const fetchMetrics = async () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
       try {
         const { data } = await supabase
           .from('metrics')
           .select('app_id, ingresos')
           .gte('fecha', thirtyDaysAgo.toISOString());
-
         const metrics = {};
         apps.forEach((app) => {
           const appData = data?.filter((m) => m.app_id === app.id) || [];
@@ -64,27 +69,12 @@ export default function Apps() {
         console.error('Error fetching metrics:', err);
       }
     };
-
-    if (apps.length > 0) {
-      fetchMetrics();
-    }
+    if (apps.length > 0) fetchMetrics();
   }, [apps]);
 
-  const handleNewApp = () => {
-    setSelectedApp(null);
-    setIsFormOpen(true);
-    setOpenMenuId(null);
-  };
-
-  const handleEditApp = (app) => {
-    setSelectedApp(app);
-    setIsFormOpen(true);
-    setOpenMenuId(null);
-  };
-
-  const handleDeleteApp = (app) => {
-    setConfirmModal({ isOpen: true, appId: app.id, appName: app.titulo || app.nombre });
-  };
+  const handleNewApp = () => { setSelectedApp(null); setIsFormOpen(true); setOpenMenuId(null); };
+  const handleEditApp = (app) => { setSelectedApp(app); setIsFormOpen(true); setOpenMenuId(null); };
+  const handleDeleteApp = (app) => { setConfirmModal({ isOpen: true, appId: app.id, appName: app.titulo || app.nombre }); };
 
   const handleConfirmDelete = async () => {
     try {
@@ -108,11 +98,7 @@ export default function Apps() {
         await updateIdea(selectedApp.id, formData);
         setToast({ message: 'App actualizada correctamente', type: 'success' });
       } else {
-        await createIdea({
-          ...formData,
-          publicada: true,
-          created_at: new Date().toISOString(),
-        });
+        await createIdea({ ...formData, publicada: true, created_at: new Date().toISOString() });
         setToast({ message: 'App creada correctamente', type: 'success' });
       }
     } catch (err) {
@@ -122,182 +108,110 @@ export default function Apps() {
     }
   };
 
-  const handleAppClick = (app) => {
-    navigate(`/apps/${app.id}`);
-  };
-
   return (
-    <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h1 style={{ color: 'white', margin: 0, fontSize: '24px', fontWeight: '600' }}>Apps</h1>
+    <div style={{ backgroundColor: '#F9FAFB', minHeight: '100%', padding: '24px' }}>
+      {/* Action row */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
         <button
           onClick={handleNewApp}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 16px',
-            backgroundColor: '#00E5A0',
-            border: 'none',
-            color: '#0A0A0F',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '600',
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '8px 16px', backgroundColor: '#00E5A0', border: 'none',
+            color: '#003D2B', borderRadius: '8px', cursor: 'pointer',
+            fontSize: '14px', fontWeight: '600',
           }}
         >
           <IconPlus /> Nueva app
         </button>
       </div>
 
-      {/* App List */}
       {loading ? (
-        <div style={{ color: '#999', textAlign: 'center', padding: '40px 0' }}>
-          Cargando...
-        </div>
+        <div style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>Cargando...</div>
       ) : apps.length === 0 ? (
-        <div
-          style={{
-            textAlign: 'center',
-            padding: '60px 24px',
-            backgroundColor: '#13131A',
-            borderRadius: '10px',
-            border: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          <div style={{ color: '#999', marginBottom: '16px' }}>No hay apps todavía</div>
+        <div style={{
+          textAlign: 'center', padding: '60px 24px',
+          backgroundColor: '#FFFFFF', borderRadius: '12px',
+          border: '1px solid rgba(0,0,0,0.06)',
+        }}>
+          <div style={{ color: '#6B7280', marginBottom: '16px' }}>No hay apps todavía</div>
           <button
             onClick={handleNewApp}
             style={{
-              padding: '10px 16px',
-              backgroundColor: '#00E5A0',
-              border: 'none',
-              color: '#0A0A0F',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
+              padding: '8px 16px', backgroundColor: '#00E5A0', border: 'none',
+              color: '#003D2B', borderRadius: '8px', cursor: 'pointer',
+              fontSize: '14px', fontWeight: '600',
             }}
           >
             Crear primera app
           </button>
         </div>
       ) : (
-        <div style={{ space: '8px' }}>
+        <div>
           {apps.map((app) => (
             <div
               key={app.id}
-              onClick={() => handleAppClick(app)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                padding: '16px',
-                backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '10px',
-                marginBottom: '8px',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s',
-              }}
+              onClick={() => navigate(`/apps/${app.id}`)}
+              style={{ ...card, display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', transition: 'all 0.15s ease' }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#1C1C26';
+                e.currentTarget.style.borderColor = 'rgba(139,92,246,0.3)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(139,92,246,0.08)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#13131A';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)';
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
+                e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              {/* Icon */}
               <AppIcon nombre={app.titulo || app.nombre || app.name} icono_url={app.icono_url} size={36} />
 
-              {/* Name & Package */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: 'white', fontWeight: '500', marginBottom: '4px' }}>
+                <div style={{ color: '#111827', fontWeight: '500', marginBottom: '4px' }}>
                   {app.titulo || app.nombre || app.name}
                 </div>
-                <div style={{ color: '#999', fontSize: '12px' }}>
-                  {app.package}
-                </div>
+                <div style={{ color: '#6B7280', fontSize: '12px' }}>{app.package}</div>
               </div>
 
-              {/* Status */}
               <StatusBadge status={app.status || 'development'} />
 
-              {/* Market */}
               {app.mercado && (
-                <span
-                  style={{
-                    backgroundColor: 'rgba(100, 150, 255, 0.2)',
-                    color: '#6496FF',
-                    fontSize: '11px',
-                    padding: '4px 8px',
-                    borderRadius: '20px',
-                  }}
-                >
+                <span style={{
+                  backgroundColor: '#EFF6FF', color: '#1E40AF',
+                  fontSize: '11px', padding: '3px 8px', borderRadius: '20px', fontWeight: '500',
+                }}>
                   {app.mercado}
                 </span>
               )}
 
-              {/* Ingresos */}
-              <div style={{ color: '#00E5A0', fontWeight: '500', minWidth: '80px', textAlign: 'right' }}>
+              <div style={{ color: '#059669', fontWeight: '600', minWidth: '80px', textAlign: 'right', fontFamily: 'DM Mono, monospace' }}>
                 ${appMetrics[app.id] || '0.00'}
               </div>
 
-              {/* Fecha */}
-              <div style={{ color: '#999', fontSize: '12px', minWidth: '100px', textAlign: 'right' }}>
+              <div style={{ color: '#9CA3AF', fontSize: '12px', minWidth: '100px', textAlign: 'right' }}>
                 {formatDate(app.created_at)}
               </div>
 
-              {/* Menu */}
-              <div
-                style={{ position: 'relative' }}
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => setOpenMenuId(openMenuId === app.id ? null : app.id)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#999',
-                    cursor: 'pointer',
-                    padding: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
+                  style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: '4px', display: 'flex' }}
                 >
                   <IconMoreVertical />
                 </button>
-
                 {openMenuId === app.id && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      right: 0,
-                      marginTop: '4px',
-                      backgroundColor: '#1C1C26',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      zIndex: 10,
-                      minWidth: '140px',
-                    }}
-                  >
+                  <div style={{
+                    position: 'absolute', top: '100%', right: 0, marginTop: '4px',
+                    backgroundColor: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)',
+                    borderRadius: '8px', overflow: 'hidden', zIndex: 10, minWidth: '140px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }}>
                     <button
                       onClick={() => handleEditApp(app)}
                       style={{
-                        display: 'block',
-                        width: '100%',
-                        padding: '10px 12px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        color: '#999',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        fontSize: '13px',
-                        borderBottom: '1px solid rgba(255,255,255,0.08)',
+                        display: 'block', width: '100%', padding: '10px 12px',
+                        backgroundColor: 'transparent', border: 'none',
+                        color: '#374151', textAlign: 'left', cursor: 'pointer',
+                        fontSize: '13px', borderBottom: '1px solid rgba(0,0,0,0.06)',
                       }}
                     >
                       Editar
@@ -305,15 +219,9 @@ export default function Apps() {
                     <button
                       onClick={() => handleDeleteApp(app)}
                       style={{
-                        display: 'block',
-                        width: '100%',
-                        padding: '10px 12px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        color: '#FF4D4F',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        fontSize: '13px',
+                        display: 'block', width: '100%', padding: '10px 12px',
+                        backgroundColor: 'transparent', border: 'none',
+                        color: '#DC2626', textAlign: 'left', cursor: 'pointer', fontSize: '13px',
                       }}
                     >
                       Eliminar
@@ -326,7 +234,6 @@ export default function Apps() {
         </div>
       )}
 
-      {/* Form */}
       <AppForm
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
@@ -334,8 +241,6 @@ export default function Apps() {
         initialData={selectedApp}
         isLoading={isLoading}
       />
-
-      {/* ConfirmModal para eliminar app */}
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         title="Eliminar app"
@@ -343,16 +248,10 @@ export default function Apps() {
         onConfirm={handleConfirmDelete}
         onCancel={() => setConfirmModal({ isOpen: false, appId: null, appName: '' })}
         confirmLabel="Eliminar"
-        confirmColor="#FF4D4F"
+        confirmColor="#DC2626"
       />
-
-      {/* Toast Notification */}
       {toast && (
-        <ToastNotification
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
+        <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}
     </div>
   );

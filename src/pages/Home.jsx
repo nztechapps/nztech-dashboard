@@ -181,7 +181,7 @@ export default function Home() {
           <div style={{ fontSize: '15px', color: '#6B7280', marginBottom: '20px' }}>
             {urgentTarea ? `Hoy toca: ${urgentTarea.titulo}` : 'Nada pendiente por hoy. ¡Gran día!'}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
             <div style={{ backgroundColor: '#F9FAFB', borderRadius: '8px', padding: '12px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                 <span style={{ color: activeRun ? '#4F46E5' : '#9CA3AF' }}><IconRocket /></span>
@@ -213,7 +213,7 @@ export default function Home() {
         </div>
 
         {/* ZONA 2 — KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
           <KpiCard label="Revenue AdMob" value={revenue} sub="último mes" />
           <KpiCard label="Apps publicadas" value={`${publishedApps.length}/50`} sub="en el portfolio" accent="#059669" />
           <KpiCard label="Ideas en desarrollo" value={ideasCount} sub="sin publicar" />
@@ -246,7 +246,7 @@ export default function Home() {
         </div>
 
         {/* ZONA 4 + 5 — Pipeline y Actividad Reciente */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
 
           {/* Pipeline */}
           <div style={card}>

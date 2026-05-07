@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useApps } from '../hooks/useApps';
+import { useIdeas } from '../hooks/useIdeas';
 import AppIcon from '../components/ui/AppIcon';
 import StatusBadge from '../components/ui/StatusBadge';
 import AppForm from '../components/apps/AppForm';
@@ -31,7 +31,8 @@ function formatDate(dateString) {
 
 export default function Apps() {
   const navigate = useNavigate();
-  const { apps, loading, createApp, updateApp, deleteApp } = useApps();
+  const { ideas, loading, createIdea, updateIdea, deleteIdea } = useIdeas();
+  const apps = ideas.filter((i) => i.publicada === true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedApp, setSelectedApp] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,13 +83,13 @@ export default function Apps() {
   };
 
   const handleDeleteApp = (app) => {
-    setConfirmModal({ isOpen: true, appId: app.id, appName: app.nombre });
+    setConfirmModal({ isOpen: true, appId: app.id, appName: app.titulo || app.nombre });
   };
 
   const handleConfirmDelete = async () => {
     try {
       setIsLoading(true);
-      await deleteApp(confirmModal.appId);
+      await deleteIdea(confirmModal.appId);
       setOpenMenuId(null);
       setToast({ message: 'App eliminada', type: 'success' });
       setConfirmModal({ isOpen: false, appId: null, appName: '' });
@@ -104,11 +105,12 @@ export default function Apps() {
     try {
       setIsLoading(true);
       if (selectedApp) {
-        await updateApp(selectedApp.id, formData);
+        await updateIdea(selectedApp.id, formData);
         setToast({ message: 'App actualizada correctamente', type: 'success' });
       } else {
-        await createApp({
+        await createIdea({
           ...formData,
+          publicada: true,
           created_at: new Date().toISOString(),
         });
         setToast({ message: 'App creada correctamente', type: 'success' });
@@ -207,12 +209,12 @@ export default function Apps() {
               }}
             >
               {/* Icon */}
-              <AppIcon nombre={app.nombre || app.name} icono_url={app.icono_url} size={36} />
+              <AppIcon nombre={app.titulo || app.nombre || app.name} icono_url={app.icono_url} size={36} />
 
               {/* Name & Package */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ color: 'white', fontWeight: '500', marginBottom: '4px' }}>
-                  {app.nombre || app.name}
+                  {app.titulo || app.nombre || app.name}
                 </div>
                 <div style={{ color: '#999', fontSize: '12px' }}>
                   {app.package}

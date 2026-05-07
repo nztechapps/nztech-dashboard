@@ -24,6 +24,9 @@ export function useIdeas() {
       if (filters.mercado) {
         query = query.eq('mercado', filters.mercado);
       }
+      if (filters.publicada !== undefined) {
+        query = query.eq('publicada', filters.publicada);
+      }
 
       const { data, error: err } = await query.order('created_at', { ascending: false });
 
@@ -77,5 +80,9 @@ export function useIdeas() {
     }
   };
 
-  return { ideas, loading, error, fetchIdeas, createIdea, updateIdea, deleteIdea };
+  const getPublicadas = () => fetchIdeas({ publicada: true });
+  const getEnDesarrollo = () => fetchIdeas({ publicada: false });
+  const publicarIdea = (id) => updateIdea(id, { publicada: true });
+
+  return { ideas, loading, error, fetchIdeas, createIdea, updateIdea, deleteIdea, getPublicadas, getEnDesarrollo, publicarIdea };
 }

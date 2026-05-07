@@ -9,7 +9,7 @@ import MetricsForm from '../components/metrics/MetricsForm';
 import MetricsTable from '../components/metrics/MetricsTable';
 import ToastNotification from '../components/ui/ToastNotification';
 import DatePicker from '../components/ui/DatePicker';
-import { useApps } from '../hooks/useApps';
+import { useIdeas } from '../hooks/useIdeas';
 import { useTareas } from '../hooks/useTareas';
 import { useMetrics } from '../hooks/useMetrics';
 import { useAsoTracker } from '../hooks/useAsoTracker';
@@ -105,9 +105,10 @@ function VersionForm({ onSubmit, onCancel }) {
 export default function AppDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { apps } = useApps();
+  const { ideas } = useIdeas();
+  const apps = ideas.filter((i) => i.publicada === true);
   const { tareas, bloques, addTarea, updateTarea, deleteTarea } = useTareas();
-  const appNombre = app?.nombre || app?.name || '';
+  const appNombre = app?.titulo || app?.nombre || app?.name || '';
   const appBloqueIds = bloques.filter(b => b.nombre === appNombre).map(b => b.id);
   const tasks = tareas.filter(t => appBloqueIds.includes(t.bloque_id) || t.titulo?.includes(appNombre));
   const { keywords, addKeyword, deleteKeyword } = useAsoTracker(id);
@@ -189,10 +190,10 @@ export default function AppDetail() {
         </button>
 
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '20px' }}>
-          <AppIcon nombre={app.nombre || app.name} icono_url={app.icono_url} size={48} />
+          <AppIcon nombre={app.titulo || app.nombre || app.name} icono_url={app.icono_url} size={48} />
           <div>
             <h1 style={{ color: 'white', margin: '0 0 6px 0', fontSize: '24px', fontWeight: '600' }}>
-              {app.nombre || app.name}
+              {app.titulo || app.nombre || app.name}
             </h1>
             <div style={{ color: '#999', fontSize: '13px', marginBottom: '10px' }}>
               {app.package}

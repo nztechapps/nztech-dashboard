@@ -1353,7 +1353,8 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
 
 export default function Ideas() {
   const navigate = useNavigate();
-  const { ideas, loading, createIdea } = useIdeas();
+  const { ideas: todasIdeas, loading, createIdea } = useIdeas();
+  const ideas = todasIdeas.filter((i) => i.publicada === false || i.publicada === null);
   const [isNewIdeaOpen, setIsNewIdeaOpen] = useState(false);
   const [filterEstado, setFilterEstado] = useState('');
   const [filterCategoria, setFilterCategoria] = useState('');

@@ -1,3 +1,4 @@
+// DEPRECATED: Usar useIdeas() con filtro publicada = true
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 

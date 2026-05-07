@@ -229,7 +229,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className="flex fixed border-r"
+      className="flex border-r flex-shrink-0"
       style={{
         width: isMobile ? '100%' : '220px',
         height: isMobile ? 'auto' : '100vh',
@@ -237,11 +237,8 @@ export function Sidebar() {
         borderRightColor: isMobile ? 'transparent' : 'rgba(0,0,0,0.08)',
         borderTopColor: isMobile ? 'rgba(0,0,0,0.08)' : 'transparent',
         borderTop: isMobile ? '1px solid rgba(0,0,0,0.08)' : 'none',
-        left: 0,
-        top: isMobile ? 'auto' : 0,
-        bottom: isMobile ? 0 : 'auto',
-        zIndex: isMobile ? 50 : 'auto',
         flexDirection: isMobile ? 'row' : 'column',
+        overflowY: isMobile ? 'visible' : 'auto',
       }}
     >
       {/* Logo */}

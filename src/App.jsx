@@ -27,19 +27,24 @@ const Productividad = lazy(() => import('./pages/Productividad'))
 function ProtectedLayout({ children, title = 'Dashboard' }) {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-  return (
-    <div className="flex" style={{ flexDirection: isMobile ? 'column' : 'row' }}>
-      <Sidebar />
-      <div className="flex-1" style={{ marginLeft: isMobile ? 0 : '220px' }}>
+  if (isMobile) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
         <TopBar title={title} />
-        <main
-          className="pt-[56px]"
-          style={{
-            backgroundColor: '#0A0A0F',
-            minHeight: '100vh',
-            paddingBottom: isMobile ? '80px' : '0',
-          }}
-        >
+        <main style={{ flex: 1, overflowY: 'auto', paddingBottom: '80px' }}>
+          {children}
+        </main>
+        <Sidebar />
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <Sidebar />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <TopBar title={title} />
+        <main style={{ flex: 1, overflowY: 'auto' }}>
           {children}
         </main>
       </div>

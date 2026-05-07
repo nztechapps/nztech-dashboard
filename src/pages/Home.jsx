@@ -194,7 +194,7 @@ export default function Home() {
   }, [activeRun]);
 
   return (
-    <div style={{ backgroundColor: '#F9FAFB', minHeight: '100vh', padding: '24px' }}>
+    <div style={{ backgroundColor: '#F9FAFB', padding: '24px' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         {/* FILA 1: Métricas */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }}>

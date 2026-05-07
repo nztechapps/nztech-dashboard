@@ -14,13 +14,11 @@ export function TopBar({ title = 'Dashboard' }) {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 border-b flex items-center justify-between px-6"
+      className="border-b flex items-center justify-between px-6 flex-shrink-0"
       style={{
         height: '56px',
         backgroundColor: '#FFFFFF',
         borderBottomColor: 'rgba(0,0,0,0.08)',
-        marginLeft: isMobile ? 0 : '220px',
-        right: '0',
       }}
     >
       <h1 style={{ color: '#111827' }} className="text-lg font-medium">

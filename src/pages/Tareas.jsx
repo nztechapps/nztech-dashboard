@@ -5,10 +5,10 @@ import { supabase } from '../lib/supabase'
 const ESTADOS = ['pendiente', 'en_progreso', 'completado', 'bloqueado']
 
 const ESTADO_CONFIG = {
-  pendiente:   { label: 'Pendiente',   bg: '#F3F4F6',          color: '#6B7280' },
+  pendiente:   { label: 'Pendiente',   bg: '#F3F4F6',          color: 'var(--text-muted)' },
   en_progreso: { label: 'En progreso', bg: '#EFF6FF',          color: '#1D4ED8' },
-  completado:  { label: 'Completado',  bg: '#ECFDF5',          color: '#065F46' },
-  bloqueado:   { label: 'Bloqueado',   bg: '#FEF2F2',          color: '#DC2626' },
+  completado:  { label: 'Completado',  bg: '#ECFDF5',          color: 'var(--nz-success)' },
+  bloqueado:   { label: 'Bloqueado',   bg: '#FEF2F2',          color: 'var(--nz-danger)' },
 }
 
 function nextEstado(estado) {
@@ -57,7 +57,7 @@ function csvToTareas(csv) {
 }
 
 const BLOQUES_DEFAULT = {
-  A: { nombre: 'Bloque A — Ensamblador',                  color: '#00E5A0', orden: 0 },
+  A: { nombre: 'Bloque A — Ensamblador',                  color: 'var(--primary)', orden: 0 },
   B: { nombre: 'Bloque B — Dashboard prioritario',        color: '#3B82F6', orden: 1 },
   C: { nombre: 'Bloque C — Perfiles freelance',           color: '#F59E0B', orden: 2 },
   D: { nombre: 'Bloque D — Dashboard segunda prioridad',  color: '#EC4899', orden: 3 },
@@ -67,10 +67,10 @@ const BLOQUES_DEFAULT = {
 // ---- Shared styles ----
 const inputStyle = {
   width: '100%',
-  backgroundColor: '#F9FAFB',
+  background: 'var(--bg)',
   border: '1px solid rgba(0,0,0,0.12)',
   borderRadius: '6px',
-  color: '#111827',
+  color: 'var(--text)',
   fontSize: '13px',
   padding: '8px 10px',
   outline: 'none',
@@ -79,8 +79,8 @@ const inputStyle = {
 const btnPrimaryStyle = {
   padding: '6px 16px',
   borderRadius: '6px',
-  backgroundColor: '#00E5A0',
-  color: '#003D2B',
+  background: 'var(--primary)',
+  color: 'var(--primary-fg)',
   fontSize: '13px',
   fontWeight: '600',
   border: 'none',
@@ -90,8 +90,8 @@ const btnPrimaryStyle = {
 const btnSecondaryStyle = {
   padding: '6px 14px',
   borderRadius: '6px',
-  backgroundColor: '#F3F4F6',
-  color: '#6B7280',
+  background: 'var(--surface-2)',
+  color: 'var(--text-muted)',
   fontSize: '13px',
   border: 'none',
   cursor: 'pointer',
@@ -126,14 +126,14 @@ function NuevoBloqueModal({ onClose, onSave }) {
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div style={{
-        backgroundColor: '#FFFFFF',
-        border: '1px solid rgba(0,0,0,0.08)',
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
         borderRadius: '14px',
         padding: '24px',
         width: '360px',
         boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
       }}>
-        <h3 style={{ color: '#111827', fontWeight: '700', fontSize: '16px', margin: '0 0 16px' }}>
+        <h3 style={{ color: 'var(--text)', fontWeight: '700', fontSize: '16px', margin: '0 0 16px' }}>
           Nuevo bloque
         </h3>
         <div className="flex flex-col gap-3">
@@ -146,7 +146,7 @@ function NuevoBloqueModal({ onClose, onSave }) {
             onKeyDown={(e) => e.key === 'Enter' && handleSave()}
           />
           <div className="flex items-center gap-3">
-            <label style={{ color: '#6B7280', fontSize: '13px', whiteSpace: 'nowrap' }}>
+            <label style={{ color: 'var(--text-muted)', fontSize: '13px', whiteSpace: 'nowrap' }}>
               Color
             </label>
             <input
@@ -192,7 +192,7 @@ function TareaCard({ tarea, bloqueActivo, readonly, onUpdateEstado, onToggleFlag
 
   return (
     <div style={{
-      backgroundColor: '#FFFFFF',
+      background: 'var(--surface)',
       border: `1px solid ${tarea.flag ? 'rgba(239,68,68,0.3)' : 'rgba(0,0,0,0.06)'}`,
       borderRadius: '10px',
       padding: '14px 16px',
@@ -228,7 +228,7 @@ function TareaCard({ tarea, bloqueActivo, readonly, onUpdateEstado, onToggleFlag
         </span>
 
         {tarea.tiempo_estimado && (
-          <span style={{ color: '#9CA3AF', fontSize: '12px', flexShrink: 0 }}>
+          <span style={{ color: 'var(--text-subtle)', fontSize: '12px', flexShrink: 0 }}>
             {tarea.tiempo_estimado}
           </span>
         )}
@@ -251,7 +251,7 @@ function TareaCard({ tarea, bloqueActivo, readonly, onUpdateEstado, onToggleFlag
           onClick={() => setExpanded((e) => !e)}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            color: '#9CA3AF', fontSize: '12px',
+            color: 'var(--text-subtle)', fontSize: '12px',
             padding: '0 2px', flexShrink: 0,
           }}
         >
@@ -264,7 +264,7 @@ function TareaCard({ tarea, bloqueActivo, readonly, onUpdateEstado, onToggleFlag
           {tarea.tags.map((tag) => (
             <span key={tag} style={{
               fontSize: '10px', padding: '2px 7px', borderRadius: '10px',
-              backgroundColor: '#F3F4F6', color: '#9CA3AF',
+              background: 'var(--surface-2)', color: 'var(--text-subtle)',
             }}>
               {tag}
             </span>
@@ -275,14 +275,14 @@ function TareaCard({ tarea, bloqueActivo, readonly, onUpdateEstado, onToggleFlag
       {expanded && (
         <div style={{ marginTop: '12px', borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: '12px' }}>
           {tarea.descripcion && (
-            <p style={{ color: '#6B7280', fontSize: '13px', marginBottom: '10px' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '10px' }}>
               {tarea.descripcion}
             </p>
           )}
 
           <div>
             <div style={{
-              color: '#9CA3AF', fontSize: '11px', marginBottom: '4px',
+              color: 'var(--text-subtle)', fontSize: '11px', marginBottom: '4px',
               fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>
               Notas / Aprendizajes
@@ -294,9 +294,9 @@ function TareaCard({ tarea, bloqueActivo, readonly, onUpdateEstado, onToggleFlag
                   onChange={(e) => setNotas(e.target.value)}
                   rows={3}
                   style={{
-                    width: '100%', backgroundColor: '#F9FAFB',
+                    width: '100%', background: 'var(--bg)',
                     border: '1px solid rgba(0,229,160,0.3)', borderRadius: '6px',
-                    color: '#111827', fontSize: '13px', padding: '8px', resize: 'vertical',
+                    color: 'var(--text)', fontSize: '13px', padding: '8px', resize: 'vertical',
                   }}
                 />
                 <div className="flex gap-2">
@@ -318,7 +318,7 @@ function TareaCard({ tarea, bloqueActivo, readonly, onUpdateEstado, onToggleFlag
               <div
                 onClick={() => !isLocked && setEditingNotas(true)}
                 style={{
-                  minHeight: '36px', backgroundColor: '#F9FAFB',
+                  minHeight: '36px', background: 'var(--bg)',
                   border: '1px dashed rgba(0,0,0,0.10)', borderRadius: '6px',
                   padding: '8px',
                   color: notas ? '#374151' : '#D1D5DB',
@@ -426,7 +426,7 @@ function BloqueSection({
               {readonly && (
                 <span style={{
                   fontSize: '10px', padding: '2px 7px', borderRadius: '10px',
-                  backgroundColor: '#F3F4F6', color: '#9CA3AF',
+                  background: 'var(--surface-2)', color: 'var(--text-subtle)',
                 }}>
                   Archivado
                 </span>
@@ -440,7 +440,7 @@ function BloqueSection({
                   borderRadius: '2px', transition: 'width 0.4s ease',
                 }} />
               </div>
-              <span style={{ color: '#9CA3AF', fontSize: '12px', whiteSpace: 'nowrap' }}>
+              <span style={{ color: 'var(--text-subtle)', fontSize: '12px', whiteSpace: 'nowrap' }}>
                 {completadas}/{total} · {progreso}%
               </span>
             </div>
@@ -452,7 +452,7 @@ function BloqueSection({
               onClick={(e) => { e.stopPropagation(); onArchivar(bloque.id) }}
               style={{
                 padding: '4px 10px', borderRadius: '6px', fontSize: '11px',
-                backgroundColor: 'rgba(0,229,160,0.1)', color: '#00E5A0',
+                backgroundColor: 'rgba(0,229,160,0.1)', color: 'var(--primary)',
                 border: '1px solid rgba(0,229,160,0.25)', cursor: 'pointer',
                 whiteSpace: 'nowrap', flexShrink: 0,
               }}
@@ -461,7 +461,7 @@ function BloqueSection({
             </button>
           )}
 
-          <span style={{ color: '#9CA3AF', fontSize: '12px', flexShrink: 0 }}>
+          <span style={{ color: 'var(--text-subtle)', fontSize: '12px', flexShrink: 0 }}>
             {collapsed ? '▼' : '▲'}
           </span>
         </div>
@@ -494,7 +494,7 @@ function BloqueSection({
             <div style={{ marginTop: '10px' }}>
               {showForm ? (
                 <div style={{
-                  backgroundColor: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)',
+                  background: 'var(--surface)', border: '1px solid var(--border)',
                   borderRadius: '10px', padding: '14px',
                 }}>
                   <div className="flex flex-col gap-2">
@@ -536,7 +536,7 @@ function BloqueSection({
                   style={{
                     width: '100%', padding: '8px', borderRadius: '8px',
                     border: '1px dashed rgba(0,0,0,0.12)',
-                    backgroundColor: 'transparent', color: '#9CA3AF',
+                    backgroundColor: 'transparent', color: 'var(--text-subtle)',
                     fontSize: '13px', cursor: 'pointer',
                   }}
                 >
@@ -675,7 +675,7 @@ export default function Tareas() {
 
   if (loading) {
     return (
-      <div style={{ padding: '32px', backgroundColor: '#F9FAFB', minHeight: '100%', color: '#9CA3AF', textAlign: 'center' }}>
+      <div style={{ padding: '32px', background: 'var(--bg)', minHeight: '100%', color: 'var(--text-subtle)', textAlign: 'center' }}>
         Cargando tareas…
       </div>
     )
@@ -686,7 +686,7 @@ export default function Tareas() {
   }
 
   return (
-    <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto', backgroundColor: '#F9FAFB', minHeight: '100%' }}>
+    <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto', background: 'var(--bg)', minHeight: '100%' }}>
       {showNuevoBloque && (
         <NuevoBloqueModal onClose={() => setShowNuevoBloque(false)} onSave={handleAddBloque} />
       )}
@@ -694,10 +694,10 @@ export default function Tareas() {
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4" style={{ marginBottom: '24px' }}>
         <div>
-          <h1 style={{ color: '#111827', fontSize: '22px', fontWeight: '700', margin: 0 }}>
+          <h1 style={{ color: 'var(--text)', fontSize: '22px', fontWeight: '700', margin: 0 }}>
             Tareas del Proyecto
           </h1>
-          <p style={{ color: '#6B7280', fontSize: '13px', marginTop: '4px' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '4px' }}>
             Bloques secuenciales — completa uno para desbloquear el siguiente.
           </p>
         </div>
@@ -736,24 +736,24 @@ export default function Tareas() {
       {/* Progreso global */}
       {totalTareas > 0 && (
         <div style={{
-          backgroundColor: '#FFFFFF', border: '1px solid rgba(0,0,0,0.06)',
+          background: 'var(--surface)', border: '1px solid var(--border)',
           borderRadius: '12px', padding: '16px 20px', marginBottom: '24px',
         }}>
           <div className="flex items-center justify-between" style={{ marginBottom: '8px' }}>
-            <span style={{ color: '#6B7280', fontSize: '13px', fontWeight: '500' }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: '500' }}>
               Progreso global del proyecto
             </span>
-            <span style={{ color: '#00E5A0', fontSize: '20px', fontWeight: '700', fontFamily: 'DM Mono, monospace' }}>
+            <span style={{ color: 'var(--primary)', fontSize: '20px', fontWeight: '700', fontFamily: 'var(--font-mono)' }}>
               {progresoGlobal}%
             </span>
           </div>
           <div style={{ height: '8px', backgroundColor: '#E5E7EB', borderRadius: '4px', overflow: 'hidden' }}>
             <div style={{
               width: `${progresoGlobal}%`, height: '100%',
-              backgroundColor: '#00E5A0', borderRadius: '4px', transition: 'width 0.5s ease',
+              background: 'var(--primary)', borderRadius: '4px', transition: 'width 0.5s ease',
             }} />
           </div>
-          <div style={{ color: '#9CA3AF', fontSize: '12px', marginTop: '6px' }}>
+          <div style={{ color: 'var(--text-subtle)', fontSize: '12px', marginTop: '6px' }}>
             {completadasTotal} de {totalTareas} tareas completadas
           </div>
         </div>
@@ -796,7 +796,7 @@ export default function Tareas() {
       {showArchivar && bloquesArchivados.length > 0 && (
         <div style={{ marginTop: '32px' }}>
           <div style={{
-            color: '#6B7280', fontSize: '11px', fontWeight: '600',
+            color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600',
             textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px',
           }}>
             Archivados

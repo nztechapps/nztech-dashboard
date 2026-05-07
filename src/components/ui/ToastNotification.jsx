@@ -1,83 +1,43 @@
 import { useEffect } from 'react';
 
 const IconCheck = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <polyline points="20 6 9 17 4 12"></polyline>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
   </svg>
 );
-
 const IconX = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="18" y1="6" x2="6" y2="18"></line>
-    <line x1="6" y1="6" x2="18" y2="18"></line>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
 
 export default function ToastNotification({ message, type = 'success', onClose }) {
   useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
-    return () => clearTimeout(timer);
+    const t = setTimeout(onClose, 3000);
+    return () => clearTimeout(t);
   }, [onClose]);
 
   const isSuccess = type === 'success';
-  const bgColor = isSuccess ? 'rgba(0, 229, 160, 0.1)' : 'rgba(255, 77, 79, 0.1)';
-  const borderColor = isSuccess ? 'rgba(0, 229, 160, 0.3)' : 'rgba(255, 77, 79, 0.3)';
-  const textColor = isSuccess ? '#00E5A0' : '#FF4D4F';
+  const color = isSuccess ? 'var(--nz-success)' : 'var(--nz-danger)';
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: '24px',
-        right: '24px',
-        backgroundColor: bgColor,
-        border: `1px solid ${borderColor}`,
-        borderRadius: '8px',
-        padding: '12px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        zIndex: 3000,
-        animation: 'slideUp 0.3s ease-out',
-      }}
-    >
-      <style>{`
-        @keyframes slideUp {
-          from {
-            transform: translateY(100px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-      `}</style>
-      <span style={{ color: textColor, display: 'flex', alignItems: 'center' }}>
-        {isSuccess ? <IconCheck /> : <IconX />}
-      </span>
-      <span style={{ color: textColor, fontSize: '13px', fontWeight: '500' }}>
-        {message}
-      </span>
+    <div style={{
+      position: 'fixed', bottom: 24, right: 24,
+      background: 'var(--surface)',
+      border: `1px solid ${color}`,
+      borderRadius: 'var(--radius-lg)',
+      padding: '12px 16px',
+      display: 'flex', alignItems: 'center', gap: 12,
+      zIndex: 3000,
+      boxShadow: 'var(--shadow-lg)',
+      animation: 'slideUp 0.25s var(--ease-out)',
+    }}>
+      <style>{`@keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
+      <span style={{ color, display: 'flex' }}>{isSuccess ? <IconCheck /> : <IconX />}</span>
+      <span style={{ color: 'var(--text)', fontSize: 13, fontWeight: 500 }}>{message}</span>
       <button
         onClick={onClose}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: textColor,
-          cursor: 'pointer',
-          padding: '0',
-          display: 'flex',
-          alignItems: 'center',
-          opacity: 0.7,
-          marginLeft: '8px',
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.opacity = '1';
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.opacity = '0.7';
-        }}
+        style={{ background: 'none', border: 'none', color: 'var(--text-subtle)', cursor: 'pointer', padding: 0, display: 'flex', marginLeft: 4 }}
       >
         <IconX />
       </button>

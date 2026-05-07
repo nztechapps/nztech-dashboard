@@ -10,59 +10,46 @@ export function Login() {
   const handleGoogleSignIn = async () => {
     setLoading(true)
     const { data, error } = await signInWithGoogle()
-    if (error) {
-      setMessage(`Error: ${error.message}`)
-    } else if (data?.user?.email !== 'nztech.apps@outlook.com') {
-      setMessage('Acceso restringido')
-    }
+    if (error) setMessage(`Error: ${error.message}`)
+    else if (data?.user?.email !== 'nztech.apps@outlook.com') setMessage('Acceso restringido')
     setLoading(false)
   }
 
   const handleMagicLink = async (e) => {
     e.preventDefault()
-    if (!email) {
-      setMessage('Por favor ingresa tu email')
-      return
-    }
-
+    if (!email) { setMessage('Por favor ingresa tu email'); return }
     setLoading(true)
     const { error } = await signInWithMagicLink(email)
-    if (error) {
-      setMessage(`Error: ${error.message}`)
-    } else {
-      setMessage('Link de acceso enviado a tu email')
-      setEmail('')
-    }
+    if (error) setMessage(`Error: ${error.message}`)
+    else { setMessage('Link de acceso enviado a tu email'); setEmail('') }
     setLoading(false)
   }
 
+  const isError = message.includes('Error') || message.includes('restringido')
+
   return (
-    <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: '#0A0A0F' }}>
-      <div className="w-full max-w-sm px-6">
-        {/* Logo */}
-        <div className="text-center mb-12">
-          <h1 style={{ color: '#00E5A0' }} className="text-5xl font-bold mb-2">
-            NZTech
-          </h1>
-          <p style={{ color: 'rgba(255,255,255,0.45)' }} className="text-lg">
-            Dashboard
-          </p>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--bg)' }}>
+      <div style={{ width: '100%', maxWidth: 360, padding: '0 24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <h1 style={{ color: 'var(--primary)', fontSize: 48, fontWeight: 700, margin: '0 0 8px 0' }}>NZTech</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: 18, margin: 0 }}>Dashboard</p>
         </div>
 
-        {/* Google OAuth Button */}
         <button
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="w-full mb-6 px-4 py-3 rounded-lg flex items-center justify-center gap-3 transition-colors"
           style={{
-            border: '1px solid rgba(255,255,255,0.12)',
-            backgroundColor: '#13131A',
-            color: 'white',
+            width: '100%', marginBottom: 24, padding: '12px 16px',
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)', color: 'var(--text)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+            cursor: 'pointer', fontSize: 14, fontWeight: 500,
+            transition: 'background var(--dur-fast)',
           }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#1C1C26'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = '#13131A'}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'var(--surface)'}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -71,52 +58,25 @@ export function Login() {
           <span>Continuar con Google</span>
         </button>
 
-        {/* Divider */}
-        <div className="flex items-center gap-4 my-6">
-          <div style={{ backgroundColor: 'rgba(255,255,255,0.08)' }} className="flex-1 h-px"></div>
-          <span style={{ color: 'rgba(255,255,255,0.45)' }} className="text-sm">o</span>
-          <div style={{ backgroundColor: 'rgba(255,255,255,0.08)' }} className="flex-1 h-px"></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          <span style={{ color: 'var(--text-subtle)', fontSize: 13 }}>o</span>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         </div>
 
-        {/* Magic Link Form */}
-        <form onSubmit={handleMagicLink} className="space-y-3">
+        <form onSubmit={handleMagicLink} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input
-            type="email"
-            placeholder="tu@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-            className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 transition-colors"
-            style={{
-              backgroundColor: '#13131A',
-              border: '1px solid rgba(255,255,255,0.12)',
-            }}
-            onFocus={(e) => e.target.style.borderColor = 'rgba(0,229,160,0.3)'}
-            onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.12)'}
+            type="email" placeholder="tu@email.com" value={email}
+            onChange={e => setEmail(e.target.value)} disabled={loading}
+            className="nz-input"
           />
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full px-4 py-3 rounded-lg font-medium transition-colors"
-            style={{
-              backgroundColor: '#00E5A0',
-              color: '#0A0A0F',
-            }}
-            onMouseEnter={(e) => e.target.style.opacity = '0.9'}
-            onMouseLeave={(e) => e.target.style.opacity = '1'}
-          >
+          <button type="submit" disabled={loading} className="nz-btn nz-btn-primary" style={{ justifyContent: 'center', padding: '12px 16px', fontSize: 14 }}>
             {loading ? 'Enviando...' : 'Enviar link'}
           </button>
         </form>
 
-        {/* Message */}
         {message && (
-          <p
-            style={{
-              color: (message.includes('Error') || message.includes('restringido')) ? '#FF4D4F' : '#00E5A0',
-            }}
-            className="mt-4 text-center text-sm"
-          >
+          <p style={{ color: isError ? 'var(--nz-danger)' : 'var(--nz-success)', marginTop: 16, textAlign: 'center', fontSize: 13 }}>
             {message}
           </p>
         )}

@@ -26,11 +26,11 @@ function ProtectedLayout({ children, title = 'Dashboard' }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#F9FAFB' }}>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#F9FAFB', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--bg)', minWidth: 0 }}>
         <TopBar title={title} onMenuClick={() => setSidebarOpen(true)} />
-        <main style={{ flex: 1, overflowY: 'auto', background: '#F9FAFB' }}>
+        <main className="scrollable" style={{ flex: 1, overflowY: 'auto', background: 'var(--bg)' }}>
           {children}
         </main>
       </div>

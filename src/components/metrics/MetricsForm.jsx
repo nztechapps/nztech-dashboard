@@ -2,334 +2,89 @@ import { useState, useEffect } from 'react';
 import DatePicker from '../ui/DatePicker';
 
 const IconX = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="18" y1="6" x2="6" y2="18"></line>
-    <line x1="6" y1="6" x2="18" y2="18"></line>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
 
+const fieldStyle = {
+  width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)',
+  borderRadius: 'var(--radius)', padding: '10px 12px', color: 'var(--text)',
+  fontSize: 14, boxSizing: 'border-box',
+};
+
 export default function MetricsForm({ isOpen, onClose, onSave, appId, isLoading = false }) {
-  const [formData, setFormData] = useState({
-    fecha: '',
-    impresiones: '',
-    clicks: '',
-    ingresos: '',
-    dau: '',
-    crash_rate: '',
-    rating: '',
-  });
+  const [form, setForm] = useState({ fecha: '', impresiones: '', clicks: '', ingresos: '', dau: '', crash_rate: '', rating: '' });
 
   useEffect(() => {
-    if (isOpen) {
-      const today = new Date().toISOString().split('T')[0];
-      setFormData((prev) => ({
-        ...prev,
-        fecha: today,
-      }));
-    }
+    if (isOpen) setForm(p => ({ ...p, fecha: new Date().toISOString().split('T')[0] }));
   }, [isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setForm(p => ({ ...p, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.fecha) {
-      return;
-    }
-
-    const dataToSave = {
-      fecha: formData.fecha,
-      impresiones: formData.impresiones ? parseFloat(formData.impresiones) : 0,
-      clicks: formData.clicks ? parseFloat(formData.clicks) : 0,
-      ingresos: formData.ingresos ? parseFloat(formData.ingresos) : 0,
-      dau: formData.dau ? parseFloat(formData.dau) : 0,
-      crash_rate: formData.crash_rate ? parseFloat(formData.crash_rate) : 0,
-      rating: formData.rating ? parseFloat(formData.rating) : 0,
-    };
-
+    if (!form.fecha) return;
     try {
-      await onSave(dataToSave);
+      await onSave({
+        fecha: form.fecha,
+        impresiones: parseFloat(form.impresiones) || 0,
+        clicks:      parseFloat(form.clicks) || 0,
+        ingresos:    parseFloat(form.ingresos) || 0,
+        dau:         parseFloat(form.dau) || 0,
+        crash_rate:  parseFloat(form.crash_rate) || 0,
+        rating:      parseFloat(form.rating) || 0,
+      });
       onClose();
-    } catch (err) {
-      console.error('Error saving metric:', err);
-    }
+    } catch (err) { console.error(err); }
   };
+
+  const labelStyle = { display: 'block', color: 'var(--text-muted)', fontSize: 12, marginBottom: 8 };
+
+  const numFields = [
+    { name: 'impresiones', label: 'Impresiones', placeholder: '0' },
+    { name: 'clicks',      label: 'Clicks',      placeholder: '0' },
+    { name: 'ingresos',    label: 'Ingresos ($)', placeholder: '0.00', step: '0.01' },
+    { name: 'dau',         label: 'DAU',          placeholder: '0' },
+    { name: 'crash_rate',  label: 'Crash Rate (%)', placeholder: '0.00', step: '0.01' },
+    { name: 'rating',      label: 'Rating ⭐',   placeholder: '0.0', step: '0.1', min: '0', max: '5' },
+  ];
 
   return (
     <>
-      {/* Overlay */}
-      {isOpen && (
-        <div
-          onClick={onClose}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.4)',
-            zIndex: 40,
-          }}
-        />
-      )}
-
-      {/* Panel */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          width: '100%',
-          maxWidth: '450px',
-          height: '100vh',
-          backgroundColor: '#0A0A0F',
-          borderLeft: '1px solid rgba(255,255,255,0.08)',
-          transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.3s ease-out',
-          zIndex: 50,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-            padding: '16px 24px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <h2 style={{ color: 'white', margin: 0, fontSize: '18px', fontWeight: '600' }}>
-            Cargar métricas
-          </h2>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'rgba(255,255,255,0.45)',
-              cursor: 'pointer',
-              padding: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+      {isOpen && <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 40 }} />}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, width: '100%', maxWidth: 450, height: '100vh',
+        background: 'var(--surface)', borderLeft: '1px solid var(--border)',
+        transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.3s var(--ease-out)',
+        zIndex: 50, display: 'flex', flexDirection: 'column',
+      }}>
+        <div style={{ borderBottom: '1px solid var(--border)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ color: 'var(--text)', margin: 0, fontSize: 18, fontWeight: 600 }}>Cargar métricas</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}>
             <IconX />
           </button>
         </div>
 
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            flex: 1,
-            overflow: 'auto',
-            padding: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <div style={{ marginBottom: '20px' }}>
-            <DatePicker value={formData.fecha} onChange={(date) => setFormData(prev => ({ ...prev, fecha: date }))} label="Fecha *" />
+        <form onSubmit={handleSubmit} style={{ flex: 1, overflow: 'auto', padding: 24, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ marginBottom: 20 }}>
+            <DatePicker value={form.fecha} onChange={(d) => setForm(p => ({ ...p, fecha: d }))} label="Fecha *" />
           </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: '#999', fontSize: '12px', marginBottom: '8px' }}>
-              Impresiones
-            </label>
-            <input
-              type="number"
-              name="impresiones"
-              value={formData.impresiones}
-              onChange={handleChange}
-              placeholder="0"
-              style={{
-                width: '100%',
-                backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                color: 'white',
-                fontSize: '14px',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: '#999', fontSize: '12px', marginBottom: '8px' }}>
-              Clicks
-            </label>
-            <input
-              type="number"
-              name="clicks"
-              value={formData.clicks}
-              onChange={handleChange}
-              placeholder="0"
-              style={{
-                width: '100%',
-                backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                color: 'white',
-                fontSize: '14px',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: '#999', fontSize: '12px', marginBottom: '8px' }}>
-              Ingresos ($)
-            </label>
-            <input
-              type="number"
-              name="ingresos"
-              value={formData.ingresos}
-              onChange={handleChange}
-              placeholder="0.00"
-              step="0.01"
-              style={{
-                width: '100%',
-                backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                color: 'white',
-                fontSize: '14px',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: '#999', fontSize: '12px', marginBottom: '8px' }}>
-              DAU (Daily Active Users)
-            </label>
-            <input
-              type="number"
-              name="dau"
-              value={formData.dau}
-              onChange={handleChange}
-              placeholder="0"
-              style={{
-                width: '100%',
-                backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                color: 'white',
-                fontSize: '14px',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: '#999', fontSize: '12px', marginBottom: '8px' }}>
-              Crash Rate (%)
-            </label>
-            <input
-              type="number"
-              name="crash_rate"
-              value={formData.crash_rate}
-              onChange={handleChange}
-              placeholder="0.00"
-              step="0.01"
-              style={{
-                width: '100%',
-                backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                color: 'white',
-                fontSize: '14px',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: '#999', fontSize: '12px', marginBottom: '8px' }}>
-              Rating (⭐)
-            </label>
-            <input
-              type="number"
-              name="rating"
-              value={formData.rating}
-              onChange={handleChange}
-              placeholder="0.0"
-              step="0.1"
-              min="0"
-              max="5"
-              style={{
-                width: '100%',
-                backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                color: 'white',
-                fontSize: '14px',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
+          {numFields.map(f => (
+            <div key={f.name} style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>{f.label}</label>
+              <input type="number" name={f.name} value={form[f.name]} onChange={handleChange}
+                placeholder={f.placeholder} step={f.step} min={f.min} max={f.max} style={fieldStyle} />
+            </div>
+          ))}
           <div style={{ flex: 1 }} />
-
-          {/* Botones */}
-          <div
-            style={{
-              display: 'flex',
-              gap: '12px',
-              borderTop: '1px solid rgba(255,255,255,0.08)',
-              paddingTop: '16px',
-              marginTop: '16px',
-            }}
-          >
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                flex: 1,
-                padding: '10px 16px',
-                backgroundColor: 'transparent',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: 'rgba(255,255,255,0.45)',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-              }}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              style={{
-                flex: 1,
-                padding: '10px 16px',
-                backgroundColor: '#00E5A0',
-                border: 'none',
-                color: '#0A0A0F',
-                borderRadius: '8px',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
-                opacity: isLoading ? 0.6 : 1,
-              }}
-            >
+          <div style={{ display: 'flex', gap: 12, borderTop: '1px solid var(--border)', paddingTop: 16, marginTop: 16 }}>
+            <button type="button" onClick={onClose} className="nz-btn nz-btn-ghost" style={{ flex: 1, justifyContent: 'center' }}>Cancelar</button>
+            <button type="submit" disabled={isLoading} className="nz-btn nz-btn-primary" style={{ flex: 1, justifyContent: 'center', opacity: isLoading ? 0.6 : 1 }}>
               {isLoading ? 'Guardando...' : 'Guardar'}
             </button>
           </div>

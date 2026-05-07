@@ -267,31 +267,31 @@ export default function Calendario() {
   const monthName = new Date(year, month, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
 
   return (
-    <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px', display: 'flex' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100%', padding: '24px', display: 'flex' }}>
       {/* Calendario */}
       <div style={{ flex: 1 }}>
         <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ color: 'white', fontSize: '24px', fontWeight: '600', margin: '0 0 24px 0' }}>
+          <h1 style={{ color: 'var(--text)', fontSize: '24px', fontWeight: '600', margin: '0 0 24px 0' }}>
             Calendario
           </h1>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <button onClick={goToPreviousMonth} style={{ background: 'none', border: 'none', color: '#00E5A0', cursor: 'pointer', padding: '8px', display: 'flex', alignItems: 'center' }}>
+            <button onClick={goToPreviousMonth} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '8px', display: 'flex', alignItems: 'center' }}>
               <IconChevronLeft />
             </button>
-            <h2 style={{ color: 'white', fontSize: '18px', fontWeight: '600', margin: 0, textTransform: 'capitalize' }}>
+            <h2 style={{ color: 'var(--text)', fontSize: '18px', fontWeight: '600', margin: 0, textTransform: 'capitalize' }}>
               {monthName}
             </h2>
-            <button onClick={goToNextMonth} style={{ background: 'none', border: 'none', color: '#00E5A0', cursor: 'pointer', padding: '8px', display: 'flex', alignItems: 'center' }}>
+            <button onClick={goToNextMonth} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '8px', display: 'flex', alignItems: 'center' }}>
               <IconChevronRight />
             </button>
           </div>
         </div>
 
-        <div style={{ backgroundColor: '#13131A', borderRadius: '10px', padding: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ background: 'var(--surface)', borderRadius: '10px', padding: '16px', border: '1px solid var(--border)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', marginBottom: '12px' }}>
             {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => (
-              <div key={day} style={{ textAlign: 'center', color: '#666', fontSize: '12px', fontWeight: '600', padding: '8px 0' }}>
+              <div key={day} style={{ textAlign: 'center', color: 'var(--text-subtle)', fontSize: '12px', fontWeight: '600', padding: '8px 0' }}>
                 {day}
               </div>
             ))}
@@ -321,23 +321,23 @@ export default function Calendario() {
                 >
                   {day && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '4px' }}>
-                      <div style={{ color: '#999', fontSize: '12px', fontWeight: '600' }}>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: '600' }}>
                         {day}
                       </div>
                       {hasObjectivesOnDay(day) && (
-                        <div style={{ width: '6px', height: '6px', backgroundColor: '#00E5A0', borderRadius: '50%' }} title="Tiene objetivos" />
+                        <div style={{ width: '6px', height: '6px', background: 'var(--primary)', borderRadius: '50%' }} title="Tiene objetivos" />
                       )}
                     </div>
                   )}
 
                   {items.tareas.map((t) => (
-                    <div key={`tarea-${t.id}`} style={{ backgroundColor: '#7C6AFF', color: 'white', fontSize: '9px', padding: '2px 4px', borderRadius: '3px', marginBottom: '2px', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div key={`tarea-${t.id}`} style={{ backgroundColor: '#7C6AFF', color: 'var(--text)', fontSize: '9px', padding: '2px 4px', borderRadius: '3px', marginBottom: '2px', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {t.titulo}
                     </div>
                   ))}
 
                   {items.eventos.map((e) => (
-                    <div key={`evento-${e.id}`} style={{ backgroundColor: TIPO_COLORS[e.tipo], color: 'white', fontSize: '9px', padding: '2px 4px', borderRadius: '3px', marginBottom: '2px', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div key={`evento-${e.id}`} style={{ backgroundColor: TIPO_COLORS[e.tipo], color: 'var(--text)', fontSize: '9px', padding: '2px 4px', borderRadius: '3px', marginBottom: '2px', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {e.titulo}
                     </div>
                   ))}
@@ -350,11 +350,11 @@ export default function Calendario() {
         <div style={{ marginTop: '24px', display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '12px', height: '12px', backgroundColor: '#7C6AFF', borderRadius: '2px' }} />
-            <span style={{ color: '#999', fontSize: '13px' }}>Tarea</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Tarea</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '6px', height: '6px', backgroundColor: '#00E5A0', borderRadius: '50%' }} />
-            <span style={{ color: '#999', fontSize: '13px' }}>Con objetivos</span>
+            <div style={{ width: '6px', height: '6px', background: 'var(--primary)', borderRadius: '50%' }} />
+            <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Con objetivos</span>
           </div>
         </div>
       </div>
@@ -368,7 +368,7 @@ export default function Calendario() {
             right: 0,
             bottom: 0,
             width: '320px',
-            backgroundColor: '#13131A',
+            background: 'var(--surface)',
             borderLeft: '1px solid rgba(255,255,255,0.08)',
             boxShadow: '-4px 0 16px rgba(0,0,0,0.4)',
             zIndex: 100,
@@ -386,12 +386,12 @@ export default function Calendario() {
 
           {/* Header */}
           <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ color: 'white', margin: 0, fontSize: '14px', fontWeight: '600', textTransform: 'capitalize' }}>
+            <h3 style={{ color: 'var(--text)', margin: 0, fontSize: '14px', fontWeight: '600', textTransform: 'capitalize' }}>
               {formatDateLabel(selectedDay, month, year)}
             </h3>
             <button
               onClick={() => setSelectedDay(null)}
-              style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', padding: '0', display: 'flex' }}
+              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0', display: 'flex' }}
             >
               <IconX />
             </button>
@@ -404,7 +404,7 @@ export default function Calendario() {
               const dayObjectives = getObjectivesForDay(selectedDay);
               return (
                 <div style={{ backgroundColor: 'rgba(0, 229, 160, 0.05)', border: '1px solid rgba(0, 229, 160, 0.2)', borderRadius: '6px', padding: '12px' }}>
-                  <h4 style={{ color: '#00E5A0', fontSize: '12px', fontWeight: '600', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
+                  <h4 style={{ color: 'var(--primary)', fontSize: '12px', fontWeight: '600', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
                     Objetivos del día
                   </h4>
 
@@ -417,7 +417,7 @@ export default function Calendario() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px',
-                            backgroundColor: '#0A0A0F',
+                            background: 'var(--bg)',
                             padding: '8px',
                             borderRadius: '4px',
                           }}
@@ -449,7 +449,7 @@ export default function Calendario() {
                             style={{
                               background: 'none',
                               border: 'none',
-                              color: '#FF4D4F',
+                              color: 'var(--nz-danger)',
                               cursor: 'pointer',
                               padding: '2px',
                               display: 'flex',
@@ -478,11 +478,11 @@ export default function Calendario() {
                       }}
                       style={{
                         flex: 1,
-                        backgroundColor: '#0A0A0F',
+                        background: 'var(--bg)',
                         border: '1px solid rgba(0, 229, 160, 0.2)',
                         borderRadius: '4px',
                         padding: '6px 8px',
-                        color: 'white',
+                        color: 'var(--text)',
                         fontSize: '11px',
                         boxSizing: 'border-box',
                       }}
@@ -492,7 +492,7 @@ export default function Calendario() {
                       style={{
                         backgroundColor: 'transparent',
                         border: '1px solid #00E5A0',
-                        color: '#00E5A0',
+                        color: 'var(--primary)',
                         borderRadius: '4px',
                         padding: '6px 10px',
                         cursor: 'pointer',
@@ -518,7 +518,7 @@ export default function Calendario() {
               ];
 
               if (allItems.length === 0 && !isFormOpen) {
-                return <div style={{ color: '#666', textAlign: 'center', paddingTop: '0px' }}>Sin eventos este día</div>;
+                return <div style={{ color: 'var(--text-subtle)', textAlign: 'center', paddingTop: '0px' }}>Sin eventos este día</div>;
               }
 
               return (
@@ -527,8 +527,8 @@ export default function Calendario() {
                     <div
                       key={idx}
                       style={{
-                        backgroundColor: '#0A0A0F',
-                        border: '1px solid rgba(255,255,255,0.08)',
+                        background: 'var(--bg)',
+                        border: '1px solid var(--border)',
                         borderRadius: '6px',
                         padding: '12px',
                         display: 'flex',
@@ -538,9 +538,9 @@ export default function Calendario() {
                       }}
                     >
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ color: 'white', fontSize: '12px', fontWeight: '500', marginBottom: '4px' }}>{item.title}</div>
+                        <div style={{ color: 'var(--text)', fontSize: '12px', fontWeight: '500', marginBottom: '4px' }}>{item.title}</div>
                         {item.type === 'tarea' && item.data.due_date && (
-                          <div style={{ color: '#00E5A0', fontSize: '10px', marginBottom: '4px', fontWeight: '500' }}>
+                          <div style={{ color: 'var(--primary)', fontSize: '10px', marginBottom: '4px', fontWeight: '500' }}>
                             Vence: {new Date(item.data.due_date).toLocaleDateString('es-ES')}
                           </div>
                         )}
@@ -555,7 +555,7 @@ export default function Calendario() {
                           <button
                             onClick={() => navigate(`/apps/${item.data.app_id}`)}
                             title="Ver en Kanban"
-                            style={{ background: 'none', border: 'none', color: '#00E5A0', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                           >
                             <IconArrowRight />
                           </button>
@@ -567,7 +567,7 @@ export default function Calendario() {
                               setToast({ message: 'Evento eliminado', type: 'success' });
                             }}
                             title="Eliminar evento"
-                            style={{ background: 'none', border: 'none', color: '#FF4D4F', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--nz-danger)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                           >
                             <IconTrash />
                           </button>
@@ -581,19 +581,19 @@ export default function Calendario() {
 
             {/* Formulario */}
             {isFormOpen && (
-              <div style={{ backgroundColor: '#1C1C26', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '12px', marginTop: 'auto' }}>
+              <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '6px', padding: '12px', marginTop: 'auto' }}>
                 <div style={{ marginBottom: '10px' }}>
                   <input
                     type="text"
                     placeholder="Título del evento"
                     value={formData.titulo}
                     onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                    style={{ width: '100%', backgroundColor: '#0A0A0F', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '4px', padding: '6px', color: 'white', fontSize: '12px', boxSizing: 'border-box', marginBottom: '8px' }}
+                    style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', padding: '6px', color: 'var(--text)', fontSize: '12px', boxSizing: 'border-box', marginBottom: '8px' }}
                   />
                   <select
                     value={formData.tipo}
                     onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-                    style={{ width: '100%', backgroundColor: '#0A0A0F', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '4px', padding: '6px', color: 'white', fontSize: '12px', boxSizing: 'border-box', marginBottom: '8px' }}
+                    style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', padding: '6px', color: 'var(--text)', fontSize: '12px', boxSizing: 'border-box', marginBottom: '8px' }}
                   >
                     <option value="publicacion">Publicación</option>
                     <option value="update">Update</option>
@@ -605,7 +605,7 @@ export default function Calendario() {
                   <select
                     value={formData.app_id || ''}
                     onChange={(e) => setFormData({ ...formData, app_id: e.target.value ? e.target.value : null })}
-                    style={{ width: '100%', backgroundColor: '#0A0A0F', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '4px', padding: '6px', color: 'white', fontSize: '12px', boxSizing: 'border-box', marginBottom: '8px' }}
+                    style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', padding: '6px', color: 'var(--text)', fontSize: '12px', boxSizing: 'border-box', marginBottom: '8px' }}
                   >
                     <option value="">Sin app</option>
                     {apps.map(app => (
@@ -616,18 +616,18 @@ export default function Calendario() {
                     placeholder="Notas (opcional)"
                     value={formData.notas}
                     onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
-                    style={{ width: '100%', backgroundColor: '#0A0A0F', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '4px', padding: '6px', color: 'white', fontSize: '12px', boxSizing: 'border-box', minHeight: '60px', marginBottom: '8px', fontFamily: 'monospace', resize: 'vertical' }}
+                    style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', padding: '6px', color: 'var(--text)', fontSize: '12px', boxSizing: 'border-box', minHeight: '60px', marginBottom: '8px', fontFamily: 'monospace', resize: 'vertical' }}
                   />
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <button
                       onClick={handleAddEvent}
-                      style={{ flex: 1, padding: '6px', backgroundColor: '#00E5A0', border: 'none', color: '#0A0A0F', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}
+                      style={{ flex: 1, padding: '6px', background: 'var(--primary)', border: 'none', color: '#0A0A0F', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}
                     >
                       Agregar
                     </button>
                     <button
                       onClick={() => setIsFormOpen(false)}
-                      style={{ flex: 1, padding: '6px', backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#999', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
+                      style={{ flex: 1, padding: '6px', backgroundColor: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
                     >
                       Cancelar
                     </button>
@@ -644,7 +644,7 @@ export default function Calendario() {
                   padding: '8px',
                   backgroundColor: 'transparent',
                   border: '1px dashed rgba(255,255,255,0.12)',
-                  color: '#999',
+                  color: 'var(--text-muted)',
                   borderRadius: '4px',
                   cursor: 'pointer',
                   fontSize: '12px',

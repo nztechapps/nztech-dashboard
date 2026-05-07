@@ -43,7 +43,7 @@ const getStatusBg = (estado) => {
   switch (estado) {
     case 'idea': return { bg: '#EFF6FF', color: '#1E40AF' };
     case 'investigando': return { bg: '#EFF6FF', color: '#1E40AF' };
-    case 'aprobada': return { bg: '#ECFDF5', color: '#065F46' };
+    case 'aprobada': return { bg: '#ECFDF5', color: 'var(--nz-success)' };
     case 'descartada': return { bg: '#FEF2F2', color: '#991B1B' };
     default: return { bg: '#EFF6FF', color: '#1E40AF' };
   }
@@ -98,25 +98,25 @@ function DeleteConfirmModal({ field, isOpen, onConfirm, onCancel }) {
     >
       <div
         style={{
-          backgroundColor: '#FFFFFF', borderRadius: '12px',
-          border: '1px solid rgba(0,0,0,0.08)', padding: '24px',
+          background: 'var(--surface)', borderRadius: '12px',
+          border: '1px solid var(--border)', padding: '24px',
           maxWidth: '400px', width: '100%', boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 style={{ color: '#111827', margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
+        <h3 style={{ color: 'var(--text)', margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
           ¿Borrar este campo?
         </h3>
-        <p style={{ color: '#6B7280', fontSize: '13px', margin: '0 0 24px 0', lineHeight: '1.5' }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '0 0 24px 0', lineHeight: '1.5' }}>
           El contenido generado se perderá y tendrás que regenerarlo.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
           <button onClick={onCancel}
-            style={{ padding: '8px 16px', backgroundColor: '#F3F4F6', border: 'none', color: '#374151', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+            style={{ padding: '8px 16px', background: 'var(--surface-2)', border: 'none', color: 'var(--text)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
             Cancelar
           </button>
           <button onClick={onConfirm}
-            style={{ padding: '8px 16px', backgroundColor: '#FEF2F2', border: '1px solid #FCA5A5', color: '#DC2626', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+            style={{ padding: '8px 16px', backgroundColor: '#FEF2F2', border: '1px solid #FCA5A5', color: 'var(--nz-danger)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
             Borrar
           </button>
         </div>
@@ -349,7 +349,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
       {/* Modal */}
       <div
         style={{
-          backgroundColor: '#FFFFFF',
+          background: 'var(--surface)',
           borderRadius: window.innerWidth < 768 ? 0 : '12px',
           maxWidth: window.innerWidth < 768 ? '100vw' : '640px',
           width: '100%',
@@ -372,16 +372,16 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
             alignItems: 'flex-start',
             position: 'sticky',
             top: 0,
-            backgroundColor: '#FFFFFF',
+            background: 'var(--surface)',
             zIndex: 10,
           }}
         >
-          <h2 style={{ color: '#111827', margin: 0, fontSize: '18px', fontWeight: '600' }}>
+          <h2 style={{ color: 'var(--text)', margin: 0, fontSize: '18px', fontWeight: '600' }}>
             {idea.titulo}
           </h2>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer', padding: 0, marginLeft: '12px' }}
+            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0, marginLeft: '12px' }}
           >
             <IconX />
           </button>
@@ -458,7 +458,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                 borderRadius: '6px',
                 padding: '12px 16px',
                 marginBottom: '20px',
-                color: '#FF4D4F',
+                color: 'var(--nz-danger)',
                 fontSize: '13px',
               }}
             >
@@ -473,7 +473,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                   style={{
                     backgroundColor: 'transparent',
                     border: '1px solid rgba(255,77,79,0.3)',
-                    color: '#FF4D4F',
+                    color: 'var(--nz-danger)',
                     padding: '4px 12px',
                     borderRadius: '4px',
                     cursor: 'pointer',
@@ -492,7 +492,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
           {activeStep === 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                   Título
                 </label>
                 <input
@@ -502,18 +502,18 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                   onBlur={(e) => handleFieldBlur('titulo', e.target.value)}
                   style={{
                     width: '100%',
-                    backgroundColor: '#F9FAFB',
+                    background: 'var(--bg)',
                     border: '1px solid rgba(0,0,0,0.12)',
                     borderRadius: '6px',
                     padding: '10px 12px',
-                    color: '#111827',
+                    color: 'var(--text)',
                     fontSize: '13px',
                     boxSizing: 'border-box',
                   }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                   Descripción
                 </label>
                 <textarea
@@ -522,22 +522,22 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                   onBlur={(e) => handleFieldBlur('descripcion', e.target.value)}
                   style={{
                     width: '100%',
-                    backgroundColor: '#F9FAFB',
+                    background: 'var(--bg)',
                     border: '1px solid rgba(0,0,0,0.12)',
                     borderRadius: '6px',
                     padding: '10px 12px',
-                    color: '#111827',
+                    color: 'var(--text)',
                     fontSize: '13px',
                     boxSizing: 'border-box',
                     minHeight: '80px',
-                    fontFamily: 'DM Mono, monospace',
+                    fontFamily: 'var(--font-mono)',
                     resize: 'vertical',
                   }}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                  <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                     Mercado
                   </label>
                   <input
@@ -547,18 +547,18 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                     onBlur={(e) => handleFieldBlur('mercado', e.target.value)}
                     style={{
                       width: '100%',
-                      backgroundColor: '#F9FAFB',
+                      background: 'var(--bg)',
                       border: '1px solid rgba(0,0,0,0.12)',
                       borderRadius: '6px',
                       padding: '10px 12px',
-                      color: '#111827',
+                      color: 'var(--text)',
                       fontSize: '13px',
                       boxSizing: 'border-box',
                     }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                  <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                     Categoría
                   </label>
                   <input
@@ -568,11 +568,11 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                     onBlur={(e) => handleFieldBlur('categoria', e.target.value)}
                     style={{
                       width: '100%',
-                      backgroundColor: '#F9FAFB',
+                      background: 'var(--bg)',
                       border: '1px solid rgba(0,0,0,0.12)',
                       borderRadius: '6px',
                       padding: '10px 12px',
-                      color: '#111827',
+                      color: 'var(--text)',
                       fontSize: '13px',
                       boxSizing: 'border-box',
                     }}
@@ -580,7 +580,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                   Prioridad
                 </label>
                 <StarRating
@@ -600,9 +600,9 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                   justifyContent: 'center',
                   gap: '8px',
                   padding: '12px 20px',
-                  backgroundColor: '#00E5A0',
+                  background: 'var(--primary)',
                   border: 'none',
-                  color: '#003D2B',
+                  color: 'var(--primary-fg)',
                   borderRadius: '6px',
                   cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
                   fontSize: '13px',
@@ -641,7 +641,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                       animation: 'spin 0.8s linear infinite',
                     }}
                   />
-                  <div style={{ color: '#999', fontSize: '14px', textAlign: 'center' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center' }}>
                     Analizando mercado con IA...
                   </div>
                 </div>
@@ -654,15 +654,15 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                       onBlur={(e) => handleFieldBlur('research_mercado', e.target.value)}
                       style={{
                         width: '100%',
-                        backgroundColor: '#F9FAFB',
-                        border: '1px solid rgba(0,0,0,0.08)',
+                        background: 'var(--bg)',
+                        border: '1px solid var(--border)',
                         borderRadius: '6px',
                         padding: '12px',
-                        color: '#374151',
+                        color: 'var(--text)',
                         fontSize: '13px',
                         boxSizing: 'border-box',
                         minHeight: '150px',
-                        fontFamily: 'DM Mono, monospace',
+                        fontFamily: 'var(--font-mono)',
                         resize: 'vertical',
                       }}
                     />
@@ -674,7 +674,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         right: '8px',
                         backgroundColor: 'rgba(255,77,79,0.1)',
                         border: '1px solid rgba(255,77,79,0.3)',
-                        color: '#FF4D4F',
+                        color: 'var(--nz-danger)',
                         borderRadius: '4px',
                         width: '32px',
                         height: '32px',
@@ -704,7 +704,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         padding: '10px 16px',
                         backgroundColor: 'transparent',
                         border: '1px solid rgba(0,0,0,0.10)',
-                        color: '#999',
+                        color: 'var(--text-muted)',
                         borderRadius: '6px',
                         cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
                         fontSize: '13px',
@@ -720,9 +720,9 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                       style={{
                         flex: 1,
                         padding: '10px 16px',
-                        backgroundColor: '#00E5A0',
+                        background: 'var(--primary)',
                         border: 'none',
-                        color: '#003D2B',
+                        color: 'var(--primary-fg)',
                         borderRadius: '6px',
                         cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
                         fontSize: '13px',
@@ -762,14 +762,14 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                       animation: 'spin 0.8s linear infinite',
                     }}
                   />
-                  <div style={{ color: '#999', fontSize: '14px', textAlign: 'center' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center' }}>
                     Generando especificaciones técnicas...
                   </div>
                 </div>
               ) : (
                 <>
                   <div>
-                    <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                       Pantallas
                     </label>
                     <div style={{ position: 'relative' }}>
@@ -779,15 +779,15 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         onBlur={(e) => handleFieldBlur('specs_pantallas', e.target.value)}
                         style={{
                           width: '100%',
-                          backgroundColor: '#F9FAFB',
-                          border: '1px solid rgba(0,0,0,0.08)',
+                          background: 'var(--bg)',
+                          border: '1px solid var(--border)',
                           borderRadius: '6px',
                           padding: '10px 12px',
-                          color: '#374151',
+                          color: 'var(--text)',
                           fontSize: '12px',
                           boxSizing: 'border-box',
                           height: '120px',
-                          fontFamily: 'DM Mono, monospace',
+                          fontFamily: 'var(--font-mono)',
                           resize: 'none',
                         }}
                       />
@@ -799,7 +799,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                           right: '8px',
                           backgroundColor: 'rgba(255,77,79,0.1)',
                           border: '1px solid rgba(255,77,79,0.3)',
-                          color: '#FF4D4F',
+                          color: 'var(--nz-danger)',
                           borderRadius: '4px',
                           width: '32px',
                           height: '32px',
@@ -822,7 +822,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                     </div>
                   </div>
                   <div>
-                    <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                       Flujos
                     </label>
                     <div style={{ position: 'relative' }}>
@@ -832,15 +832,15 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         onBlur={(e) => handleFieldBlur('specs_flujos', e.target.value)}
                         style={{
                           width: '100%',
-                          backgroundColor: '#F9FAFB',
-                          border: '1px solid rgba(0,0,0,0.08)',
+                          background: 'var(--bg)',
+                          border: '1px solid var(--border)',
                           borderRadius: '6px',
                           padding: '10px 12px',
-                          color: '#374151',
+                          color: 'var(--text)',
                           fontSize: '12px',
                           boxSizing: 'border-box',
                           height: '120px',
-                          fontFamily: 'DM Mono, monospace',
+                          fontFamily: 'var(--font-mono)',
                           resize: 'none',
                         }}
                       />
@@ -852,7 +852,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                           right: '8px',
                           backgroundColor: 'rgba(255,77,79,0.1)',
                           border: '1px solid rgba(255,77,79,0.3)',
-                          color: '#FF4D4F',
+                          color: 'var(--nz-danger)',
                           borderRadius: '4px',
                           width: '32px',
                           height: '32px',
@@ -875,7 +875,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                     </div>
                   </div>
                   <div>
-                    <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                       APIs / Integraciones
                     </label>
                     <div style={{ position: 'relative' }}>
@@ -885,15 +885,15 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         onBlur={(e) => handleFieldBlur('specs_apis', e.target.value)}
                         style={{
                           width: '100%',
-                          backgroundColor: '#F9FAFB',
-                          border: '1px solid rgba(0,0,0,0.08)',
+                          background: 'var(--bg)',
+                          border: '1px solid var(--border)',
                           borderRadius: '6px',
                           padding: '10px 12px',
-                          color: '#374151',
+                          color: 'var(--text)',
                           fontSize: '12px',
                           boxSizing: 'border-box',
                           height: '120px',
-                          fontFamily: 'DM Mono, monospace',
+                          fontFamily: 'var(--font-mono)',
                           resize: 'none',
                         }}
                       />
@@ -905,7 +905,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                           right: '8px',
                           backgroundColor: 'rgba(255,77,79,0.1)',
                           border: '1px solid rgba(255,77,79,0.3)',
-                          color: '#FF4D4F',
+                          color: 'var(--nz-danger)',
                           borderRadius: '4px',
                           width: '32px',
                           height: '32px',
@@ -928,7 +928,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                     </div>
                   </div>
                   <div>
-                    <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                       Complejidad
                     </label>
                     <div style={{ position: 'relative' }}>
@@ -940,11 +940,11 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         placeholder="baja | media | alta"
                         style={{
                           width: '100%',
-                          backgroundColor: '#F9FAFB',
-                          border: '1px solid rgba(0,0,0,0.08)',
+                          background: 'var(--bg)',
+                          border: '1px solid var(--border)',
                           borderRadius: '6px',
                           padding: '10px 12px',
-                          color: '#374151',
+                          color: 'var(--text)',
                           fontSize: '13px',
                           boxSizing: 'border-box',
                         }}
@@ -957,7 +957,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                           right: '8px',
                           backgroundColor: 'rgba(255,77,79,0.1)',
                           border: '1px solid rgba(255,77,79,0.3)',
-                          color: '#FF4D4F',
+                          color: 'var(--nz-danger)',
                           borderRadius: '4px',
                           width: '32px',
                           height: '32px',
@@ -988,7 +988,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         padding: '10px 16px',
                         backgroundColor: 'transparent',
                         border: '1px solid rgba(0,0,0,0.10)',
-                        color: '#999',
+                        color: 'var(--text-muted)',
                         borderRadius: '6px',
                         cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
                         fontSize: '13px',
@@ -1004,9 +1004,9 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                       style={{
                         flex: 1,
                         padding: '10px 16px',
-                        backgroundColor: '#00E5A0',
+                        background: 'var(--primary)',
                         border: 'none',
-                        color: '#003D2B',
+                        color: 'var(--primary-fg)',
                         borderRadius: '6px',
                         cursor: sendingPipeline || isProcessingNow || processingStep !== null ? 'not-allowed' : 'pointer',
                         fontSize: '13px',
@@ -1024,7 +1024,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
 
           {/* PASO 3 — Pipeline (solo vista) */}
           {activeStep === 3 && (
-            <div style={{ color: '#999', textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 20px' }}>
               <p>Pipeline será completado próximamente</p>
             </div>
           )}
@@ -1104,25 +1104,25 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
     >
       <div
         style={{
-          backgroundColor: '#FFFFFF',
+          background: 'var(--surface)',
           borderRadius: '12px',
           padding: '24px',
           maxWidth: '500px',
           width: '100%',
           maxHeight: '80vh',
           overflow: 'auto',
-          border: '1px solid rgba(0,0,0,0.08)',
+          border: '1px solid var(--border)',
           boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ color: '#111827', margin: 0, fontSize: '18px', fontWeight: '600' }}>
+          <h2 style={{ color: 'var(--text)', margin: 0, fontSize: '18px', fontWeight: '600' }}>
             Nueva idea
           </h2>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer', padding: 0 }}
+            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}
           >
             <IconX />
           </button>
@@ -1130,7 +1130,7 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
               Título *
             </label>
             <input
@@ -1140,11 +1140,11 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
               placeholder="Nombre de la idea"
               style={{
                 width: '100%',
-                backgroundColor: '#0A0A0F',
-                border: '1px solid rgba(0,0,0,0.08)',
+                backgroundColor: 'var(--bg)',
+                border: '1px solid var(--border)',
                 borderRadius: '6px',
                 padding: '10px 12px',
-                color: 'white',
+                color: 'var(--text)',
                 fontSize: '13px',
                 boxSizing: 'border-box',
               }}
@@ -1152,7 +1152,7 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
               Descripción
             </label>
             <textarea
@@ -1161,22 +1161,22 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
               placeholder="Describe la idea"
               style={{
                 width: '100%',
-                backgroundColor: '#0A0A0F',
-                border: '1px solid rgba(0,0,0,0.08)',
+                backgroundColor: 'var(--bg)',
+                border: '1px solid var(--border)',
                 borderRadius: '6px',
                 padding: '10px 12px',
-                color: 'white',
+                color: 'var(--text)',
                 fontSize: '13px',
                 boxSizing: 'border-box',
                 minHeight: '80px',
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'var(--font-mono)',
               }}
             />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
-              <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+              <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                 Público
               </label>
               <input
@@ -1186,11 +1186,11 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
                 placeholder="Ej: desarrolladores"
                 style={{
                   width: '100%',
-                  backgroundColor: '#F9FAFB',
-                  border: '1px solid rgba(0,0,0,0.08)',
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border)',
                   borderRadius: '6px',
                   padding: '10px 12px',
-                  color: 'white',
+                  color: 'var(--text)',
                   fontSize: '13px',
                   boxSizing: 'border-box',
                 }}
@@ -1198,7 +1198,7 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
             </div>
 
             <div>
-              <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+              <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                 Mercado
               </label>
               <input
@@ -1208,11 +1208,11 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
                 placeholder="Ej: argentina"
                 style={{
                   width: '100%',
-                  backgroundColor: '#F9FAFB',
-                  border: '1px solid rgba(0,0,0,0.08)',
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border)',
                   borderRadius: '6px',
                   padding: '10px 12px',
-                  color: 'white',
+                  color: 'var(--text)',
                   fontSize: '13px',
                   boxSizing: 'border-box',
                 }}
@@ -1221,7 +1221,7 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
               Categoría
             </label>
             <input
@@ -1231,11 +1231,11 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
               placeholder="Ej: productividad"
               style={{
                 width: '100%',
-                backgroundColor: '#0A0A0F',
-                border: '1px solid rgba(0,0,0,0.08)',
+                backgroundColor: 'var(--bg)',
+                border: '1px solid var(--border)',
                 borderRadius: '6px',
                 padding: '10px 12px',
-                color: 'white',
+                color: 'var(--text)',
                 fontSize: '13px',
                 boxSizing: 'border-box',
               }}
@@ -1243,14 +1243,14 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
               Prioridad
             </label>
             <StarRating value={formData.prioridad} onChange={(val) => setFormData({ ...formData, prioridad: val })} />
           </div>
 
           <div>
-            <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
               Notas
             </label>
             <textarea
@@ -1259,15 +1259,15 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
               placeholder="Notas adicionales"
               style={{
                 width: '100%',
-                backgroundColor: '#0A0A0F',
-                border: '1px solid rgba(0,0,0,0.08)',
+                backgroundColor: 'var(--bg)',
+                border: '1px solid var(--border)',
                 borderRadius: '6px',
                 padding: '10px 12px',
-                color: 'white',
+                color: 'var(--text)',
                 fontSize: '13px',
                 boxSizing: 'border-box',
                 minHeight: '60px',
-                fontFamily: 'DM Mono, monospace',
+                fontFamily: 'var(--font-mono)',
               }}
             />
           </div>
@@ -1281,7 +1281,7 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
                 padding: '10px',
                 backgroundColor: 'transparent',
                 border: '1px solid rgba(0,0,0,0.10)',
-                color: '#6B7280',
+                color: 'var(--text-muted)',
                 borderRadius: '6px',
                 cursor: 'pointer',
                 fontSize: '13px',
@@ -1296,9 +1296,9 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
               style={{
                 flex: 1,
                 padding: '10px',
-                backgroundColor: '#00E5A0',
+                background: 'var(--primary)',
                 border: 'none',
-                color: '#003D2B',
+                color: 'var(--primary-fg)',
                 borderRadius: '6px',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 fontSize: '13px',
@@ -1488,13 +1488,13 @@ export default function Ideas() {
   const mercados = [...new Set(ideas.map((i) => i.mercado).filter(Boolean))];
 
   return (
-    <div style={{ backgroundColor: '#F9FAFB', minHeight: '100%', padding: '24px' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100%', padding: '24px' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexDirection: window.innerWidth < 768 ? 'column' : 'row', alignItems: window.innerWidth < 768 ? 'flex-start' : 'center', gap: window.innerWidth < 768 ? '12px' : '0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <p style={{ color: '#6B7280', fontSize: '14px', margin: 0 }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: 0 }}>
                 Gestiona todas tus ideas para futuras apps
               </p>
             </div>
@@ -1521,7 +1521,7 @@ export default function Ideas() {
                   padding: '10px 20px',
                   backgroundColor: 'transparent',
                   border: '1px solid rgba(0,0,0,0.10)',
-                  color: '#999',
+                  color: 'var(--text-muted)',
                   borderRadius: '6px',
                   cursor: 'pointer',
                   fontSize: '13px',
@@ -1539,7 +1539,7 @@ export default function Ideas() {
                   padding: '10px 20px',
                   backgroundColor: 'transparent',
                   border: '1px solid rgba(0,0,0,0.10)',
-                  color: '#999',
+                  color: 'var(--text-muted)',
                   borderRadius: '6px',
                   cursor: 'pointer',
                   fontSize: '13px',
@@ -1555,9 +1555,9 @@ export default function Ideas() {
                   alignItems: 'center',
                   gap: '8px',
                   padding: '10px 20px',
-                  backgroundColor: '#00E5A0',
+                  background: 'var(--primary)',
                   border: 'none',
-                  color: '#003D2B',
+                  color: 'var(--primary-fg)',
                   borderRadius: '6px',
                   cursor: 'pointer',
                   fontSize: '13px',
@@ -1580,10 +1580,10 @@ export default function Ideas() {
             style={{
               width: '100%',
               padding: '10px 12px',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid rgba(0,0,0,0.08)',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
               borderRadius: '6px',
-              color: '#111827',
+              color: 'var(--text)',
               fontSize: '13px',
               boxSizing: 'border-box',
             }}
@@ -1593,7 +1593,7 @@ export default function Ideas() {
         {/* Filtros */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '24px' }}>
           <div>
-            <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
               Estado
             </label>
             <select
@@ -1601,11 +1601,11 @@ export default function Ideas() {
               onChange={(e) => setFilterEstado(e.target.value)}
               style={{
                 width: '100%',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid rgba(0,0,0,0.08)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
                 borderRadius: '6px',
                 padding: '10px 12px',
-                color: '#111827',
+                color: 'var(--text)',
                 fontSize: '13px',
               }}
             >
@@ -1619,7 +1619,7 @@ export default function Ideas() {
 
           {categories.length > 0 && (
             <div>
-              <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+              <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                 Categoría
               </label>
               <select
@@ -1627,11 +1627,11 @@ export default function Ideas() {
                 onChange={(e) => setFilterCategoria(e.target.value)}
                 style={{
                   width: '100%',
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid rgba(0,0,0,0.08)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
                   borderRadius: '6px',
                   padding: '10px 12px',
-                  color: 'white',
+                  color: 'var(--text)',
                   fontSize: '13px',
                 }}
               >
@@ -1647,7 +1647,7 @@ export default function Ideas() {
 
           {mercados.length > 0 && (
             <div>
-              <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+              <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
                 Mercado
               </label>
               <select
@@ -1655,11 +1655,11 @@ export default function Ideas() {
                 onChange={(e) => setFilterMercado(e.target.value)}
                 style={{
                   width: '100%',
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid rgba(0,0,0,0.08)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
                   borderRadius: '6px',
                   padding: '10px 12px',
-                  color: 'white',
+                  color: 'var(--text)',
                   fontSize: '13px',
                 }}
               >
@@ -1676,20 +1676,20 @@ export default function Ideas() {
 
         {/* Grid de ideas */}
         {loading ? (
-          <div style={{ color: '#999', textAlign: 'center', padding: '40px 0' }}>
+          <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>
             Cargando...
           </div>
         ) : filteredIdeas.length === 0 ? (
           <div
             style={{
-              backgroundColor: '#FFFFFF',
+              background: 'var(--surface)',
               border: '1px dashed rgba(0,0,0,0.12)',
               borderRadius: '10px',
               padding: '40px 20px',
               textAlign: 'center',
             }}
           >
-            <p style={{ color: '#666', margin: 0, fontSize: '13px' }}>
+            <p style={{ color: 'var(--text-subtle)', margin: 0, fontSize: '13px' }}>
               {ideas.length === 0 ? 'No hay ideas aún' : 'No hay ideas que coincidan con los filtros'}
             </p>
           </div>
@@ -1709,8 +1709,8 @@ export default function Ideas() {
                     position: 'absolute',
                     top: '12px',
                     left: '12px',
-                    backgroundColor: '#00E5A0',
-                    color: '#003D2B',
+                    background: 'var(--primary)',
+                    color: 'var(--primary-fg)',
                     width: '40px',
                     height: '40px',
                     borderRadius: '50%',
@@ -1730,11 +1730,11 @@ export default function Ideas() {
                   style={{
                     width: '100%',
                     background: 'none',
-                    border: '1px solid rgba(0,0,0,0.08)',
+                    border: '1px solid var(--border)',
                     borderRadius: '8px',
                     padding: '16px',
                     paddingTop: '56px',
-                    backgroundColor: '#FFFFFF',
+                    background: 'var(--surface)',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.2s',
@@ -1750,14 +1750,14 @@ export default function Ideas() {
                     e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
                   }}
                 >
-                <h3 style={{ color: '#111827', margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
+                <h3 style={{ color: 'var(--text)', margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
                   {idea.titulo}
                 </h3>
 
                 {idea.descripcion && (
                   <p
                     style={{
-                      color: '#6B7280',
+                      color: 'var(--text-muted)',
                       margin: '0 0 12px 0',
                       fontSize: '12px',
                       display: '-webkit-box',
@@ -1777,7 +1777,7 @@ export default function Ideas() {
                     </span>
                   ); })()}
                   {idea.categoria && (
-                    <span style={{ backgroundColor: '#F5F3FF', color: '#7C3AED', fontSize: '10px', fontWeight: '600', padding: '3px 8px', borderRadius: '20px' }}>
+                    <span style={{ backgroundColor: '#F5F3FF', color: 'var(--primary)', fontSize: '10px', fontWeight: '600', padding: '3px 8px', borderRadius: '20px' }}>
                       {idea.categoria}
                     </span>
                   )}
@@ -1803,7 +1803,7 @@ export default function Ideas() {
                     height: '32px',
                     backgroundColor: '#F5F3FF',
                     border: '1px solid #EDE9FE',
-                    color: '#7C3AED',
+                    color: 'var(--primary)',
                     borderRadius: '6px',
                     cursor: 'pointer',
                     display: 'flex',

@@ -1,20 +1,20 @@
 export default function MetricCard({ label, value, sub, subColor = 'neutral' }) {
-  const subColorClass = {
-    'green': 'text-[#00E5A0]',
-    'red': 'text-[#FF4D4F]',
-    'neutral': 'text-[rgba(255,255,255,0.45)]'
-  }[subColor] || 'text-[rgba(255,255,255,0.45)]';
+  const subColorMap = {
+    green:   'var(--nz-success)',
+    red:     'var(--nz-danger)',
+    neutral: 'var(--text-subtle)',
+  };
 
   return (
-    <div className="bg-[#13131A] border border-[rgba(255,255,255,0.08)] rounded-[10px] p-4">
-      <div className="text-[11px] text-[rgba(255,255,255,0.45)] uppercase tracking-[0.08em] mb-3">
+    <div className="nz-card" style={{ padding: 16 }}>
+      <div style={{ fontSize: 11, color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 12, fontWeight: 500 }}>
         {label}
       </div>
-      <div className="text-[28px] font-medium text-white mb-2" style={{ fontFamily: 'Syne' }}>
+      <div style={{ fontSize: 28, fontWeight: 500, color: 'var(--text)', marginBottom: 8, fontFamily: 'var(--font-sans)', fontVariantNumeric: 'tabular-nums' }}>
         {value}
       </div>
       {sub && (
-        <div className={`text-[12px] ${subColorClass}`}>
+        <div style={{ fontSize: 12, color: subColorMap[subColor] || 'var(--text-subtle)' }}>
           {sub}
         </div>
       )}

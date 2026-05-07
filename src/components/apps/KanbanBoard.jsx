@@ -1,131 +1,113 @@
 import { useState } from 'react';
-import {
-  DndContext, pointerWithin, rectIntersection,
-  KeyboardSensor, PointerSensor, useSensor, useSensors,
-  useDroppable,
-} from '@dnd-kit/core';
+import { DndContext, pointerWithin, rectIntersection, KeyboardSensor, PointerSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import {
-  SortableContext, sortableKeyboardCoordinates,
-  verticalListSortingStrategy, useSortable,
-} from '@dnd-kit/sortable';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import DatePicker from '../ui/DatePicker';
 
 const IconPlus = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="12" y1="5" x2="12" y2="19"></line>
-    <line x1="5" y1="12" x2="19" y2="12"></line>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
   </svg>
 );
-
-const IconGripVertical = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+const IconGrip = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/>
     <circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>
   </svg>
 );
-
-const typeColors = {
-  pipeline: { bg: 'rgba(124,106,255,0.12)', text: '#7C6AFF' },
-  aso: { bg: 'rgba(100,150,255,0.12)', text: '#6496FF' },
-  mantenimiento: { bg: 'rgba(255,180,0,0.12)', text: '#FFB400' },
-  marketing: { bg: 'rgba(0,229,160,0.12)', text: '#00E5A0' },
-  legal: { bg: 'rgba(255,77,79,0.12)', text: '#FF4D4F' },
-};
-
-const priorityColors = { 1: '#FF4D4F', 2: '#FFB400', 3: 'rgba(255,255,255,0.45)' };
-
 const IconText = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M4 7h16M4 12h16M4 17h16"/>
   </svg>
 );
 
+const typeColors = {
+  pipeline:      { bg: 'var(--primary-soft)', color: 'var(--primary)' },
+  aso:           { bg: 'oklch(0.97 0.04 235)', color: 'oklch(0.45 0.14 235)' },
+  mantenimiento: { bg: 'oklch(0.97 0.06 75)',  color: 'oklch(0.45 0.15 75)' },
+  marketing:     { bg: 'oklch(0.97 0.06 155)', color: 'oklch(0.40 0.14 155)' },
+  legal:         { bg: 'oklch(0.97 0.05 27)',  color: 'oklch(0.45 0.18 27)' },
+};
+const priorityColors = {
+  1: 'var(--nz-danger)',
+  2: 'var(--nz-warning)',
+  3: 'var(--text-subtle)',
+};
+
+const dateColor = (dateStr) => {
+  if (!dateStr) return 'var(--text-muted)';
+  const d = new Date(dateStr); const t = new Date(); t.setHours(0,0,0,0); d.setHours(0,0,0,0);
+  const days = (d - t) / 86400000;
+  if (days < 0) return 'var(--nz-danger)';
+  if (days <= 3) return 'var(--nz-warning)';
+  return 'var(--text-muted)';
+};
+
+const inputS = { width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '8px 10px', color: 'var(--text)', fontSize: 13, boxSizing: 'border-box' };
+
 const TaskCard = ({ task, onDelete, onUpdate }) => {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [editingNotes, setEditingNotes] = useState(false);
   const [editedNotes, setEditedNotes] = useState(task.notas || '');
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
-  const typeConfig = typeColors[task.tipo] || typeColors.pipeline;
-
-  const handleCopyPrompt = () => {
-    navigator.clipboard.writeText(task.notas || '');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const tc = typeColors[task.tipo] || typeColors.pipeline;
 
   const handleSaveNotes = async () => {
-    if (onUpdate && editedNotes !== task.notas) {
-      await onUpdate(task.id, { notas: editedNotes });
-    }
-    setIsEditingNotes(false);
-  };
-
-  const getDateColor = (dateStr) => {
-    if (!dateStr) return '#999';
-    const dueDate = new Date(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    dueDate.setHours(0, 0, 0, 0);
-    const daysUntil = (dueDate - today) / (1000 * 60 * 60 * 24);
-    if (daysUntil < 0) return '#FF4D4F'; // Rojo — vencido
-    if (daysUntil <= 3) return '#FFB400'; // Amarillo — vence pronto
-    return '#999'; // Gris — normal
+    if (onUpdate && editedNotes !== task.notas) await onUpdate(task.id, { notas: editedNotes });
+    setEditingNotes(false);
   };
 
   return (
-    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
-      className="mb-3 bg-[#1C1C26] border border-[rgba(255,255,255,0.08)] rounded-[8px]">
-      <div style={{ padding: '12px' }}>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-          <div {...attributes} {...listeners} style={{ cursor: 'grab', color: '#999', marginTop: '2px', flexShrink: 0 }}>
-            <IconGripVertical />
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, marginBottom: 8 }}>
+      <div className="nz-card" style={{ padding: 12 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+          <div {...attributes} {...listeners} style={{ cursor: 'grab', color: 'var(--text-subtle)', marginTop: 2, flexShrink: 0 }}>
+            <IconGrip />
           </div>
-          <div style={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={() => setExpanded(!expanded)}>
-            <div style={{ color: 'white', fontSize: '13px', marginBottom: '6px', wordBreak: 'break-word' }}>{task.titulo}</div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <span style={{ backgroundColor: typeConfig.bg, color: typeConfig.text, fontSize: '10px', padding: '2px 6px', borderRadius: '12px' }}>{task.tipo}</span>
-              <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: priorityColors[task.prioridad] || priorityColors[3] }} />
-              {task.notas && <span style={{ color: '#666', fontSize: '12px', marginLeft: 'auto' }}><IconText /></span>}
+          <div style={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={() => setExpanded(e => !e)}>
+            <div style={{ color: 'var(--text)', fontSize: 13, marginBottom: 6, wordBreak: 'break-word' }}>{task.titulo}</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ background: tc.bg, color: tc.color, fontSize: 10, padding: '2px 7px', borderRadius: 'var(--radius-pill)' }}>{task.tipo}</span>
+              <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: 999, background: priorityColors[task.prioridad] || priorityColors[3] }} />
+              {task.notas && <span style={{ color: 'var(--text-subtle)', fontSize: 11, marginLeft: 'auto' }}><IconText /></span>}
             </div>
           </div>
           {onDelete && (
-            <button onClick={(e) => { e.stopPropagation(); onDelete(task.id); }} style={{ background: 'none', border: 'none', color: '#FF4D4F', cursor: 'pointer', fontSize: '16px', flexShrink: 0, padding: '0', lineHeight: '1' }}>×</button>
+            <button onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
+              style={{ background: 'none', border: 'none', color: 'var(--nz-danger)', cursor: 'pointer', fontSize: 16, flexShrink: 0, padding: 0, lineHeight: 1 }}>×</button>
           )}
         </div>
       </div>
 
       {expanded && (task.notas || task.due_date) && (
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: '12px' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ borderTop: '1px solid var(--border)', padding: 12, background: 'var(--surface-2)', borderRadius: '0 0 var(--radius-lg) var(--radius-lg)' }} onClick={e => e.stopPropagation()}>
           {task.due_date && (
-            <div style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              <div style={{ color: '#999', fontSize: '10px', marginBottom: '4px' }}>Fecha límite</div>
-              <div style={{ color: getDateColor(task.due_date), fontSize: '13px', fontWeight: '500' }}>
+            <div style={{ marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
+              <div style={{ color: 'var(--text-subtle)', fontSize: 10, marginBottom: 4 }}>Fecha límite</div>
+              <div style={{ color: dateColor(task.due_date), fontSize: 13, fontWeight: 500 }}>
                 {new Date(task.due_date).toLocaleDateString('es-ES')}
               </div>
             </div>
           )}
-          {isEditingNotes ? (
+          {editingNotes ? (
             <div>
-              <textarea value={editedNotes} onChange={(e) => setEditedNotes(e.target.value)} onBlur={handleSaveNotes}
-                style={{ width: '100%', backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '12px', boxSizing: 'border-box', fontFamily: 'DM Mono, monospace', minHeight: '80px', resize: 'vertical' }}
-                autoFocus />
-              <button onClick={handleSaveNotes} style={{ marginTop: '8px', padding: '6px 12px', backgroundColor: '#00E5A0', border: 'none', color: '#0A0A0F', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}>Guardar</button>
+              <textarea value={editedNotes} onChange={e => setEditedNotes(e.target.value)} onBlur={handleSaveNotes}
+                style={{ ...inputS, background: 'var(--surface)', fontFamily: 'var(--font-mono)', minHeight: 80, resize: 'vertical' }} autoFocus />
+              <button onClick={handleSaveNotes} className="nz-btn nz-btn-primary" style={{ marginTop: 8, fontSize: 11, padding: '5px 12px' }}>Guardar</button>
             </div>
           ) : task.notas ? (
             <div>
-              <div style={{ backgroundColor: '#13131A', borderRadius: '6px', padding: '8px', marginBottom: '8px', fontSize: '12px', color: 'rgba(255,255,255,0.7)', fontFamily: 'DM Mono, monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-sm)', padding: 8, marginBottom: 8, fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                 {task.notas}
               </div>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <button onClick={handleCopyPrompt} style={{ padding: '6px 12px', backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#999', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={() => { navigator.clipboard.writeText(task.notas); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+                  className="nz-btn nz-btn-ghost" style={{ fontSize: 11, padding: '5px 10px' }}>
                   {copied ? 'Copiado ✓' : 'Copiar prompt'}
                 </button>
                 {onUpdate && (
-                  <button onClick={() => setIsEditingNotes(true)} style={{ padding: '6px 12px', backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#999', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>
-                    Editar
-                  </button>
+                  <button onClick={() => setEditingNotes(true)} className="nz-btn nz-btn-ghost" style={{ fontSize: 11, padding: '5px 10px' }}>Editar</button>
                 )}
               </div>
             </div>
@@ -137,60 +119,50 @@ const TaskCard = ({ task, onDelete, onUpdate }) => {
 };
 
 const NewTaskForm = ({ estado, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({ titulo: '', tipo: 'pipeline', prioridad: 2, notas: '', due_date: '' });
+  const [form, setForm] = useState({ titulo: '', tipo: 'pipeline', prioridad: 2, notas: '', due_date: '' });
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: name === 'prioridad' ? parseInt(value) : value }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const validate = () => {
-    const newErrors = {};
-    if (!formData.titulo.trim()) {
-      newErrors.titulo = 'El título es requerido';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setForm(p => ({ ...p, [name]: name === 'prioridad' ? parseInt(value) : value }));
+    if (errors[name]) setErrors(p => ({ ...p, [name]: '' }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
-    onSubmit(estado, formData);
+    if (!form.titulo.trim()) { setErrors({ titulo: 'Requerido' }); return; }
+    onSubmit(estado, form);
   };
+
   return (
-    <form onSubmit={handleSubmit} style={{ backgroundColor: '#1C1C26', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
-      <div style={{ marginBottom: '8px' }}>
-        <input type="text" name="titulo" value={formData.titulo} onChange={handleChange} placeholder="Título de la tarea" autoFocus
-          style={{ width: '100%', backgroundColor: '#13131A', border: errors.titulo ? '1px solid #FF4D4F' : '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '13px', boxSizing: 'border-box' }} />
-        {errors.titulo && <span style={{ color: '#FF4D4F', fontSize: '11px', marginTop: '4px', display: 'block' }}>{errors.titulo}</span>}
+    <form onSubmit={handleSubmit} className="nz-card" style={{ padding: 12, marginBottom: 12 }}>
+      <div style={{ marginBottom: 8 }}>
+        <input type="text" name="titulo" value={form.titulo} onChange={handleChange} placeholder="Título de la tarea" autoFocus
+          style={{ ...inputS, border: errors.titulo ? '1px solid var(--nz-danger)' : '1px solid var(--border)' }} />
+        {errors.titulo && <span style={{ color: 'var(--nz-danger)', fontSize: 11 }}>{errors.titulo}</span>}
       </div>
-      <textarea name="notas" value={formData.notas} onChange={handleChange} placeholder="Descripción o prompt para ejecutar esta tarea..."
-        style={{ width: '100%', backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '12px', boxSizing: 'border-box', marginBottom: '10px', minHeight: '60px', fontFamily: 'DM Mono, monospace', resize: 'vertical' }} />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
-        <select name="tipo" value={formData.tipo} onChange={handleChange} style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '12px' }}>
+      <textarea name="notas" value={form.notas} onChange={handleChange} placeholder="Descripción o prompt..."
+        style={{ ...inputS, marginBottom: 8, minHeight: 56, fontFamily: 'var(--font-mono)', resize: 'vertical' }} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+        <select name="tipo" value={form.tipo} onChange={handleChange} style={inputS}>
           <option value="pipeline">Pipeline</option>
           <option value="aso">ASO</option>
           <option value="mantenimiento">Mantenimiento</option>
           <option value="marketing">Marketing</option>
           <option value="legal">Legal</option>
         </select>
-        <select name="prioridad" value={formData.prioridad} onChange={handleChange} style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '12px' }}>
+        <select name="prioridad" value={form.prioridad} onChange={handleChange} style={inputS}>
           <option value="1">Alta</option>
           <option value="2">Media</option>
           <option value="3">Baja</option>
         </select>
       </div>
-      <div style={{ marginBottom: '10px' }}>
-        <DatePicker value={formData.due_date} onChange={(date) => setFormData(prev => ({ ...prev, due_date: date }))} label="Fecha límite (opcional)" />
+      <div style={{ marginBottom: 8 }}>
+        <DatePicker value={form.due_date} onChange={d => setForm(p => ({ ...p, due_date: d }))} label="Fecha límite (opcional)" />
       </div>
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <button type="submit" style={{ flex: 1, padding: '8px', backgroundColor: '#00E5A0', border: 'none', color: '#0A0A0F', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>Agregar</button>
-        <button type="button" onClick={onCancel} style={{ flex: 1, padding: '8px', backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#999', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>Cancelar</button>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button type="submit" className="nz-btn nz-btn-primary" style={{ flex: 1, justifyContent: 'center', fontSize: 12 }}>Agregar</button>
+        <button type="button" onClick={onCancel} className="nz-btn nz-btn-ghost" style={{ flex: 1, justifyContent: 'center', fontSize: 12 }}>Cancelar</button>
       </div>
     </form>
   );
@@ -200,24 +172,19 @@ const KanbanColumn = ({ title, estado, tasks, onAddTask, onDeleteTask, onUpdateT
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { setNodeRef, isOver } = useDroppable({ id: estado });
 
-  const handleFormSubmit = async (columnEstado, taskData) => {
-    try {
-      await onAddTask(columnEstado, taskData);
-      setIsFormOpen(false);
-    } catch (err) {
-      console.error('Error adding task:', err);
-    }
+  const handleFormSubmit = async (colEstado, taskData) => {
+    try { await onAddTask(colEstado, taskData); setIsFormOpen(false); } catch (err) { console.error(err); }
   };
 
   return (
     <div ref={setNodeRef} style={{
-      flex: 1, minWidth: '280px', backgroundColor: isOver ? '#111118' : '#0A0A0F',
-      padding: '16px', borderRadius: '10px',
-      border: `1px solid ${isOver ? 'rgba(0,229,160,0.3)' : 'rgba(255,255,255,0.08)'}`,
-      transition: 'background-color 0.15s, border-color 0.15s',
+      flex: 1, minWidth: 280, padding: 16, borderRadius: 'var(--radius-lg)',
+      background: isOver ? 'var(--primary-soft)' : 'var(--bg-muted)',
+      border: `1px dashed ${isOver ? 'var(--primary)' : 'var(--border)'}`,
+      transition: 'background var(--dur), border-color var(--dur)',
     }}>
-      <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '600', marginBottom: '12px', marginTop: 0 }}>
-        {title} <span style={{ color: '#999' }}>({tasks.length})</span>
+      <h3 style={{ color: 'var(--text)', fontSize: 14, fontWeight: 600, marginBottom: 12, marginTop: 0 }}>
+        {title} <span style={{ color: 'var(--text-subtle)', fontWeight: 400 }}>({tasks.length})</span>
       </h3>
       <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
         {tasks.map(task => <TaskCard key={task.id} task={task} onDelete={onDeleteTask} onUpdate={onUpdateTask} />)}
@@ -226,10 +193,10 @@ const KanbanColumn = ({ title, estado, tasks, onAddTask, onDeleteTask, onUpdateT
         <NewTaskForm estado={estado} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} />
       ) : onAddTask && (
         <button onClick={() => setIsFormOpen(true)} style={{
-          width: '100%', padding: '10px', backgroundColor: 'transparent',
-          border: '1px dashed rgba(255,255,255,0.12)', color: '#999',
-          borderRadius: '8px', cursor: 'pointer', fontSize: '12px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '8px',
+          width: '100%', padding: 10, background: 'transparent',
+          border: '1px dashed var(--border)', color: 'var(--text-subtle)',
+          borderRadius: 'var(--radius)', cursor: 'pointer', fontSize: 12,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 8,
         }}>
           <IconPlus /> Nueva tarea
         </button>
@@ -244,45 +211,34 @@ export default function KanbanBoard({ tasks, onUpdateTask, onDeleteTask, onAddTa
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const todoTasks = tasks.filter(t => t.estado === 'todo');
+  const todoTasks  = tasks.filter(t => t.estado === 'todo');
   const doingTasks = tasks.filter(t => t.estado === 'doing');
-  const doneTasks = tasks.filter(t => t.estado === 'done');
+  const doneTasks  = tasks.filter(t => t.estado === 'done');
 
-  const getColumnEstado = (itemId) => {
-    if (todoTasks.find(t => t.id === itemId)) return 'todo';
-    if (doingTasks.find(t => t.id === itemId)) return 'doing';
-    if (doneTasks.find(t => t.id === itemId)) return 'done';
-    return itemId;
+  const getCol = (id) => {
+    if (todoTasks.find(t => t.id === id))  return 'todo';
+    if (doingTasks.find(t => t.id === id)) return 'doing';
+    if (doneTasks.find(t => t.id === id))  return 'done';
+    return id;
   };
 
-  const handleDragEnd = async (event) => {
-    const { active, over } = event;
+  const handleDragEnd = async ({ active, over }) => {
     if (!over) return;
-
-    const activeEstado = getColumnEstado(active.id);
-    const overEstado = getColumnEstado(over.id);
-    const newEstado = ['todo', 'doing', 'done'].includes(over.id) ? over.id : overEstado;
-
-    if (newEstado && newEstado !== activeEstado) {
-      try {
-        await onUpdateTask(active.id, { estado: newEstado });
-      } catch (err) {
-        console.error('Error updating task:', err);
-      }
+    const fromCol = getCol(active.id);
+    const toCol = ['todo','doing','done'].includes(over.id) ? over.id : getCol(over.id);
+    if (toCol && toCol !== fromCol) {
+      try { await onUpdateTask(active.id, { estado: toCol }); } catch (err) { console.error(err); }
     }
   };
 
   return (
     <DndContext sensors={sensors}
-      collisionDetection={(args) => {
-        const p = pointerWithin(args);
-        return p.length > 0 ? p : rectIntersection(args);
-      }}
+      collisionDetection={args => { const p = pointerWithin(args); return p.length > 0 ? p : rectIntersection(args); }}
       onDragEnd={handleDragEnd}>
-      <div style={{ display: 'flex', gap: '16px', overflow: 'auto', paddingBottom: '16px' }}>
-        <KanbanColumn title="Todo" estado="todo" tasks={todoTasks} onAddTask={onAddTask} onDeleteTask={onDeleteTask} onUpdateTask={onUpdateTask} />
+      <div style={{ display: 'flex', gap: 16, overflow: 'auto', paddingBottom: 16 }}>
+        <KanbanColumn title="Todo"       estado="todo"  tasks={todoTasks}  onAddTask={onAddTask} onDeleteTask={onDeleteTask} onUpdateTask={onUpdateTask} />
         <KanbanColumn title="En progreso" estado="doing" tasks={doingTasks} onAddTask={onAddTask} onDeleteTask={onDeleteTask} onUpdateTask={onUpdateTask} />
-        <KanbanColumn title="Hecho" estado="done" tasks={doneTasks} onAddTask={null} onDeleteTask={onDeleteTask} onUpdateTask={onUpdateTask} />
+        <KanbanColumn title="Hecho"      estado="done"  tasks={doneTasks}  onAddTask={null}      onDeleteTask={onDeleteTask} onUpdateTask={onUpdateTask} />
       </div>
     </DndContext>
   );

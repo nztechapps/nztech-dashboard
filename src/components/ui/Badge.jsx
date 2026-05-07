@@ -1,34 +1,33 @@
 const STATUS_CONFIG = {
-  published:     { bg: '#ECFDF5', color: '#065F46' },
-  publicada:     { bg: '#ECFDF5', color: '#065F46' },
-  development:   { bg: '#F5F3FF', color: '#7C3AED' },
-  en_desarrollo: { bg: '#F5F3FF', color: '#7C3AED' },
-  testing:       { bg: '#FFFBEB', color: '#92400E' },
-  idea:          { bg: '#EFF6FF', color: '#1E40AF' },
-  aprobada:      { bg: '#ECFDF5', color: '#065F46' },
-  descartada:    { bg: '#FEF2F2', color: '#991B1B' },
-  deprecated:    { bg: '#FEF2F2', color: '#991B1B' },
-  investigando:  { bg: '#EFF6FF', color: '#1E40AF' },
-  running:       { bg: '#EEF2FF', color: '#4F46E5' },
-  completado:    { bg: '#ECFDF5', color: '#059669' },
-  error:         { bg: '#FEF2F2', color: '#DC2626' },
-  ensamblando:   { bg: '#FFFBEB', color: '#D97706' },
+  published:     { bg: 'oklch(0.97 0.06 155)', color: 'oklch(0.40 0.14 155)' },
+  publicada:     { bg: 'oklch(0.97 0.06 155)', color: 'oklch(0.40 0.14 155)' },
+  development:   { bg: 'var(--primary-soft)',   color: 'var(--primary)' },
+  en_desarrollo: { bg: 'var(--primary-soft)',   color: 'var(--primary)' },
+  testing:       { bg: 'oklch(0.97 0.06 75)',   color: 'oklch(0.45 0.15 75)' },
+  idea:          { bg: 'oklch(0.97 0.04 235)',  color: 'oklch(0.45 0.14 235)' },
+  aprobada:      { bg: 'oklch(0.97 0.06 155)',  color: 'oklch(0.40 0.14 155)' },
+  descartada:    { bg: 'oklch(0.97 0.05 27)',   color: 'oklch(0.45 0.18 27)' },
+  deprecated:    { bg: 'oklch(0.97 0.05 27)',   color: 'oklch(0.45 0.18 27)' },
+  investigando:  { bg: 'oklch(0.97 0.04 235)',  color: 'oklch(0.45 0.14 235)' },
+  running:       { bg: 'var(--primary-soft)',   color: 'var(--primary)' },
+  completado:    { bg: 'oklch(0.97 0.06 155)',  color: 'oklch(0.40 0.14 155)' },
+  error:         { bg: 'oklch(0.97 0.05 27)',   color: 'oklch(0.45 0.18 27)' },
+  ensamblando:   { bg: 'oklch(0.97 0.06 75)',   color: 'oklch(0.45 0.15 75)' },
 };
 
 export default function Badge({ status, label }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.idea;
-  const displayLabel = label || status;
   return (
     <span style={{
-      backgroundColor: cfg.bg,
+      background: cfg.bg,
       color: cfg.color,
-      fontSize: '11px',
-      padding: '3px 8px',
-      borderRadius: '20px',
-      fontWeight: '500',
+      fontSize: 11,
+      padding: '3px 10px',
+      borderRadius: 'var(--radius-pill)',
+      fontWeight: 500,
       display: 'inline-block',
     }}>
-      {displayLabel}
+      {label || status}
     </span>
   );
 }

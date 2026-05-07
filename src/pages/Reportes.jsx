@@ -57,17 +57,17 @@ export default function Reportes() {
     : reportes;
 
   return (
-    <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100%', padding: '24px' }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <IconDocument style={{ color: '#00E5A0' }} />
-            <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '600', margin: 0 }}>
+            <IconDocument style={{ color: 'var(--primary)' }} />
+            <h1 style={{ color: 'var(--text)', fontSize: '28px', fontWeight: '600', margin: 0 }}>
               Reportes
             </h1>
           </div>
-          <p style={{ color: '#999', fontSize: '13px', margin: 0 }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0 }}>
             Los agentes depositarán reportes automáticamente aquí
           </p>
         </div>
@@ -75,18 +75,18 @@ export default function Reportes() {
         {/* Filtro por agente */}
         {agents.length > 0 && (
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
               Filtrar por agente
             </label>
             <select
               value={selectedAgent}
               onChange={(e) => setSelectedAgent(e.target.value)}
               style={{
-                backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
                 borderRadius: '6px',
                 padding: '10px 12px',
-                color: 'white',
+                color: 'var(--text)',
                 fontSize: '13px',
               }}
             >
@@ -102,20 +102,20 @@ export default function Reportes() {
 
         {/* Contenido */}
         {loading ? (
-          <div style={{ color: '#999', textAlign: 'center', padding: '40px 0' }}>
+          <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>
             Cargando...
           </div>
         ) : filteredReportes.length === 0 ? (
           <div
             style={{
-              backgroundColor: '#13131A',
+              background: 'var(--surface)',
               border: '1px dashed rgba(255,255,255,0.12)',
               borderRadius: '10px',
               padding: '40px 20px',
               textAlign: 'center',
             }}
           >
-            <p style={{ color: '#666', margin: 0, fontSize: '13px' }}>
+            <p style={{ color: 'var(--text-subtle)', margin: 0, fontSize: '13px' }}>
               Los agentes depositarán reportes automáticamente aquí
             </p>
           </div>
@@ -125,8 +125,8 @@ export default function Reportes() {
               <div
                 key={reporte.id}
                 style={{
-                  backgroundColor: '#13131A',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
                   borderRadius: '8px',
                   overflow: 'hidden',
                 }}
@@ -152,7 +152,7 @@ export default function Reportes() {
                   }}
                 >
                   <div style={{ textAlign: 'left', flex: 1 }}>
-                    <h3 style={{ color: 'white', margin: '0 0 6px 0', fontSize: '14px', fontWeight: '600' }}>
+                    <h3 style={{ color: 'var(--text)', margin: '0 0 6px 0', fontSize: '14px', fontWeight: '600' }}>
                       {reporte.titulo || 'Reporte sin título'}
                     </h3>
                     <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
@@ -160,7 +160,7 @@ export default function Reportes() {
                         <span
                           style={{
                             backgroundColor: 'rgba(0,229,160,0.12)',
-                            color: '#00E5A0',
+                            color: 'var(--primary)',
                             fontSize: '10px',
                             fontWeight: '600',
                             padding: '4px 8px',
@@ -170,7 +170,7 @@ export default function Reportes() {
                           {reporte.agent}
                         </span>
                       )}
-                      <span style={{ color: '#999', fontSize: '12px' }}>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
                         {reporte.created_at && !isNaN(new Date(reporte.created_at))
                           ? new Date(reporte.created_at).toLocaleDateString('es-ES', {
                               day: 'numeric',
@@ -187,7 +187,7 @@ export default function Reportes() {
                     style={{
                       transform: expandedId === reporte.id ? 'rotate(180deg)' : 'rotate(0deg)',
                       transition: 'transform 0.2s',
-                      color: '#999',
+                      color: 'var(--text-muted)',
                     }}
                   />
                 </button>
@@ -195,16 +195,16 @@ export default function Reportes() {
                 {expandedId === reporte.id && (
                   <div
                     style={{
-                      borderTop: '1px solid rgba(255,255,255,0.08)',
+                      borderTop: '1px solid var(--border)',
                       padding: '16px',
                       backgroundColor: 'rgba(255,255,255,0.02)',
                     }}
                   >
                     <div
                       style={{
-                        color: 'rgba(255,255,255,0.7)',
+                        color: 'var(--text-muted)',
                         fontSize: '13px',
-                        fontFamily: 'DM Mono, monospace',
+                        fontFamily: 'var(--font-mono)',
                         whiteSpace: 'pre-wrap',
                         wordBreak: 'break-word',
                       }}

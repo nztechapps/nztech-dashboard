@@ -52,20 +52,20 @@ function AsoForm({ onSubmit, onCancel }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '16px', marginBottom: '20px' }}>
+    <form onSubmit={handleSubmit} style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', marginBottom: '20px' }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-        <input type="text" placeholder="Keyword" value={formData.keyword} onChange={(e) => setFormData({...formData, keyword: e.target.value})} style={{ backgroundColor: '#0A0A0F', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '13px', boxSizing: 'border-box' }} />
-        <input type="number" placeholder="Posición" min="1" max="100" value={formData.posicion} onChange={(e) => setFormData({...formData, posicion: e.target.value})} style={{ backgroundColor: '#0A0A0F', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '13px', boxSizing: 'border-box' }} />
+        <input type="text" placeholder="Keyword" value={formData.keyword} onChange={(e) => setFormData({...formData, keyword: e.target.value})} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px', color: 'var(--text)', fontSize: '13px', boxSizing: 'border-box' }} />
+        <input type="number" placeholder="Posición" min="1" max="100" value={formData.posicion} onChange={(e) => setFormData({...formData, posicion: e.target.value})} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px', color: 'var(--text)', fontSize: '13px', boxSizing: 'border-box' }} />
       </div>
       <div style={{ marginBottom: '12px' }}>
         <DatePicker value={formData.fecha} onChange={(date) => setFormData({...formData, fecha: date})} label="Fecha" />
       </div>
       <div style={{ marginBottom: '12px' }}>
-        <input type="text" placeholder="Notas (opcional)" value={formData.notas} onChange={(e) => setFormData({...formData, notas: e.target.value})} style={{ width: '100%', backgroundColor: '#0A0A0F', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '13px', boxSizing: 'border-box' }} />
+        <input type="text" placeholder="Notas (opcional)" value={formData.notas} onChange={(e) => setFormData({...formData, notas: e.target.value})} style={{ width: '100%', backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px', color: 'var(--text)', fontSize: '13px', boxSizing: 'border-box' }} />
       </div>
       <div style={{ display: 'flex', gap: '8px' }}>
-        <button type="submit" style={{ flex: 1, padding: '8px', backgroundColor: '#00E5A0', border: 'none', color: '#0A0A0F', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>Guardar</button>
-        <button type="button" onClick={onCancel} style={{ flex: 1, padding: '8px', backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#999', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>Cancelar</button>
+        <button type="submit" style={{ flex: 1, padding: '8px', background: 'var(--primary)', border: 'none', color: 'var(--bg)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>Guardar</button>
+        <button type="button" onClick={onCancel} style={{ flex: 1, padding: '8px', backgroundColor: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>Cancelar</button>
       </div>
     </form>
   );
@@ -86,17 +86,17 @@ function VersionForm({ onSubmit, onCancel }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '16px', marginBottom: '20px' }}>
+    <form onSubmit={handleSubmit} style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', marginBottom: '20px' }}>
       <div style={{ marginBottom: '12px' }}>
-        <input type="text" placeholder="1.0.1" value={formData.version} onChange={(e) => setFormData({...formData, version: e.target.value})} style={{ width: '100%', backgroundColor: '#0A0A0F', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '13px', boxSizing: 'border-box' }} />
+        <input type="text" placeholder="1.0.1" value={formData.version} onChange={(e) => setFormData({...formData, version: e.target.value})} style={{ width: '100%', backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px', color: 'var(--text)', fontSize: '13px', boxSizing: 'border-box' }} />
       </div>
       <div style={{ marginBottom: '12px' }}>
         <DatePicker value={formData.fecha} onChange={(date) => setFormData({...formData, fecha: date})} label="Fecha" />
       </div>
-      <textarea placeholder="Cambios..." value={formData.cambios} onChange={(e) => setFormData({...formData, cambios: e.target.value})} style={{ width: '100%', backgroundColor: '#0A0A0F', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '8px', color: 'white', fontSize: '13px', boxSizing: 'border-box', minHeight: '80px', marginBottom: '12px', fontFamily: 'DM Mono, monospace', resize: 'vertical' }} />
+      <textarea placeholder="Cambios..." value={formData.cambios} onChange={(e) => setFormData({...formData, cambios: e.target.value})} style={{ width: '100%', backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px', color: 'var(--text)', fontSize: '13px', boxSizing: 'border-box', minHeight: '80px', marginBottom: '12px', fontFamily: 'var(--font-mono)', resize: 'vertical' }} />
       <div style={{ display: 'flex', gap: '8px' }}>
-        <button type="submit" style={{ flex: 1, padding: '8px', backgroundColor: '#00E5A0', border: 'none', color: '#0A0A0F', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>Guardar</button>
-        <button type="button" onClick={onCancel} style={{ flex: 1, padding: '8px', backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#999', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>Cancelar</button>
+        <button type="submit" style={{ flex: 1, padding: '8px', background: 'var(--primary)', border: 'none', color: 'var(--bg)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>Guardar</button>
+        <button type="button" onClick={onCancel} style={{ flex: 1, padding: '8px', backgroundColor: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>Cancelar</button>
       </div>
     </form>
   );
@@ -161,14 +161,14 @@ export default function AppDetail() {
 
   if (!app) {
     return (
-      <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px' }}>
-        <div style={{ color: '#999' }}>App no encontrada</div>
+      <div style={{ backgroundColor: 'var(--bg)', minHeight: '100%', padding: '24px' }}>
+        <div style={{ color: 'var(--text-muted)' }}>App no encontrada</div>
       </div>
     );
   }
 
   return (
-    <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px' }}>
+    <div style={{ backgroundColor: 'var(--bg)', minHeight: '100%', padding: '24px' }}>
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <button
@@ -176,7 +176,7 @@ export default function AppDetail() {
           style={{
             background: 'none',
             border: 'none',
-            color: '#00E5A0',
+            color: 'var(--primary)',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -192,10 +192,10 @@ export default function AppDetail() {
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '20px' }}>
           <AppIcon nombre={app.titulo || app.nombre || app.name} icono_url={app.icono_url} size={48} />
           <div>
-            <h1 style={{ color: 'white', margin: '0 0 6px 0', fontSize: '24px', fontWeight: '600' }}>
+            <h1 style={{ color: 'var(--text)', margin: '0 0 6px 0', fontSize: '24px', fontWeight: '600' }}>
               {app.titulo || app.nombre || app.name}
             </h1>
-            <div style={{ color: '#999', fontSize: '13px', marginBottom: '10px' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '10px' }}>
               {app.package}
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -219,7 +219,7 @@ export default function AppDetail() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', gap: '16px', borderBottom: '1px solid var(--border)', marginBottom: '24px' }}>
         {['produccion', 'metricas', 'aso', 'versiones'].map((tab) => (
           <button
             key={tab}
@@ -245,7 +245,7 @@ export default function AppDetail() {
       {/* Tab Content */}
       {activeTab === 'produccion' && (
         <div>
-          <h2 style={{ color: 'white', fontSize: '16px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>
+          <h2 style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>
             Tareas
           </h2>
           <KanbanBoard tasks={tasks} onUpdateTask={updateTarea} onDeleteTask={deleteTarea} onAddTask={handleAddTask} />
@@ -256,7 +256,7 @@ export default function AppDetail() {
         <div>
           {/* Header con botón */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h2 style={{ color: 'white', fontSize: '16px', fontWeight: '600', margin: 0 }}>
+            <h2 style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '600', margin: 0 }}>
               Métricas
             </h2>
             <button
@@ -266,9 +266,9 @@ export default function AppDetail() {
                 alignItems: 'center',
                 gap: '8px',
                 padding: '10px 16px',
-                backgroundColor: '#00E5A0',
+                background: 'var(--primary)',
                 border: 'none',
-                color: '#0A0A0F',
+                color: 'var(--bg)',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '14px',
@@ -280,30 +280,30 @@ export default function AppDetail() {
           </div>
 
           {metricsLoading ? (
-            <div style={{ color: '#999', textAlign: 'center', padding: '40px 0' }}>
+            <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>
               Cargando métricas...
             </div>
           ) : (
             <>
               {/* Revenue Chart */}
-              <div style={{ marginBottom: '24px', backgroundColor: '#13131A', padding: '16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
+              <div style={{ marginBottom: '24px', backgroundColor: 'var(--surface)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                <h3 style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
                   Ingresos (últimos 30 días)
                 </h3>
                 <RevenueChart data={metrics} height={250} />
               </div>
 
               {/* DAU Chart */}
-              <div style={{ marginBottom: '24px', backgroundColor: '#13131A', padding: '16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
+              <div style={{ marginBottom: '24px', backgroundColor: 'var(--surface)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                <h3 style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
                   DAU (últimos 30 días)
                 </h3>
                 <DAUChart data={metrics} height={250} />
               </div>
 
               {/* Metrics Table */}
-              <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <h3 style={{ color: 'white', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
+              <div style={{ backgroundColor: 'var(--surface)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                <h3 style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
                   Detalle
                 </h3>
                 <MetricsTable metrics={metrics} />
@@ -326,7 +326,7 @@ export default function AppDetail() {
       {activeTab === 'aso' && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h2 style={{ color: 'white', fontSize: '16px', fontWeight: '600', margin: 0 }}>
+            <h2 style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '600', margin: 0 }}>
               ASO Tracker
             </h2>
             <button
@@ -336,9 +336,9 @@ export default function AppDetail() {
                 alignItems: 'center',
                 gap: '8px',
                 padding: '10px 16px',
-                backgroundColor: '#00E5A0',
+                background: 'var(--primary)',
                 border: 'none',
-                color: '#0A0A0F',
+                color: 'var(--bg)',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '14px',
@@ -365,38 +365,38 @@ export default function AppDetail() {
           )}
 
           {keywords.length === 0 ? (
-            <div style={{ backgroundColor: '#13131A', padding: '40px', borderRadius: '10px', textAlign: 'center', color: '#666' }}>
+            <div style={{ backgroundColor: 'var(--surface)', padding: '40px', borderRadius: '10px', textAlign: 'center', color: 'var(--text-subtle)' }}>
               No hay keywords trackeadas todavía
             </div>
           ) : (
-            <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', overflowX: 'auto' }}>
+            <div style={{ backgroundColor: 'var(--surface)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)', overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#999', fontWeight: '500' }}>Keyword</th>
-                    <th style={{ padding: '12px', textAlign: 'center', color: '#999', fontWeight: '500' }}>Posición</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#999', fontWeight: '500' }}>Fecha</th>
-                    <th style={{ padding: '12px', textAlign: 'left', color: '#999', fontWeight: '500' }}>Notas</th>
-                    <th style={{ padding: '12px', textAlign: 'center', color: '#999', fontWeight: '500' }}>Acción</th>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: '500' }}>Keyword</th>
+                    <th style={{ padding: '12px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: '500' }}>Posición</th>
+                    <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: '500' }}>Fecha</th>
+                    <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: '500' }}>Notas</th>
+                    <th style={{ padding: '12px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: '500' }}>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   {keywords.map((kw, idx) => {
-                    const bgColor = idx % 2 === 0 ? '#0A0A0F' : '#1C1C26';
+                    const bgColor = idx % 2 === 0 ? 'var(--bg)' : 'var(--surface-2)';
                     const posColor = kw.posicion <= 10 ? '#00E5A0' : kw.posicion <= 30 ? '#FFB400' : '#666';
                     return (
-                      <tr key={kw.id} style={{ backgroundColor: bgColor, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                        <td style={{ padding: '12px', color: 'white' }}>{kw.keyword}</td>
+                      <tr key={kw.id} style={{ backgroundColor: bgColor, borderBottom: '1px solid var(--border)' }}>
+                        <td style={{ padding: '12px', color: 'var(--text)' }}>{kw.keyword}</td>
                         <td style={{ padding: '12px', textAlign: 'center', color: posColor, fontWeight: '600' }}>{kw.posicion}</td>
-                        <td style={{ padding: '12px', color: '#999' }}>{new Date(kw.fecha).toLocaleDateString('es-ES')}</td>
-                        <td style={{ padding: '12px', color: '#999' }}>{kw.notas || '-'}</td>
+                        <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{new Date(kw.fecha).toLocaleDateString('es-ES')}</td>
+                        <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{kw.notas || '-'}</td>
                         <td style={{ padding: '12px', textAlign: 'center' }}>
                           <button
                             onClick={() => {
                               deleteKeyword(kw.id);
                               setToast({ message: 'Keyword eliminado', type: 'success' });
                             }}
-                            style={{ background: 'none', border: 'none', color: '#FF4D4F', cursor: 'pointer' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--nz-danger)', cursor: 'pointer' }}
                           >
                             <IconTrash />
                           </button>
@@ -415,7 +415,7 @@ export default function AppDetail() {
       {activeTab === 'versiones' && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h2 style={{ color: 'white', fontSize: '16px', fontWeight: '600', margin: 0 }}>
+            <h2 style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '600', margin: 0 }}>
               Version Log
             </h2>
             <button
@@ -425,9 +425,9 @@ export default function AppDetail() {
                 alignItems: 'center',
                 gap: '8px',
                 padding: '10px 16px',
-                backgroundColor: '#00E5A0',
+                background: 'var(--primary)',
                 border: 'none',
-                color: '#0A0A0F',
+                color: 'var(--bg)',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '14px',
@@ -454,7 +454,7 @@ export default function AppDetail() {
           )}
 
           {versions.length === 0 ? (
-            <div style={{ backgroundColor: '#13131A', padding: '40px', borderRadius: '10px', textAlign: 'center', color: '#666' }}>
+            <div style={{ backgroundColor: 'var(--surface)', padding: '40px', borderRadius: '10px', textAlign: 'center', color: 'var(--text-subtle)' }}>
               No hay versiones registradas
             </div>
           ) : (
@@ -463,8 +463,8 @@ export default function AppDetail() {
                 <div
                   key={v.id}
                   style={{
-                    backgroundColor: idx % 2 === 0 ? '#0A0A0F' : '#1C1C26',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    backgroundColor: idx % 2 === 0 ? 'var(--bg)' : 'var(--surface-2)',
+                    border: '1px solid var(--border)',
                     borderRadius: '8px',
                     padding: '16px',
                     marginBottom: '12px',
@@ -478,7 +478,7 @@ export default function AppDetail() {
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
                       <span style={{
                         backgroundColor: '#7C6AFF',
-                        color: 'white',
+                        color: 'var(--text)',
                         fontSize: '12px',
                         fontWeight: '600',
                         padding: '4px 8px',
@@ -486,11 +486,11 @@ export default function AppDetail() {
                       }}>
                         v{v.version}
                       </span>
-                      <span style={{ color: '#999', fontSize: '12px' }}>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
                         {new Date(v.fecha).toLocaleDateString('es-ES')}
                       </span>
                     </div>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                       {v.cambios}
                     </p>
                   </div>
@@ -499,7 +499,7 @@ export default function AppDetail() {
                       deleteVersion(v.id);
                       setToast({ message: 'Versión eliminada', type: 'success' });
                     }}
-                    style={{ background: 'none', border: 'none', color: '#FF4D4F', cursor: 'pointer', flexShrink: 0 }}
+                    style={{ background: 'none', border: 'none', color: 'var(--nz-danger)', cursor: 'pointer', flexShrink: 0 }}
                   >
                     <IconTrash />
                   </button>

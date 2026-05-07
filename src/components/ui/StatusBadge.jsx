@@ -1,25 +1,22 @@
+const STATUS_CONFIG = {
+  development: { bg: 'var(--primary-soft)',  color: 'var(--primary)' },
+  testing:     { bg: 'oklch(0.97 0.06 75)',  color: 'oklch(0.45 0.15 75)' },
+  published:   { bg: 'oklch(0.97 0.06 155)', color: 'oklch(0.40 0.14 155)' },
+  deprecated:  { bg: 'oklch(0.97 0.05 27)',  color: 'oklch(0.45 0.18 27)' },
+};
+
 export default function StatusBadge({ status }) {
-  const statusConfig = {
-    development: { bg: '#F5F3FF', text: '#7C3AED' },
-    testing:     { bg: '#FFFBEB', text: '#92400E' },
-    published:   { bg: '#ECFDF5', text: '#065F46' },
-    deprecated:  { bg: '#FEF2F2', text: '#991B1B' },
-  };
-
-  const config = statusConfig[status] || statusConfig.development;
-
+  const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.development;
   return (
-    <span
-      className="inline-block"
-      style={{
-        backgroundColor: config.bg,
-        color: config.text,
-        fontSize: '11px',
-        padding: '2px 8px',
-        borderRadius: '20px',
-        fontWeight: '500',
-      }}
-    >
+    <span style={{
+      background: cfg.bg,
+      color: cfg.color,
+      fontSize: 11,
+      padding: '2px 10px',
+      borderRadius: 'var(--radius-pill)',
+      fontWeight: 500,
+      display: 'inline-block',
+    }}>
       {status}
     </span>
   );

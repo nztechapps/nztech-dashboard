@@ -9,8 +9,8 @@ import { useGastos } from '../hooks/useGastos';
 import { useApps } from '../hooks/useApps';
 
 const card = {
-  backgroundColor: '#FFFFFF',
-  border: '1px solid rgba(0,0,0,0.06)',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
   borderRadius: '12px',
   boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
   padding: '16px',
@@ -36,11 +36,11 @@ const IconTrash = () => (
 const MARKET_COLORS = { AR: '#00E5A0', MX: '#7C3AED', ES: '#6496FF', CL: '#FFB400', CO: '#FF77B4', PE: '#4ECDC4', global: '#9CA3AF' };
 const APP_COLORS = ['#00E5A0', '#7C3AED', '#6496FF', '#FFB400', '#FF77B4', '#4ECDC4', '#FF6B6B', '#A78BFA'];
 const CATEGORY_COLORS = {
-  plataforma:      { bg: '#EFF6FF', text: '#1E40AF' },
-  herramientas_ia: { bg: '#F5F3FF', text: '#7C3AED' },
-  equipo:          { bg: '#FFFBEB', text: '#92400E' },
-  marketing:       { bg: '#ECFDF5', text: '#065F46' },
-  otro:            { bg: '#F9FAFB', text: '#6B7280' },
+  plataforma:      { bg: 'oklch(0.97 0.04 235)', color: 'oklch(0.45 0.14 235)' },
+  herramientas_ia: { bg: 'var(--primary-soft)',   color: 'var(--primary)' },
+  equipo:          { bg: 'oklch(0.97 0.06 75)',   color: 'oklch(0.45 0.15 75)' },
+  marketing:       { bg: 'oklch(0.97 0.06 155)',  color: 'oklch(0.40 0.14 155)' },
+  otro:            { bg: 'var(--surface-2)',       color: 'var(--text-muted)' },
 };
 
 function formatCurrency(value) {
@@ -111,7 +111,7 @@ export default function Finanzas() {
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div style={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '8px', padding: '8px 12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
           {payload.map((entry, idx) => (
             <div key={idx} style={{ fontSize: '12px', color: entry.color }}>{entry.name}: ${entry.value.toFixed(2)}</div>
           ))}
@@ -121,8 +121,8 @@ export default function Finanzas() {
     return null;
   };
 
-  const thStyle = { padding: '12px', color: '#6B7280', fontWeight: '500', whiteSpace: 'nowrap' };
-  const tdStyle = { padding: '12px', borderBottom: '1px solid rgba(0,0,0,0.05)', color: '#111827' };
+  const thStyle = { padding: '12px', color: 'var(--text-muted)', fontWeight: '500', whiteSpace: 'nowrap' };
+  const tdStyle = { padding: '12px', borderBottom: '1px solid var(--border)', color: 'var(--text)' };
 
   const currentMonthStr = new Date().toISOString().substring(0, 7);
   const totalGastosMes = gastos.filter(g => g.fecha.startsWith(currentMonthStr)).reduce((sum, g) => sum + g.monto_usd, 0);
@@ -153,9 +153,9 @@ export default function Finanzas() {
   };
 
   return (
-    <div style={{ backgroundColor: '#F9FAFB', minHeight: '100%', padding: '24px' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100%', padding: '24px' }}>
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '0', borderBottom: '1px solid rgba(0,0,0,0.08)', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', gap: '0', borderBottom: '1px solid var(--border)', marginBottom: '24px' }}>
         {['ingresos', 'gastos', 'pyL'].map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             style={{
@@ -172,23 +172,23 @@ export default function Finanzas() {
 
       {/* TAB: INGRESOS */}
       {activeTab === 'ingresos' && (
-        loadingFinanzas ? <div style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>Cargando finanzas...</div> : (
+        loadingFinanzas ? <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>Cargando finanzas...</div> : (
           <>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px', marginBottom: '16px' }}>
               <MetricCard label="MAR Actual" value={formatCurrency(currentMarValue)} sub={`Objetivo: ${formatCurrency(objective)}`} subColor={currentMarValue >= objective ? 'green' : 'red'} />
               <div style={{ ...card, marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ color: '#6B7280', fontSize: '11px' }}>Progreso al objetivo</span>
-                  <span style={{ color: '#00E5A0', fontSize: '11px', fontWeight: '500' }}>{progressPercent.toFixed(0)}%</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Progreso al objetivo</span>
+                  <span style={{ color: 'var(--primary)', fontSize: '11px', fontWeight: '500' }}>{progressPercent.toFixed(0)}%</span>
                 </div>
-                <div style={{ height: '8px', backgroundColor: '#E5E7EB', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', backgroundColor: currentMarValue >= objective ? '#00E5A0' : '#DC2626', width: `${progressPercent}%`, transition: 'width 0.3s ease' }} />
+                <div style={{ height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: currentMarValue >= objective ? 'var(--primary)' : 'var(--nz-danger)', width: `${progressPercent}%`, transition: 'width 0.3s ease' }} />
                 </div>
               </div>
             </div>
 
             <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'flex-end' }}>
-              <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F3F4F6', padding: '4px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', gap: '4px', background: 'var(--surface-2)', padding: '4px', borderRadius: '8px' }}>
                 <button onClick={() => setViewMode('app')}
                   style={{ padding: '6px 14px', backgroundColor: viewMode === 'app' ? '#FFFFFF' : 'transparent', color: viewMode === 'app' ? '#111827' : '#6B7280', border: viewMode === 'app' ? '1px solid rgba(0,0,0,0.08)' : 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', boxShadow: viewMode === 'app' ? '0 1px 3px rgba(0,0,0,0.06)' : 'none' }}>
                   Por app
@@ -201,15 +201,15 @@ export default function Finanzas() {
             </div>
 
             <div style={card}>
-              <h2 style={{ color: '#111827', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
+              <h2 style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>
                 {viewMode === 'app' ? 'Ingresos por app' : 'Ingresos por mercado'}
               </h2>
               {viewMode === 'app' ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={appChartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                    <XAxis dataKey="month" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
-                    <YAxis stroke="#9CA3AF" tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v}`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="month" stroke="var(--text-subtle)" tick={{ fontSize: 12 }} />
+                    <YAxis stroke="var(--text-subtle)" tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v}`} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
                     {allAppNames.map((appName, idx) => (
@@ -220,9 +220,9 @@ export default function Finanzas() {
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={mercadoChartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                    <XAxis dataKey="month" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
-                    <YAxis stroke="#9CA3AF" tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v}`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="month" stroke="var(--text-subtle)" tick={{ fontSize: 12 }} />
+                    <YAxis stroke="var(--text-subtle)" tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v}`} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
                     {allMarkets.map((market) => (
@@ -234,10 +234,10 @@ export default function Finanzas() {
             </div>
 
             <div style={card}>
-              <h2 style={{ color: '#111827', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>Resumen mensual</h2>
+              <h2 style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>Resumen mensual</h2>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
                     <th style={{ ...thStyle, textAlign: 'left' }}>Mes</th>
                     <th style={{ ...thStyle, textAlign: 'right' }}>Ingresos totales</th>
                     <th style={{ ...thStyle, textAlign: 'right' }}>Apps activas</th>
@@ -249,9 +249,9 @@ export default function Finanzas() {
                   {tableSummary.map((row) => (
                     <tr key={row.month}>
                       <td style={{ ...tdStyle }}>{row.displayMonth}</td>
-                      <td style={{ ...tdStyle, textAlign: 'right', color: '#059669', fontFamily: 'DM Mono, monospace' }}>{formatCurrency(row.totalIngresos)}</td>
-                      <td style={{ ...tdStyle, textAlign: 'right', color: '#7C3AED' }}>{row.appsActivas}</td>
-                      <td style={{ ...tdStyle, textAlign: 'right', color: '#059669', fontFamily: 'DM Mono, monospace' }}>{formatCurrency(row.mar)}</td>
+                      <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--nz-success)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(row.totalIngresos)}</td>
+                      <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--primary)' }}>{row.appsActivas}</td>
+                      <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--nz-success)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(row.mar)}</td>
                       <td style={{ ...tdStyle, textAlign: 'right', color: row.delta >= 0 ? '#059669' : '#DC2626' }}>
                         {row.delta >= 0 ? '↑' : '↓'} {formatCurrency(Math.abs(row.delta))} ({row.deltaPercent}%)
                       </td>
@@ -268,27 +268,27 @@ export default function Finanzas() {
       {activeTab === 'gastos' && (
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <span style={{ color: '#111827', fontSize: '16px', fontWeight: '600' }}>Gastos</span>
+            <span style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '600' }}>Gastos</span>
             <button onClick={() => setIsGastoFormOpen(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: '#00E5A0', border: 'none', color: '#003D2B', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'var(--primary)', border: 'none', color: 'var(--primary-fg)', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}>
               <IconPlus /> Nuevo gasto
             </button>
           </div>
 
-          {loadingGastos ? <div style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>Cargando gastos...</div> : (
+          {loadingGastos ? <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>Cargando gastos...</div> : (
             <>
               <div style={{ ...card, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: '#6B7280', fontSize: '14px' }}>Total — {new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</span>
-                <span style={{ color: '#DC2626', fontSize: '20px', fontWeight: '600', fontFamily: 'DM Mono, monospace' }}>{formatCurrency(totalGastosMes)}</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Total — {new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</span>
+                <span style={{ color: 'var(--nz-danger)', fontSize: '20px', fontWeight: '600', fontFamily: 'var(--font-mono)' }}>{formatCurrency(totalGastosMes)}</span>
               </div>
 
               <div style={card}>
                 {gastos.length === 0 ? (
-                  <div style={{ color: '#9CA3AF', textAlign: 'center', padding: '40px 0' }}>Sin gastos registrados</div>
+                  <div style={{ color: 'var(--text-subtle)', textAlign: 'center', padding: '40px 0' }}>Sin gastos registrados</div>
                 ) : (
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                     <thead>
-                      <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+                      <tr style={{ borderBottom: '1px solid var(--border)' }}>
                         <th style={{ ...thStyle, textAlign: 'left' }}>Fecha</th>
                         <th style={{ ...thStyle, textAlign: 'left' }}>Concepto</th>
                         <th style={{ ...thStyle, textAlign: 'left' }}>Categoría</th>
@@ -301,15 +301,15 @@ export default function Finanzas() {
                         const cat = CATEGORY_COLORS[gasto.categoria] || CATEGORY_COLORS.otro;
                         return (
                           <tr key={gasto.id}>
-                            <td style={{ ...tdStyle, color: '#6B7280' }}>{formatDate(gasto.fecha)}</td>
+                            <td style={{ ...tdStyle, color: 'var(--text-muted)' }}>{formatDate(gasto.fecha)}</td>
                             <td style={{ ...tdStyle }}>{gasto.concepto}</td>
                             <td style={{ ...tdStyle }}>
                               <span style={{ backgroundColor: cat.bg, color: cat.text, fontSize: '10px', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>{gasto.categoria}</span>
                             </td>
-                            <td style={{ ...tdStyle, textAlign: 'right', color: '#DC2626', fontWeight: '500', fontFamily: 'DM Mono, monospace' }}>{formatCurrency(gasto.monto_usd)}</td>
+                            <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--nz-danger)', fontWeight: '500', fontFamily: 'var(--font-mono)' }}>{formatCurrency(gasto.monto_usd)}</td>
                             <td style={{ ...tdStyle, textAlign: 'center' }}>
                               <button onClick={() => handleDeleteGasto(gasto.id)}
-                                style={{ background: 'none', border: 'none', color: '#DC2626', cursor: 'pointer', padding: '0', display: 'flex', alignItems: 'center', margin: '0 auto' }}>
+                                style={{ background: 'none', border: 'none', color: 'var(--nz-danger)', cursor: 'pointer', padding: '0', display: 'flex', alignItems: 'center', margin: '0 auto' }}>
                                 <IconTrash />
                               </button>
                             </td>
@@ -330,13 +330,13 @@ export default function Finanzas() {
       {/* TAB: P&L */}
       {activeTab === 'pyL' && (
         <div style={card}>
-          <h2 style={{ color: '#111827', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>Profit & Loss (P&L)</h2>
+          <h2 style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>Profit & Loss (P&L)</h2>
           {loadingFinanzas || loadingGastos ? (
-            <div style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>Cargando datos...</div>
+            <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>Cargando datos...</div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+                <tr style={{ borderBottom: '1px solid var(--border)' }}>
                   <th style={{ ...thStyle, textAlign: 'left' }}>Mes</th>
                   <th style={{ ...thStyle, textAlign: 'right' }}>Ingresos ($)</th>
                   <th style={{ ...thStyle, textAlign: 'right' }}>Gastos ($)</th>
@@ -348,10 +348,10 @@ export default function Finanzas() {
                 {pyData.map((row) => (
                   <tr key={row.mes}>
                     <td style={{ ...tdStyle }}>{row.displayMes}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right', color: '#059669', fontFamily: 'DM Mono, monospace' }}>{formatCurrency(row.ingresos)}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right', color: '#DC2626', fontFamily: 'DM Mono, monospace' }}>{formatCurrency(row.gastosMes)}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right', color: row.resultado >= 0 ? '#059669' : '#DC2626', fontWeight: '500', fontFamily: 'DM Mono, monospace' }}>{formatCurrency(row.resultado)}</td>
-                    <td style={{ ...tdStyle, textAlign: 'right', color: row.acumulado >= 0 ? '#059669' : '#DC2626', fontWeight: '600', fontFamily: 'DM Mono, monospace' }}>{formatCurrency(row.acumulado)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--nz-success)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(row.ingresos)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--nz-danger)', fontFamily: 'var(--font-mono)' }}>{formatCurrency(row.gastosMes)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', color: row.resultado >= 0 ? '#059669' : '#DC2626', fontWeight: '500', fontFamily: 'var(--font-mono)' }}>{formatCurrency(row.resultado)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', color: row.acumulado >= 0 ? '#059669' : '#DC2626', fontWeight: '600', fontFamily: 'var(--font-mono)' }}>{formatCurrency(row.acumulado)}</td>
                   </tr>
                 ))}
               </tbody>

@@ -138,7 +138,7 @@ function AgentCard({ agent, isSelected, onSelect }) {
         border: `1px solid ${isSelected ? '#00E5A0' : 'rgba(255,255,255,0.08)'}`,
         borderRadius: '10px',
         padding: '20px',
-        backgroundColor: isSelected ? 'rgba(0,229,160,0.08)' : '#13131A',
+        backgroundColor: isSelected ? 'rgba(0,229,160,0.08)' : 'var(--surface)',
         cursor: isDisabled ? 'default' : 'pointer',
         opacity: isDisabled ? 0.5 : 1,
         transition: 'all 0.2s',
@@ -153,17 +153,17 @@ function AgentCard({ agent, isSelected, onSelect }) {
       onMouseLeave={(e) => {
         if (!isDisabled && !isSelected) {
           e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-          e.currentTarget.style.backgroundColor = '#13131A';
+          e.currentTarget.style.backgroundColor = 'var(--surface)';
         }
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', color: getStatusColor(agent.status) }}>
         {getAgentIcon(agent.icon)}
-        <h3 style={{ color: 'white', margin: 0, fontSize: '15px', fontWeight: '600', flex: 1 }}>
+        <h3 style={{ color: 'var(--text)', margin: 0, fontSize: '15px', fontWeight: '600', flex: 1 }}>
           {agent.name}
         </h3>
       </div>
-      <p style={{ color: 'rgba(255,255,255,0.6)', margin: '0 0 12px 0', fontSize: '12px', lineHeight: '1.4' }}>
+      <p style={{ color: 'var(--text-muted)', margin: '0 0 12px 0', fontSize: '12px', lineHeight: '1.4' }}>
         {agent.description}
       </p>
       <div
@@ -215,11 +215,11 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
       {/* Agent Header */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-          <div style={{ color: '#00E5A0', fontSize: '24px' }}>
+          <div style={{ color: 'var(--primary)', fontSize: '24px' }}>
             {getAgentIcon(agent.icon)}
           </div>
           <div>
-            <h2 style={{ color: 'white', margin: 0, fontSize: '18px', fontWeight: '600' }}>
+            <h2 style={{ color: 'var(--text)', margin: 0, fontSize: '18px', fontWeight: '600' }}>
               {agent.name}
             </h2>
           </div>
@@ -227,7 +227,7 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
         <span
           style={{
             backgroundColor: 'rgba(0,229,160,0.12)',
-            color: '#00E5A0',
+            color: 'var(--primary)',
             fontSize: '11px',
             fontWeight: '600',
             padding: '4px 8px',
@@ -238,17 +238,17 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
         >
           {agent.status}
         </span>
-        <p style={{ color: 'rgba(255,255,255,0.6)', margin: '12px 0 0 0', fontSize: '13px' }}>
+        <p style={{ color: 'var(--text-muted)', margin: '12px 0 0 0', fontSize: '13px' }}>
           {agent.description}
         </p>
       </div>
 
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }} />
+      <div style={{ borderTop: '1px solid var(--border)' }} />
 
       {/* Form */}
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div>
-          <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+          <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
             App *
           </label>
           <select
@@ -257,11 +257,11 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
             required
             style={{
               width: '100%',
-              backgroundColor: '#0A0A0F',
-              border: '1px solid rgba(255,255,255,0.08)',
+              backgroundColor: 'var(--bg)',
+              border: '1px solid var(--border)',
               borderRadius: '6px',
               padding: '10px 12px',
-              color: 'white',
+              color: 'var(--text)',
               fontSize: '13px',
               boxSizing: 'border-box',
             }}
@@ -277,7 +277,7 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
 
         {selectedApp && (
           <div>
-            <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
               Package
             </label>
             <input
@@ -286,11 +286,11 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
               disabled
               style={{
                 width: '100%',
-                backgroundColor: '#0A0A0F',
-                border: '1px solid rgba(255,255,255,0.08)',
+                backgroundColor: 'var(--bg)',
+                border: '1px solid var(--border)',
                 borderRadius: '6px',
                 padding: '10px 12px',
-                color: '#999',
+                color: 'var(--text-muted)',
                 fontSize: '13px',
                 boxSizing: 'border-box',
               }}
@@ -299,7 +299,7 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
         )}
 
         <div>
-          <label style={{ display: 'block', color: '#999', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+          <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
             Descripción del problema o solicitud *
           </label>
           <textarea
@@ -309,15 +309,15 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
             required
             style={{
               width: '100%',
-              backgroundColor: '#0A0A0F',
-              border: '1px solid rgba(255,255,255,0.08)',
+              backgroundColor: 'var(--bg)',
+              border: '1px solid var(--border)',
               borderRadius: '6px',
               padding: '10px 12px',
-              color: 'white',
+              color: 'var(--text)',
               fontSize: '13px',
               boxSizing: 'border-box',
               minHeight: '100px',
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: 'var(--font-mono)',
               resize: 'vertical',
             }}
           />
@@ -330,7 +330,7 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
             padding: '10px 16px',
             backgroundColor: isLoading || !formData.app_id || !formData.descripcion ? '#999' : '#00E5A0',
             border: 'none',
-            color: '#0A0A0F',
+            color: 'var(--bg)',
             borderRadius: '6px',
             cursor: isLoading ? 'not-allowed' : 'pointer',
             fontSize: '13px',
@@ -348,8 +348,8 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
 
       {/* Recent Executions */}
       {recentExecutions.length > 0 && (
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ color: 'white', margin: '0 0 12px 0', fontSize: '13px', fontWeight: '600' }}>
+        <div style={{ borderTop: '1px solid var(--border)', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <h3 style={{ color: 'var(--text)', margin: '0 0 12px 0', fontSize: '13px', fontWeight: '600' }}>
             Últimas ejecuciones
           </h3>
           <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -357,17 +357,17 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
               <div
                 key={idx}
                 style={{
-                  backgroundColor: '#0A0A0F',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  backgroundColor: 'var(--bg)',
+                  border: '1px solid var(--border)',
                   borderRadius: '6px',
                   padding: '8px 12px',
                   fontSize: '11px',
                 }}
               >
-                <div style={{ color: 'white', fontWeight: '600', marginBottom: '4px' }}>
+                <div style={{ color: 'var(--text)', fontWeight: '600', marginBottom: '4px' }}>
                   {exec.titulo || 'Sin título'}
                 </div>
-                <div style={{ color: '#999', fontSize: '10px' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
                   {exec.created_at && !isNaN(new Date(exec.created_at))
                     ? new Date(exec.created_at).toLocaleDateString('es-ES', {
                         day: '2-digit',
@@ -392,7 +392,7 @@ function EmptyState() {
       <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }}>
         🤖
       </div>
-      <p style={{ color: '#666', fontSize: '13px', margin: 0 }}>
+      <p style={{ color: 'var(--text-subtle)', fontSize: '13px', margin: 0 }}>
         Seleccioná un agente para interactuar
       </p>
     </div>
@@ -416,14 +416,14 @@ function InboxSection() {
   const filteredItems = filterType ? items.filter((i) => i.tipo === filterType) : items;
 
   return (
-    <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '24px' }}>
-      <h2 style={{ color: 'white', fontSize: '18px', fontWeight: '600', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <div style={{ borderTop: '1px solid var(--border)', paddingTop: '24px' }}>
+      <h2 style={{ color: 'var(--text)', fontSize: '18px', fontWeight: '600', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
         Inbox de agentes
         {pendingCount > 0 && (
           <span
             style={{
               backgroundColor: '#FF4D4F',
-              color: 'white',
+              color: 'var(--text)',
               fontSize: '10px',
               fontWeight: '600',
               padding: '2px 6px',
@@ -445,7 +445,7 @@ function InboxSection() {
               padding: '6px 12px',
               backgroundColor: filterType === type.value ? '#00E5A0' : 'transparent',
               border: `1px solid ${filterType === type.value ? '#00E5A0' : 'rgba(255,255,255,0.12)'}`,
-              color: filterType === type.value ? '#0A0A0F' : '#999',
+              color: filterType === type.value ? 'var(--bg)' : '#999',
               borderRadius: '20px',
               cursor: 'pointer',
               fontSize: '11px',
@@ -461,7 +461,7 @@ function InboxSection() {
 
       {/* Items */}
       {filteredItems.length === 0 ? (
-        <div style={{ backgroundColor: '#13131A', border: '1px dashed rgba(255,255,255,0.12)', borderRadius: '8px', padding: '24px', textAlign: 'center', color: '#666', fontSize: '12px' }}>
+        <div style={{ backgroundColor: 'var(--surface)', border: '1px dashed rgba(255,255,255,0.12)', borderRadius: '8px', padding: '24px', textAlign: 'center', color: 'var(--text-subtle)', fontSize: '12px' }}>
           No hay items {filterType ? `en esta categoría` : 'aún'}
         </div>
       ) : (
@@ -470,8 +470,8 @@ function InboxSection() {
             <div
               key={item.id}
               style={{
-                backgroundColor: '#13131A',
-                border: '1px solid rgba(255,255,255,0.08)',
+                backgroundColor: 'var(--surface)',
+                border: '1px solid var(--border)',
                 borderRadius: '8px',
                 overflow: 'hidden',
               }}
@@ -501,7 +501,7 @@ function InboxSection() {
                     <span
                       style={{
                         backgroundColor: 'rgba(0,229,160,0.12)',
-                        color: '#00E5A0',
+                        color: 'var(--primary)',
                         fontSize: '10px',
                         fontWeight: '600',
                         padding: '2px 6px',
@@ -511,13 +511,13 @@ function InboxSection() {
                     >
                       {item.tipo || 'inbox'}
                     </span>
-                    <h4 style={{ color: 'white', margin: 0, fontSize: '13px', fontWeight: '600', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <h4 style={{ color: 'var(--text)', margin: 0, fontSize: '13px', fontWeight: '600', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {item.titulo || 'Sin título'}
                     </h4>
                   </div>
                   <p
                     style={{
-                      color: '#999',
+                      color: 'var(--text-muted)',
                       margin: 0,
                       fontSize: '11px',
                       overflow: 'hidden',
@@ -528,7 +528,7 @@ function InboxSection() {
                   >
                     {item.contenido || 'Sin contenido'}
                   </p>
-                  <div style={{ color: '#666', fontSize: '10px', marginTop: '4px' }}>
+                  <div style={{ color: 'var(--text-subtle)', fontSize: '10px', marginTop: '4px' }}>
                     {item.created_at && !isNaN(new Date(item.created_at))
                       ? new Date(item.created_at).toLocaleDateString('es-ES', {
                           day: '2-digit',
@@ -544,15 +544,15 @@ function InboxSection() {
                     marginLeft: '12px',
                     transform: expandedId === item.id ? 'rotate(180deg)' : 'rotate(0deg)',
                     transition: 'transform 0.2s',
-                    color: '#999',
+                    color: 'var(--text-muted)',
                     flexShrink: 0,
                   }}
                 />
               </button>
 
               {expandedId === item.id && (
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: '12px', backgroundColor: 'rgba(255,255,255,0.02)' }}>
-                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', fontFamily: 'DM Mono, monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                <div style={{ borderTop: '1px solid var(--border)', padding: '12px', backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '12px', fontFamily: 'var(--font-mono)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                     {item.contenido || 'Sin contenido'}
                   </div>
                 </div>
@@ -596,14 +596,14 @@ export default function Agentes() {
   };
 
   return (
-    <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px' }}>
+    <div style={{ backgroundColor: 'var(--bg)', minHeight: '100%', padding: '24px' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: '24px' }}>
-          <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '600', margin: 0 }}>
+          <h1 style={{ color: 'var(--text)', fontSize: '28px', fontWeight: '600', margin: 0 }}>
             Agentes
           </h1>
-          <p style={{ color: '#999', fontSize: '13px', margin: '8px 0 0 0' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '8px 0 0 0' }}>
             Plataforma de agentes autónomos para automatizar tareas
           </p>
         </div>
@@ -628,7 +628,7 @@ export default function Agentes() {
           {/* Right Column - Interaction Panel */}
           <div
             style={{
-              backgroundColor: '#13131A',
+              backgroundColor: 'var(--surface)',
               border: `1px solid ${selectedAgent ? '#00E5A0' : 'rgba(255,255,255,0.08)'}`,
               borderRadius: '10px',
               padding: '24px',

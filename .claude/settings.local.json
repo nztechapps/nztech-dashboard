@@ -18,7 +18,8 @@
       "Bash(Remove-Item \"C:\\\\Users\\\\FedeN\\\\nztech-code\\\\nztech-dashboard\\\\src\\\\hooks\\\\useTasks.js\" -Force)",
       "Bash(Remove-Item \"C:\\\\Users\\\\FedeN\\\\nztech-code\\\\nztech-dashboard\\\\src\\\\hooks\\\\useTasksForApp.js\" -Force)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\FedeN\\\\nztech-code\\\\nztech-dashboard\\\\src\" -Directory)",
-      "Bash(Select-Object -ExpandProperty Name)"
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(Remove-Item *)"
     ]
   },
   "enableAllProjectMcpServers": true,

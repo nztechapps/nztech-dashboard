@@ -92,8 +92,8 @@ const renderField = (value) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {value.map((item, i) => (
             <div key={i} style={{ paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <strong style={{ color: '#00E5A0' }}>{item.nombre}</strong>
-              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px', marginTop: '4px' }}>
+              <strong style={{ color: 'var(--primary)' }}>{item.nombre}</strong>
+              <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '4px' }}>
                 {item.debilidad}
               </div>
             </div>
@@ -108,19 +108,19 @@ const renderField = (value) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {value.map((item, i) => (
             <div key={i} style={{ paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <strong style={{ color: '#00E5A0' }}>{item.nombre}</strong>
+              <strong style={{ color: 'var(--primary)' }}>{item.nombre}</strong>
               {item.url && (
                 <div style={{ color: '#6496FF', fontSize: '11px', marginTop: '2px' }}>
                   {item.url}
                 </div>
               )}
               {item.gratuita !== undefined && (
-                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px', marginTop: '2px' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '2px' }}>
                   {item.gratuita ? '✓ Gratuita' : '💰 De pago'}
                 </div>
               )}
               {item.uso && (
-                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11px', marginTop: '4px' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '4px' }}>
                   {item.uso}
                 </div>
               )}
@@ -136,19 +136,19 @@ const renderField = (value) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {value.map((item, i) => (
             <div key={i} style={{ paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <strong style={{ color: '#00E5A0' }}>{item.nombre}</strong>
+              <strong style={{ color: 'var(--primary)' }}>{item.nombre}</strong>
               {item.tab && (
-                <div style={{ color: '#7C6AFF', fontSize: '10px', marginTop: '2px', fontFamily: 'DM Mono, monospace' }}>
+                <div style={{ color: 'var(--primary)', fontSize: '10px', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>
                   [{item.tab}]
                 </div>
               )}
               {item.descripcion && (
-                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11px', marginTop: '4px' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '4px' }}>
                   {item.descripcion}
                 </div>
               )}
               {item.elementos && (
-                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px', marginTop: '4px' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '4px' }}>
                   <div style={{ fontWeight: '500', marginBottom: '2px' }}>Elementos:</div>
                   {item.elementos}
                 </div>
@@ -163,7 +163,7 @@ const renderField = (value) => {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
         {value.map((item, i) => (
-          <div key={i} style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>
+          <div key={i} style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
             {typeof item === 'object' ? JSON.stringify(item) : String(item)}
           </div>
         ))}
@@ -202,7 +202,7 @@ const ResearchSection = ({ data }) => {
     try {
       parsedData = JSON.parse(data);
     } catch (e) {
-      return <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>Error al parsear datos: {data}</div>;
+      return <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Error al parsear datos: {data}</div>;
     }
   }
 
@@ -223,12 +223,12 @@ const ResearchSection = ({ data }) => {
             }
           }
           return (
-            <div key={key} style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+            <div key={key} style={{ background: 'var(--surface)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <h3 style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
                 {label}
               </h3>
-              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
-                {aso.titulo && <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#00E5A0' }}>{aso.titulo}</p>}
+              <div style={{ color: 'var(--text-muted)', fontSize: '12px', lineHeight: '1.5' }}>
+                {aso.titulo && <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: 'var(--primary)' }}>{aso.titulo}</p>}
                 {aso.descripcion_corta && <p style={{ margin: '0 0 8px 0' }}>{aso.descripcion_corta}</p>}
                 {aso.keywords && Array.isArray(aso.keywords) && (
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -255,19 +255,19 @@ const ResearchSection = ({ data }) => {
             }
           }
           return (
-            <div key={key} style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+            <div key={key} style={{ background: 'var(--surface)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <h3 style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
                 {label}
               </h3>
-              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: '12px', lineHeight: '1.5' }}>
                 {diseno.paleta && Array.isArray(diseno.paleta) && (
                   <div style={{ marginBottom: '12px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: '500', marginBottom: '6px', color: '#999' }}>Paleta de Colores</div>
+                    <div style={{ fontSize: '11px', fontWeight: '500', marginBottom: '6px', color: 'var(--text-muted)' }}>Paleta de Colores</div>
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                       {diseno.paleta.map((color, i) => (
                         <div key={i} style={{ textAlign: 'center' }}>
                           <div style={{ width: '40px', height: '40px', backgroundColor: color, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '4px' }}></div>
-                          <div style={{ fontSize: '10px', color: '#999' }}>{color}</div>
+                          <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{color}</div>
                         </div>
                       ))}
                     </div>
@@ -291,14 +291,14 @@ const ResearchSection = ({ data }) => {
             }
           }
           return (
-            <div key={key} style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+            <div key={key} style={{ background: 'var(--surface)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <h3 style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
                 {label}
               </h3>
-              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: '12px', lineHeight: '1.5' }}>
                 {monetizacion.modelo && <p style={{ margin: '0 0 8px 0' }}><strong>{monetizacion.modelo}</strong></p>}
                 {monetizacion.revenue_estimado_mensual_usd && (
-                  <p style={{ margin: 0, fontSize: '14px', color: '#00E5A0', fontWeight: '600' }}>
+                  <p style={{ margin: 0, fontSize: '14px', color: 'var(--primary)', fontWeight: '600' }}>
                     ${monetizacion.revenue_estimado_mensual_usd}/mes
                   </p>
                 )}
@@ -309,11 +309,11 @@ const ResearchSection = ({ data }) => {
 
         // Renderizado por defecto con renderField
         return (
-          <div key={key} style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+          <div key={key} style={{ background: 'var(--surface)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+            <h3 style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
               {label}
             </h3>
-            <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '12px', lineHeight: '1.5' }}>
               {renderField(value)}
             </div>
           </div>
@@ -893,16 +893,16 @@ Devuelve SOLO el JSON válido, sin explicación.`,
 
   if (loading) {
     return (
-      <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#999', fontSize: '16px' }}>Cargando...</div>
+      <div style={{ background: 'var(--bg)', minHeight: '100%', padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: '16px' }}>Cargando...</div>
       </div>
     );
   }
 
   if (!idea) {
     return (
-      <div style={{ backgroundColor: '#0A0A0F', minHeight: '100vh', padding: '24px' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto', color: '#999', textAlign: 'center' }}>
+      <div style={{ background: 'var(--bg)', minHeight: '100%', padding: '24px' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto', color: 'var(--text-muted)', textAlign: 'center' }}>
           Idea no encontrada
         </div>
       </div>
@@ -926,15 +926,15 @@ Devuelve SOLO el JSON válido, sin explicación.`,
 
   return (
     <div style={{
-      backgroundColor: '#0A0A0F',
-      minHeight: '100vh',
+      background: 'var(--bg)',
+      minHeight: '100%',
       display: 'flex',
       flexDirection: 'column',
       padding: 0
     }}>
       {/* Sticky Header */}
       <div style={{
-        backgroundColor: '#0A0A0F',
+        background: 'var(--bg)',
         borderBottom: '1px solid rgba(255,255,255,0.08)',
         padding: '16px 24px',
         position: 'sticky',
@@ -949,7 +949,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
             gap: '8px',
             backgroundColor: 'transparent',
             border: 'none',
-            color: '#00E5A0',
+            color: 'var(--primary)',
             cursor: 'pointer',
             fontSize: '14px',
             fontWeight: '600',
@@ -960,7 +960,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
           <IconArrowLeft /> Volver a Ideas
         </button>
 
-        <h1 style={{ color: 'white', fontSize: '28px', fontWeight: '700', margin: 0 }}>
+        <h1 style={{ color: 'var(--text)', fontSize: '28px', fontWeight: '700', margin: 0 }}>
           {idea.titulo}
         </h1>
       </div>
@@ -1054,7 +1054,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                 <span
                   style={{
                     backgroundColor: 'rgba(124,106,255,0.12)',
-                    color: '#7C6AFF',
+                    color: 'var(--primary)',
                     fontSize: '12px',
                     fontWeight: '600',
                     padding: '6px 12px',
@@ -1068,7 +1068,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
 
             {idea.prioridad && (
               <div style={{ marginBottom: '24px' }}>
-                <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px', fontWeight: '500' }}>Prioridad</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px', fontWeight: '500' }}>Prioridad</div>
                 <StarRating value={idea.prioridad} />
               </div>
             )}
@@ -1076,7 +1076,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
             {/* Editable Descripción */}
             {idea.descripcion && (
               <div style={{ marginBottom: '24px' }}>
-                <h2 style={{ color: '#00E5A0', fontSize: '14px', fontWeight: '600', marginBottom: '12px', textTransform: 'uppercase' }}>
+                <h2 style={{ color: 'var(--primary)', fontSize: '14px', fontWeight: '600', marginBottom: '12px', textTransform: 'uppercase' }}>
                   Descripción
                 </h2>
                 {editingFields.descripcion !== undefined ? (
@@ -1089,10 +1089,10 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                       width: '100%',
                       minHeight: '100px',
                       padding: '12px',
-                      backgroundColor: '#13131A',
+                      background: 'var(--surface)',
                       border: '1px solid #00E5A0',
                       borderRadius: '6px',
-                      color: 'white',
+                      color: 'var(--text)',
                       fontSize: '14px',
                       fontFamily: 'inherit',
                       resize: 'vertical',
@@ -1103,7 +1103,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                   <p
                     onClick={() => setEditingFields({ ...editingFields, descripcion: idea.descripcion })}
                     style={{
-                      color: 'rgba(255,255,255,0.7)',
+                      color: 'var(--text-muted)',
                       fontSize: '14px',
                       lineHeight: '1.6',
                       margin: 0,
@@ -1123,7 +1123,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
             {/* Público y Categoría editables */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
               <div>
-                <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px', fontWeight: '500', textTransform: 'uppercase' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px', fontWeight: '500', textTransform: 'uppercase' }}>
                   Público
                 </div>
                 {editingFields.publico !== undefined ? (
@@ -1136,10 +1136,10 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                     style={{
                       width: '100%',
                       padding: '10px 12px',
-                      backgroundColor: '#13131A',
+                      background: 'var(--surface)',
                       border: '1px solid #00E5A0',
                       borderRadius: '6px',
-                      color: 'white',
+                      color: 'var(--text)',
                       fontSize: '14px',
                       fontFamily: 'inherit',
                       boxSizing: 'border-box',
@@ -1150,9 +1150,9 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                     onClick={() => setEditingFields({ ...editingFields, publico: idea.publico || '' })}
                     style={{
                       padding: '10px 12px',
-                      backgroundColor: '#13131A',
+                      background: 'var(--surface)',
                       borderRadius: '6px',
-                      color: 'rgba(255,255,255,0.7)',
+                      color: 'var(--text-muted)',
                       fontSize: '14px',
                       cursor: 'pointer',
                       border: '1px solid rgba(255,255,255,0.1)',
@@ -1165,7 +1165,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
               </div>
 
               <div>
-                <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px', fontWeight: '500', textTransform: 'uppercase' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px', fontWeight: '500', textTransform: 'uppercase' }}>
                   Categoría
                 </div>
                 {editingFields.categoria !== undefined ? (
@@ -1178,10 +1178,10 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                     style={{
                       width: '100%',
                       padding: '10px 12px',
-                      backgroundColor: '#13131A',
+                      background: 'var(--surface)',
                       border: '1px solid #00E5A0',
                       borderRadius: '6px',
-                      color: 'white',
+                      color: 'var(--text)',
                       fontSize: '14px',
                       fontFamily: 'inherit',
                       boxSizing: 'border-box',
@@ -1192,9 +1192,9 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                     onClick={() => setEditingFields({ ...editingFields, categoria: idea.categoria || '' })}
                     style={{
                       padding: '10px 12px',
-                      backgroundColor: '#13131A',
+                      background: 'var(--surface)',
                       borderRadius: '6px',
-                      color: 'rgba(255,255,255,0.7)',
+                      color: 'var(--text-muted)',
                       fontSize: '14px',
                       cursor: 'pointer',
                       border: '1px solid rgba(255,255,255,0.1)',
@@ -1274,8 +1274,8 @@ Devuelve SOLO el JSON válido, sin explicación.`,
             {researchData ? (
               <ResearchSection data={researchData} />
             ) : (
-              <div style={{ backgroundColor: '#13131A', padding: '20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center' }}>
-                <p style={{ color: '#999', margin: 0 }}>No hay research aún. Genera uno con el botón en Info.</p>
+              <div style={{ background: 'var(--surface)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border)', textAlign: 'center' }}>
+                <p style={{ color: 'var(--text-muted)', margin: 0 }}>No hay research aún. Genera uno con el botón en Info.</p>
               </div>
             )}
           </div>
@@ -1295,11 +1295,11 @@ Devuelve SOLO el JSON válido, sin explicación.`,
               <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr', gap: '16px' }}>
                 {/* Pantallas */}
                 {idea.specs_pantallas && (
-                  <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                  <div style={{ background: 'var(--surface)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <h3 style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
                       Pantallas
                     </h3>
-                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '12px', lineHeight: '1.5' }}>
                       {renderField(parseField(idea.specs_pantallas))}
                     </div>
                   </div>
@@ -1307,18 +1307,18 @@ Devuelve SOLO el JSON válido, sin explicación.`,
 
                 {/* Flujos */}
                 {idea.specs_flujos && (
-                  <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                  <div style={{ background: 'var(--surface)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <h3 style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
                       Flujos
                     </h3>
-                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '12px', lineHeight: '1.5' }}>
                       {Array.isArray(specsData.flujos) ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           {specsData.flujos.map((flujo, i) => (
                             <div key={i} style={{ paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                              <strong style={{ color: '#00E5A0' }}>{flujo.nombre}</strong>
+                              <strong style={{ color: 'var(--primary)' }}>{flujo.nombre}</strong>
                               {Array.isArray(flujo.pasos) && (
-                                <ol style={{ margin: '8px 0 0 0', paddingLeft: '20px', color: 'rgba(255,255,255,0.7)' }}>
+                                <ol style={{ margin: '8px 0 0 0', paddingLeft: '20px', color: 'var(--text-muted)' }}>
                                   {flujo.pasos.map((paso, j) => (
                                     <li key={j} style={{ margin: '4px 0', fontSize: '11px' }}>
                                       {paso}
@@ -1338,16 +1338,16 @@ Devuelve SOLO el JSON válido, sin explicación.`,
 
                 {/* APIs */}
                 {idea.specs_apis && (
-                  <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                  <div style={{ background: 'var(--surface)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <h3 style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
                       APIs / Integraciones
                     </h3>
-                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', lineHeight: '1.5' }}>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '12px', lineHeight: '1.5' }}>
                       {Array.isArray(specsData.apis) ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           {specsData.apis.map((api, i) => (
                             <div key={i} style={{ paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                              <strong style={{ color: '#00E5A0' }}>{api.nombre}</strong>
+                              <strong style={{ color: 'var(--primary)' }}>{api.nombre}</strong>
                               {api.endpoint && (
                                 <div style={{ marginTop: '4px' }}>
                                   <a
@@ -1371,7 +1371,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                                 </div>
                               )}
                               {api.auth && (
-                                <div style={{ marginTop: '4px', fontSize: '10px', color: '#7C6AFF' }}>
+                                <div style={{ marginTop: '4px', fontSize: '10px', color: 'var(--primary)' }}>
                                   <span>Auth: {api.auth}</span>
                                 </div>
                               )}
@@ -1387,19 +1387,19 @@ Devuelve SOLO el JSON válido, sin explicación.`,
 
                 {/* Complejidad */}
                 {idea.complejidad && (
-                  <div style={{ backgroundColor: '#13131A', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <h3 style={{ color: '#999', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                  <div style={{ background: 'var(--surface)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <h3 style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
                       Complejidad
                     </h3>
-                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', fontWeight: '600', textTransform: 'capitalize' }}>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '12px', fontWeight: '600', textTransform: 'capitalize' }}>
                       {idea.complejidad}
                     </div>
                   </div>
                 )}
               </div>
             ) : (
-              <div style={{ backgroundColor: '#13131A', padding: '20px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center' }}>
-                <p style={{ color: '#999', margin: 0 }}>No hay specs aún. Primero genera el Research, luego los Specs.</p>
+              <div style={{ background: 'var(--surface)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border)', textAlign: 'center' }}>
+                <p style={{ color: 'var(--text-muted)', margin: 0 }}>No hay specs aún. Primero genera el Research, luego los Specs.</p>
               </div>
             )}
           </div>
@@ -1416,7 +1416,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
             }}
           >
             <div>
-              <h3 style={{ color: 'white', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Pipeline</h3>
+              <h3 style={{ color: 'var(--text)', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Pipeline</h3>
 
               {/* 1. BOTÓN LANZAR PIPELINE */}
               <button
@@ -1425,7 +1425,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                 style={{
                   width: '100%',
                   padding: '16px 32px',
-                  backgroundColor: '#00E5A0',
+                  background: 'var(--primary)',
                   border: 'none',
                   color: '#0A0A0F',
                   borderRadius: '8px',
@@ -1442,24 +1442,24 @@ Devuelve SOLO el JSON válido, sin explicación.`,
 
               {/* 2. HISTORIAL DE RUNS */}
               <div style={{ marginBottom: '32px' }}>
-                <h4 style={{ color: 'white', fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Historial de Runs</h4>
+                <h4 style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Historial de Runs</h4>
 
                 {loadingAllRuns ? (
-                  <div style={{ color: '#999', padding: '20px', textAlign: 'center' }}>Cargando runs...</div>
+                  <div style={{ color: 'var(--text-muted)', padding: '20px', textAlign: 'center' }}>Cargando runs...</div>
                 ) : allRuns.length > 0 ? (
                   <div style={{ display: 'grid', gap: '12px' }}>
                     {allRuns.map((run, index) => (
                       <div
                         key={run.id}
                         style={{
-                          backgroundColor: '#13131A',
-                          border: '1px solid rgba(255,255,255,0.08)',
+                          background: 'var(--surface)',
+                          border: '1px solid var(--border)',
                           borderRadius: '8px',
                           padding: '16px',
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                          <div style={{ fontSize: '14px', fontWeight: '600', color: 'white' }}>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>
                             #{allRuns.length - index}
                           </div>
                           <span
@@ -1481,25 +1481,25 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                         <div style={{ display: 'grid', gap: '8px', fontSize: '13px', color: '#DDD' }}>
                           {run.created_at && (
                             <div>
-                              <span style={{ color: '#999' }}>Fecha:</span> {new Date(run.created_at).toLocaleDateString('es-ES')} a las {new Date(run.created_at).toLocaleTimeString('es-ES')}
+                              <span style={{ color: 'var(--text-muted)' }}>Fecha:</span> {new Date(run.created_at).toLocaleDateString('es-ES')} a las {new Date(run.created_at).toLocaleTimeString('es-ES')}
                             </div>
                           )}
 
                           {run.paso_actual && (
                             <div>
-                              <span style={{ color: '#999' }}>Paso actual:</span> {run.paso_actual}
+                              <span style={{ color: 'var(--text-muted)' }}>Paso actual:</span> {run.paso_actual}
                             </div>
                           )}
 
                           {run.duracion_segundos && (
                             <div>
-                              <span style={{ color: '#999' }}>Duración:</span> {run.duracion_segundos}s
+                              <span style={{ color: 'var(--text-muted)' }}>Duración:</span> {run.duracion_segundos}s
                             </div>
                           )}
 
                           {run.estado === 'error' && run.error && (
-                            <div style={{ color: '#FF4D4F' }}>
-                              <span style={{ color: '#999' }}>Error:</span> {run.error}
+                            <div style={{ color: 'var(--nz-danger)' }}>
+                              <span style={{ color: 'var(--text-muted)' }}>Error:</span> {run.error}
                             </div>
                           )}
                         </div>
@@ -1517,7 +1517,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                                 padding: '8px 12px',
                                 backgroundColor: 'transparent',
                                 border: '1px solid #00E5A0',
-                                color: '#00E5A0',
+                                color: 'var(--primary)',
                                 borderRadius: '4px',
                                 cursor: 'pointer',
                                 fontSize: '12px',
@@ -1540,7 +1540,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                     ))}
                   </div>
                 ) : (
-                  <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: '#999' }}>
+                  <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
                     No hay runs aún para esta idea
                   </div>
                 )}
@@ -1549,10 +1549,10 @@ Devuelve SOLO el JSON válido, sin explicación.`,
               {/* 3. SETUP CHECKLIST */}
               {getLastCompletedRun() ? (
                 <div>
-                  <h4 style={{ color: 'white', fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Setup: Firebase + AdMob</h4>
+                  <h4 style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Setup: Firebase + AdMob</h4>
 
-                  <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
-                    <div style={{ color: '#999', fontSize: '12px', marginBottom: '8px' }}>Package Name (copiable):</div>
+                  <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px' }}>Package Name (copiable):</div>
                     <div
                       onClick={() => {
                         navigator.clipboard.writeText(getPackageName());
@@ -1560,12 +1560,12 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                       }}
                       style={{
                         padding: '12px',
-                        backgroundColor: '#0A0A0F',
+                        background: 'var(--bg)',
                         border: '1px solid rgba(0, 229, 160, 0.3)',
                         borderRadius: '6px',
                         fontFamily: 'monospace',
                         fontSize: '13px',
-                        color: '#00E5A0',
+                        color: 'var(--primary)',
                         cursor: 'pointer',
                         transition: 'all 200ms ease',
                       }}
@@ -1578,7 +1578,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
 
                   <div style={{ display: 'grid', gap: '12px' }}>
                     <div>
-                      <h5 style={{ color: '#00E5A0', fontSize: '13px', fontWeight: '600', marginBottom: '8px', margin: '0 0 8px 0' }}>Firebase</h5>
+                      <h5 style={{ color: 'var(--primary)', fontSize: '13px', fontWeight: '600', marginBottom: '8px', margin: '0 0 8px 0' }}>Firebase</h5>
                       <div style={{ display: 'grid', gap: '8px' }}>
                         {[
                           { key: 'firebase_proyecto', label: 'Crear proyecto en console.firebase.google.com' },
@@ -1596,8 +1596,8 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                                 alignItems: 'center',
                                 gap: '12px',
                                 padding: '12px',
-                                backgroundColor: '#0A0A0F',
-                                border: '1px solid rgba(255,255,255,0.08)',
+                                background: 'var(--bg)',
+                                border: '1px solid var(--border)',
                                 borderRadius: '6px',
                                 cursor: 'pointer',
                                 transition: 'all 200ms ease',
@@ -1620,7 +1620,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                                   e.preventDefault();
                                   setHelpModalFirebaseAdMob({ key: item.key, ...firebaseAdMobHelp[item.key] });
                                 }}
-                                style={{ padding: '4px 8px', backgroundColor: 'transparent', border: 'none', color: '#00E5A0', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', transition: 'all 200ms ease', flexShrink: 0 }}
+                                style={{ padding: '4px 8px', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', transition: 'all 200ms ease', flexShrink: 0 }}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.15)'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                 title="Ayuda"
@@ -1634,7 +1634,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                     </div>
 
                     <div>
-                      <h5 style={{ color: '#00E5A0', fontSize: '13px', fontWeight: '600', marginBottom: '8px', margin: '0 0 8px 0' }}>AdMob</h5>
+                      <h5 style={{ color: 'var(--primary)', fontSize: '13px', fontWeight: '600', marginBottom: '8px', margin: '0 0 8px 0' }}>AdMob</h5>
                       <div style={{ display: 'grid', gap: '8px' }}>
                         {[
                           { key: 'admob_app', label: 'Crear app en admob.google.com' },
@@ -1652,8 +1652,8 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                                 alignItems: 'center',
                                 gap: '12px',
                                 padding: '12px',
-                                backgroundColor: '#0A0A0F',
-                                border: '1px solid rgba(255,255,255,0.08)',
+                                background: 'var(--bg)',
+                                border: '1px solid var(--border)',
                                 borderRadius: '6px',
                                 cursor: 'pointer',
                                 transition: 'all 200ms ease',
@@ -1676,7 +1676,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                                   e.preventDefault();
                                   setHelpModalFirebaseAdMob({ key: item.key, ...firebaseAdMobHelp[item.key] });
                                 }}
-                                style={{ padding: '4px 8px', backgroundColor: 'transparent', border: 'none', color: '#00E5A0', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', transition: 'all 200ms ease', flexShrink: 0 }}
+                                style={{ padding: '4px 8px', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', transition: 'all 200ms ease', flexShrink: 0 }}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.15)'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                 title="Ayuda"
@@ -1691,7 +1691,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                   </div>
                 </div>
               ) : (
-                <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: '#999' }}>
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
                   Completa un pipeline exitosamente para desbloquear el Setup Checklist
                 </div>
               )}
@@ -1710,10 +1710,10 @@ Devuelve SOLO el JSON válido, sin explicación.`,
             }}
           >
             <div>
-              <h3 style={{ color: 'white', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Control de Calidad</h3>
+              <h3 style={{ color: 'var(--text)', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Control de Calidad</h3>
 
               {!hasCompletedRun ? (
-                <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: '#999' }}>
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
                   Completa un pipeline exitosamente para desbloquear este tab
                 </div>
               ) : (
@@ -1739,8 +1739,8 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                             display: 'flex',
                             alignItems: 'center',
                             gap: '12px',
-                            backgroundColor: '#13131A',
-                            border: '1px solid rgba(255,255,255,0.08)',
+                            background: 'var(--surface)',
+                            border: '1px solid var(--border)',
                             borderRadius: '8px',
                             padding: '16px',
                             cursor: 'pointer',
@@ -1781,7 +1781,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                               width: '100%',
                               minHeight: '80px',
                               padding: '12px',
-                              backgroundColor: '#13131A',
+                              background: 'var(--surface)',
                               border: '1px solid rgba(0, 229, 160, 0.3)',
                               borderRadius: '6px',
                               color: '#DDD',
@@ -1806,7 +1806,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                   style={{
                     width: '100%',
                     padding: '16px 32px',
-                    backgroundColor: '#00E5A0',
+                    background: 'var(--primary)',
                     border: 'none',
                     color: '#0A0A0F',
                     borderRadius: '8px',
@@ -1836,18 +1836,18 @@ Devuelve SOLO el JSON válido, sin explicación.`,
             }}
           >
             <div>
-              <h3 style={{ color: 'white', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Publicación</h3>
+              <h3 style={{ color: 'var(--text)', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Publicación</h3>
 
               {!calidadAprobada ? (
-                <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: '#999' }}>
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
                   Completa el control de calidad primero
                 </div>
               ) : (
                 <>
                   <div style={{ marginBottom: '24px' }}>
                     <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                      <h4 style={{ color: 'white', margin: 0, fontSize: '14px', fontWeight: '600' }}>Setup Técnico</h4>
-                      <span style={{ color: '#999', fontSize: '11px' }}>
+                      <h4 style={{ color: 'var(--text)', margin: 0, fontSize: '14px', fontWeight: '600' }}>Setup Técnico</h4>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
                         {Object.values(idea.checklist_publicacion || {}).slice(0, 5).filter(Boolean).length}/5
                       </span>
                     </div>
@@ -1859,7 +1859,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                         { key: 'release_build', label: 'Build release generado sin errores' },
                         { key: 'firma_apk', label: 'APK firmado con keystore' },
                       ].map(item => (
-                        <label key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px', cursor: 'pointer' }}>
+                        <label key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', cursor: 'pointer' }}>
                           <input type="checkbox" checked={idea.checklist_publicacion?.[item.key] || false} onChange={() => handleChecklistPublicacion(item.key)} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#00E5A0' }} />
                           <span style={{ color: idea.checklist_publicacion?.[item.key] ? '#999' : '#DDD', fontSize: '12px', textDecoration: idea.checklist_publicacion?.[item.key] ? 'line-through' : 'none', flex: 1 }}>{item.label}</span>
                           <button
@@ -1868,7 +1868,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                               e.preventDefault();
                               setHelpModal({ key: item.key, ...publicacionHelp[item.key] });
                             }}
-                            style={{ padding: '4px 8px', backgroundColor: 'transparent', border: 'none', color: '#00E5A0', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '50%', transition: 'all 200ms ease' }}
+                            style={{ padding: '4px 8px', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '50%', transition: 'all 200ms ease' }}
                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.15)'}
                             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             title="Ayuda"
@@ -1882,8 +1882,8 @@ Devuelve SOLO el JSON válido, sin explicación.`,
 
                   <div style={{ marginBottom: '24px' }}>
                     <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                      <h4 style={{ color: 'white', margin: 0, fontSize: '14px', fontWeight: '600' }}>Play Store</h4>
-                      <span style={{ color: '#999', fontSize: '11px' }}>
+                      <h4 style={{ color: 'var(--text)', margin: 0, fontSize: '14px', fontWeight: '600' }}>Play Store</h4>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
                         {Object.values(idea.checklist_publicacion || {}).slice(5, 10).filter(Boolean).length}/5
                       </span>
                     </div>
@@ -1895,7 +1895,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                         { key: 'clasificacion', label: 'Clasificación de contenido completada' },
                         { key: 'datos_seguridad', label: 'Cuestionario de seguridad de datos completado' },
                       ].map(item => (
-                        <label key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px', cursor: 'pointer' }}>
+                        <label key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', cursor: 'pointer' }}>
                           <input type="checkbox" checked={idea.checklist_publicacion?.[item.key] || false} onChange={() => handleChecklistPublicacion(item.key)} style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#00E5A0' }} />
                           <span style={{ color: idea.checklist_publicacion?.[item.key] ? '#999' : '#DDD', fontSize: '12px', textDecoration: idea.checklist_publicacion?.[item.key] ? 'line-through' : 'none', flex: 1 }}>{item.label}</span>
                           <button
@@ -1904,7 +1904,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                               e.preventDefault();
                               setHelpModal({ key: item.key, ...publicacionHelp[item.key] });
                             }}
-                            style={{ padding: '4px 8px', backgroundColor: 'transparent', border: 'none', color: '#00E5A0', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '50%', transition: 'all 200ms ease' }}
+                            style={{ padding: '4px 8px', backgroundColor: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '50%', transition: 'all 200ms ease' }}
                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 229, 160, 0.15)'}
                             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             title="Ayuda"
@@ -1917,8 +1917,8 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                   </div>
 
                   <div style={{ marginBottom: '24px' }}>
-                    <div style={{ height: '4px', backgroundColor: '#1C1C26', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', backgroundColor: '#00E5A0', width: `${(Object.values(idea.checklist_publicacion || {}).filter(Boolean).length / 10) * 100}%`, transition: 'width 0.3s ease' }} />
+                    <div style={{ height: '4px', background: 'var(--surface-2)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', background: 'var(--primary)', width: `${(Object.values(idea.checklist_publicacion || {}).filter(Boolean).length / 10) * 100}%`, transition: 'width 0.3s ease' }} />
                     </div>
                   </div>
 
@@ -1928,7 +1928,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                       style={{
                         width: '100%',
                         padding: '20px 32px',
-                        backgroundColor: '#00E5A0',
+                        background: 'var(--primary)',
                         border: 'none',
                         color: '#0A0A0F',
                         borderRadius: '8px',
@@ -1960,16 +1960,16 @@ Devuelve SOLO el JSON válido, sin explicación.`,
             }}
           >
             <div>
-              <h3 style={{ color: 'white', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Screenshots</h3>
+              <h3 style={{ color: 'var(--text)', fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Screenshots</h3>
 
               {!hasCompletedRun ? (
-                <div style={{ backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: '#999' }}>
+                <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
                   Completa un pipeline exitosamente para desbloquear este tab
                 </div>
               ) : (
                 <>
                   <div style={{ marginBottom: '24px' }}>
-                    <h4 style={{ color: 'white', fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Feature Graphic Generator</h4>
+                    <h4 style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Feature Graphic Generator</h4>
                     <button
                       onClick={handleGenerateFeatureGraphic}
                       disabled={generatingGraphic}
@@ -1977,7 +1977,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                         padding: '12px 24px',
                         backgroundColor: '#7C6AFF',
                         border: 'none',
-                        color: 'white',
+                        color: 'var(--text)',
                         borderRadius: '8px',
                         cursor: generatingGraphic ? 'not-allowed' : 'pointer',
                         fontSize: '14px',
@@ -1989,7 +1989,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                       {generatingGraphic ? 'Generando...' : '✨ Generar Feature Graphic (Claude)'}
                     </button>
                     {idea.feature_graphic_spec && (
-                      <div style={{ marginTop: '16px', backgroundColor: '#13131A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '20px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ marginTop: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '20px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
                         <div style={{
                           width: '100%',
                           height: '100%',
@@ -2015,11 +2015,11 @@ Devuelve SOLO el JSON válido, sin explicación.`,
                   </div>
 
                   <div>
-                    <h4 style={{ color: 'white', fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Screenshots</h4>
-                    <p style={{ color: '#999', fontSize: '12px', marginBottom: '12px' }}>
+                    <h4 style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Screenshots</h4>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '12px' }}>
                       Nota: La carga de archivos requiere una solución de storage (Supabase Storage o similar)
                     </p>
-                    <div style={{ backgroundColor: '#13131A', border: '2px dashed rgba(0, 229, 160, 0.3)', borderRadius: '8px', padding: '40px', textAlign: 'center', color: '#999' }}>
+                    <div style={{ background: 'var(--surface)', border: '2px dashed rgba(0, 229, 160, 0.3)', borderRadius: '8px', padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
                       <p>📸 Sube screenshots aquí (implementar storage)</p>
                     </div>
                   </div>
@@ -2048,7 +2048,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
         >
           <div
             style={{
-              backgroundColor: '#13131A',
+              background: 'var(--surface)',
               border: '1px solid rgba(0, 229, 160, 0.3)',
               borderRadius: '12px',
               padding: '32px',
@@ -2058,7 +2058,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ color: '#00E5A0', fontSize: '18px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>
+            <h3 style={{ color: 'var(--primary)', fontSize: '18px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>
               {helpModal.title}
             </h3>
             <p style={{ color: '#DDD', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px', whiteSpace: 'pre-wrap' }}>
@@ -2069,7 +2069,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
               style={{
                 width: '100%',
                 padding: '12px 24px',
-                backgroundColor: '#00E5A0',
+                background: 'var(--primary)',
                 border: 'none',
                 color: '#0A0A0F',
                 borderRadius: '6px',
@@ -2105,7 +2105,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
         >
           <div
             style={{
-              backgroundColor: '#13131A',
+              background: 'var(--surface)',
               border: '1px solid rgba(0, 229, 160, 0.3)',
               borderRadius: '12px',
               padding: '32px',
@@ -2115,7 +2115,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ color: '#00E5A0', fontSize: '18px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>
+            <h3 style={{ color: 'var(--primary)', fontSize: '18px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>
               {helpModalFirebaseAdMob.title}
             </h3>
             <p style={{ color: '#DDD', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px', whiteSpace: 'pre-wrap' }}>
@@ -2126,7 +2126,7 @@ Devuelve SOLO el JSON válido, sin explicación.`,
               style={{
                 width: '100%',
                 padding: '12px 24px',
-                backgroundColor: '#00E5A0',
+                background: 'var(--primary)',
                 border: 'none',
                 color: '#0A0A0F',
                 borderRadius: '6px',

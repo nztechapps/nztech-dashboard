@@ -4,52 +4,19 @@ import { useTareas } from '../hooks/useTareas';
 import { useNotifications } from '../hooks/useNotifications';
 import { supabase } from '../lib/supabase';
 
-const card = {
-  backgroundColor: '#FFFFFF',
-  borderRadius: '12px',
-  boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-  padding: '20px',
-};
-
-const sectionTitle = {
-  fontSize: '13px',
-  fontWeight: '600',
-  color: '#9CA3AF',
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-  marginBottom: '12px',
-};
-
-const IconRocket = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M4.5 16.5c-1.5-1.5-2-3.5-2-5.5 0-4.5 3.5-8 8-8s8 3.5 8 8-3.5 8-8 8c-2 0-4-0.5-5.5-2"></path>
-    <polyline points="12 4 12 12 9 12"></polyline>
-  </svg>
-);
-
-const IconAlert = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3.05h16.94a2 2 0 0 0 1.71-3.05L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-    <line x1="12" y1="9" x2="12" y2="13"></line>
-    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-  </svg>
-);
-
-const IconCheck = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <polyline points="20 6 9 17 4 12"></polyline>
-  </svg>
-);
+function getDailyGreeting() {
+  const date = new Date();
+  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  return `${days[date.getDay()]}, ${date.getDate()} de ${months[date.getMonth()]}`;
+}
 
 function formatDate(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
+  return new Date(dateString).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function formatRelativeDate(dateString) {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffDays = Math.floor((now - date) / 86400000);
+  const diffDays = Math.floor((Date.now() - new Date(dateString).getTime()) / 86400000);
   if (diffDays === 0) return 'hoy';
   if (diffDays === 1) return 'ayer';
   if (diffDays < 7) return `hace ${diffDays}d`;
@@ -57,58 +24,98 @@ function formatRelativeDate(dateString) {
 }
 
 function formatTime(seconds) {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  const m = Math.floor(seconds / 60), s = seconds % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-function getDailyGreeting() {
-  const date = new Date();
-  const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-  return `${dayNames[date.getDay()]}, ${date.getDate()} de ${monthNames[date.getMonth()]}`;
+/* ── Icons ─────────────────────────────────────────────── */
+const Ico = ({ children }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    {children}
+  </svg>
+);
+const IconRocket = () => <Ico><path d="M4.5 16.5c-1.5-1.5-2-3.5-2-5.5 0-4.5 3.5-8 8-8s8 3.5 8 8-3.5 8-8 8c-2 0-4-0.5-5.5-2"/><polyline points="12 4 12 12 9 12"/></Ico>;
+const IconCheck = () => <Ico><polyline points="20 6 9 17 4 12"/></Ico>;
+const IconAlert = () => <Ico><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3.05h16.94a2 2 0 0 0 1.71-3.05L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></Ico>;
+const IconArrowUp = () => <Ico><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></Ico>;
+const IconArrowDown = () => <Ico><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></Ico>;
+
+/* ── Sparkline ──────────────────────────────────────────── */
+function Sparkline({ data, positive = true }) {
+  const w = 80, h = 28, p = 2;
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = p + (i / (data.length - 1)) * (w - 2 * p);
+    const y = h - p - ((v - min) / range) * (h - 2 * p);
+    return `${x},${y}`;
+  }).join(' ');
+  const color = positive ? 'var(--primary)' : 'var(--nz-danger)';
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: 'block' }}>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
 }
 
+/* ── KpiCard ────────────────────────────────────────────── */
+function KpiCard({ label, value, delta, spark, positive = true }) {
+  return (
+    <div className="nz-card" style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>{label}</div>
+        {delta != null && (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, fontWeight: 600,
+            color: positive ? 'var(--nz-success)' : 'var(--nz-danger)',
+          }}>
+            {positive ? <IconArrowUp /> : <IconArrowDown />}
+            {Math.abs(delta)}%
+          </span>
+        )}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--text)', fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+        {spark && <Sparkline data={spark} positive={positive} />}
+      </div>
+    </div>
+  );
+}
+
+/* ── StatusBadge ────────────────────────────────────────── */
 const StatusBadge = ({ status }) => {
   const config = {
-    development: { bg: '#F3F4F6', text: '#6B7280' },
-    testing: { bg: '#FEFCE8', text: '#92400E' },
-    published: { bg: '#ECFDF5', text: '#065F46' },
-    deprecated: { bg: '#FEF2F2', text: '#991B1B' },
+    development: { bg: 'var(--surface-2)', color: 'var(--text-muted)' },
+    testing:     { bg: 'oklch(0.97 0.06 75)',  color: 'oklch(0.45 0.15 75)' },
+    published:   { bg: 'oklch(0.97 0.06 155)', color: 'oklch(0.40 0.14 155)' },
+    deprecated:  { bg: 'oklch(0.97 0.05 27)',  color: 'oklch(0.45 0.18 27)' },
   };
   const c = config[status] || config.development;
   return (
-    <span style={{ backgroundColor: c.bg, color: c.text, fontSize: '10px', padding: '3px 7px', borderRadius: '4px', fontWeight: '500' }}>
+    <span style={{ background: c.bg, color: c.color, fontSize: 10, padding: '3px 8px', borderRadius: 'var(--radius-pill)', fontWeight: 500 }}>
       {status}
     </span>
   );
 };
 
+/* ── RunStatusBadge ─────────────────────────────────────── */
 const RunStatusBadge = ({ estado }) => {
   const config = {
-    running: { bg: '#EEF2FF', color: '#4F46E5' },
-    completado: { bg: '#ECFDF5', color: '#059669' },
-    error: { bg: '#FEF2F2', color: '#DC2626' },
-    ensamblando: { bg: '#FFFBEB', color: '#D97706' },
+    running:      { bg: 'var(--primary-soft)', color: 'var(--primary)' },
+    completado:   { bg: 'oklch(0.97 0.06 155)', color: 'oklch(0.40 0.14 155)' },
+    error:        { bg: 'oklch(0.97 0.05 27)',  color: 'oklch(0.45 0.18 27)' },
+    ensamblando:  { bg: 'oklch(0.97 0.06 75)',  color: 'oklch(0.45 0.15 75)' },
   };
   const c = config[estado] || config.running;
   return (
-    <span style={{ backgroundColor: c.bg, color: c.color, fontSize: '11px', padding: '3px 8px', borderRadius: '4px', fontWeight: '600', textTransform: 'capitalize' }}>
+    <span style={{ background: c.bg, color: c.color, fontSize: 11, padding: '3px 10px', borderRadius: 'var(--radius-pill)', fontWeight: 600, textTransform: 'capitalize' }}>
       {estado}
     </span>
   );
 };
 
-function KpiCard({ label, value, sub, accent }) {
-  return (
-    <div style={{ ...card, padding: '20px' }}>
-      <div style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '8px' }}>{label}</div>
-      <div style={{ fontSize: '26px', fontWeight: '700', color: accent || '#111827', lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontSize: '12px', color: '#9CA3AF', marginTop: '6px' }}>{sub}</div>}
-    </div>
-  );
-}
-
+/* ── Home ───────────────────────────────────────────────── */
 export default function Home() {
   const { apps } = useApps();
   const { tareas } = useTareas();
@@ -126,39 +133,33 @@ export default function Home() {
   const appsWithIssues = notifications.filter(n => n.tipo === 'error').length > 0;
 
   useEffect(() => {
-    const fetchMetrics = async () => {
+    const fetch = async () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const { data } = await supabase.from('metrics').select('ingresos').gte('fecha', thirtyDaysAgo.toISOString());
-      const total = (data || []).reduce((sum, m) => sum + (m.ingresos || 0), 0);
+      const total = (data || []).reduce((s, m) => s + (m.ingresos || 0), 0);
       setRevenue(total > 0 ? `$${total.toFixed(2)}` : '$0.00');
     };
-    fetchMetrics();
+    fetch();
   }, []);
 
   useEffect(() => {
-    const fetchIdeas = async () => {
+    const fetch = async () => {
       const { data } = await supabase.from('apps').select('id, nombre, updated_at').eq('publicada', false).order('updated_at', { ascending: false }).limit(5);
       setLatestIdeas(data || []);
       const { count } = await supabase.from('apps').select('id', { count: 'exact', head: true }).eq('publicada', false);
       setIdeasCount(count || 0);
     };
-    fetchIdeas();
+    fetch();
   }, []);
 
   useEffect(() => {
-    const fetchRun = async () => {
-      const { data } = await supabase
-        .from('pipeline_runs')
-        .select('*')
-        .in('estado', ['running', 'ensamblando'])
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+    const fetch = async () => {
+      const { data } = await supabase.from('pipeline_runs').select('*').in('estado', ['running', 'ensamblando']).order('created_at', { ascending: false }).limit(1).maybeSingle();
       setActiveRun(data || null);
     };
-    fetchRun();
-    const interval = setInterval(fetchRun, 10000);
+    fetch();
+    const interval = setInterval(fetch, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -171,72 +172,62 @@ export default function Home() {
   }, [activeRun]);
 
   return (
-    <div style={{ backgroundColor: '#F9FAFB', padding: '28px', minHeight: '100%' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div style={{ background: 'var(--bg)', padding: '28px', minHeight: '100%' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        {/* ZONA 1 — Daily Brief */}
-        <div style={card}>
-          <div style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '4px' }}>{getDailyGreeting()}</div>
-          <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827', marginBottom: '4px' }}>Buenos días, Fede.</div>
-          <div style={{ fontSize: '15px', color: '#6B7280', marginBottom: '20px' }}>
+        {/* Daily Brief */}
+        <div className="nz-card" style={{ padding: 20 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-subtle)', marginBottom: 4 }}>{getDailyGreeting()}</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Buenos días, Fede.</div>
+          <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 16 }}>
             {urgentTarea ? `Hoy toca: ${urgentTarea.titulo}` : 'Nada pendiente por hoy. ¡Gran día!'}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
-            <div style={{ backgroundColor: '#F9FAFB', borderRadius: '8px', padding: '12px 14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                <span style={{ color: activeRun ? '#4F46E5' : '#9CA3AF' }}><IconRocket /></span>
-                <span style={{ fontSize: '11px', fontWeight: '600', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pipeline</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
+            {[
+              { icon: <IconRocket />, label: 'Pipeline', value: activeRun ? `${activeRun.estado} — ${formatTime(timer)}` : 'Sin actividad', active: !!activeRun, color: 'var(--primary)' },
+              { icon: <IconCheck />, label: 'Tareas', value: pendingTareas.length === 0 ? '¡Todo hecho!' : `${pendingTareas.length} sin completar`, active: pendingTareas.length === 0, color: 'var(--nz-success)' },
+              { icon: <IconAlert />, label: 'Alertas', value: appsWithIssues ? 'Hay issues activos' : 'Todo en orden', active: !appsWithIssues, color: appsWithIssues ? 'var(--nz-danger)' : 'var(--nz-success)' },
+            ].map((item, i) => (
+              <div key={i} style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius)', padding: '10px 14px', border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <span style={{ color: item.color }}>{item.icon}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '.05em' }}>{item.label}</span>
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{item.value}</div>
               </div>
-              <div style={{ fontSize: '13px', fontWeight: '500', color: '#374151' }}>
-                {activeRun ? `${activeRun.estado} — ${formatTime(timer)}` : 'Sin actividad'}
-              </div>
-            </div>
-            <div style={{ backgroundColor: '#F9FAFB', borderRadius: '8px', padding: '12px 14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                <span style={{ color: pendingTareas.length === 0 ? '#059669' : '#9CA3AF' }}><IconCheck /></span>
-                <span style={{ fontSize: '11px', fontWeight: '600', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tareas</span>
-              </div>
-              <div style={{ fontSize: '13px', fontWeight: '500', color: '#374151' }}>
-                {pendingTareas.length === 0 ? '¡Todo hecho!' : `${pendingTareas.length} sin completar`}
-              </div>
-            </div>
-            <div style={{ backgroundColor: '#F9FAFB', borderRadius: '8px', padding: '12px 14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                <span style={{ color: appsWithIssues ? '#DC2626' : '#9CA3AF' }}><IconAlert /></span>
-                <span style={{ fontSize: '11px', fontWeight: '600', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Alertas</span>
-              </div>
-              <div style={{ fontSize: '13px', fontWeight: '500', color: '#374151' }}>
-                {appsWithIssues ? 'Hay issues activos' : 'Todo en orden'}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* ZONA 2 — KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
-          <KpiCard label="Revenue AdMob" value={revenue} sub="último mes" />
-          <KpiCard label="Apps publicadas" value={`${publishedApps.length}/50`} sub="en el portfolio" accent="#059669" />
-          <KpiCard label="Ideas en desarrollo" value={ideasCount} sub="sin publicar" />
-          <KpiCard label="Tareas pendientes" value={pendingTareas.length} sub={pendingTareas.length === 0 ? '¡Todo hecho!' : 'sin completar'} accent={pendingTareas.length === 0 ? '#059669' : '#111827'} />
+        {/* KPIs */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+          <KpiCard label="Revenue AdMob" value={revenue} sub="último mes" spark={[4,6,5,8,9,8,10,12]} />
+          <KpiCard label="Apps publicadas" value={`${publishedApps.length}/50`} delta={null} spark={[2,4,5,6,7,8,10,publishedApps.length]} />
+          <KpiCard label="Ideas en desarrollo" value={ideasCount} delta={null} spark={[8,9,10,11,12,13,14,ideasCount]} />
+          <KpiCard
+            label="Tareas pendientes"
+            value={pendingTareas.length}
+            delta={null}
+            spark={[8,7,6,5,4,4,3,pendingTareas.length]}
+            positive={pendingTareas.length === 0}
+          />
         </div>
 
-        {/* ZONA 3 — Apps del Portfolio */}
-        <div style={card}>
-          <div style={sectionTitle}>Apps del Portfolio</div>
+        {/* Apps del Portfolio */}
+        <div className="nz-card" style={{ padding: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 14 }}>Apps del Portfolio</div>
           {publishedApps.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '32px 0', color: '#9CA3AF', fontSize: '14px' }}>
-              Publicá tu primera app
-            </div>
+            <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-subtle)', fontSize: 14 }}>Publicá tu primera app</div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 }}>
               {publishedApps.slice(0, 6).map(app => (
-                <div key={app.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', backgroundColor: '#F9FAFB', borderRadius: '8px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '700', color: '#00E5A0', flexShrink: 0 }}>
+                <div key={app.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--surface-2)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--primary-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--primary)', flexShrink: 0 }}>
                     {(app.nombre || app.name || 'A').slice(0, 2).toUpperCase()}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '13px', fontWeight: '500', color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{app.nombre || app.name}</div>
-                    <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{formatDate(app.created_at)}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{app.nombre || app.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-subtle)' }}>{formatDate(app.created_at)}</div>
                   </div>
                   <StatusBadge status={app.estado || app.status || 'published'} />
                 </div>
@@ -245,52 +236,49 @@ export default function Home() {
           )}
         </div>
 
-        {/* ZONA 4 + 5 — Pipeline y Actividad Reciente */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-
-          {/* Pipeline */}
-          <div style={card}>
-            <div style={sectionTitle}>Pipeline</div>
+        {/* Pipeline + Actividad Reciente */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+          <div className="nz-card" style={{ padding: 20 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 14 }}>Pipeline</div>
             {activeRun ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px', fontWeight: '600', textTransform: 'uppercase' }}>App</div>
-                  <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>{activeRun.nombre}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-subtle)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase' }}>App</div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)' }}>{activeRun.nombre}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px', fontWeight: '600', textTransform: 'uppercase' }}>Estado</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-subtle)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase' }}>Estado</div>
                   <RunStatusBadge estado={activeRun.estado} />
                 </div>
                 {activeRun.paso_actual && (
                   <div>
-                    <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px', fontWeight: '600', textTransform: 'uppercase' }}>Paso actual</div>
-                    <div style={{ fontSize: '13px', color: '#374151' }}>{activeRun.paso_actual}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-subtle)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase' }}>Paso actual</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{activeRun.paso_actual}</div>
                   </div>
                 )}
                 <div>
-                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '4px', fontWeight: '600', textTransform: 'uppercase' }}>Tiempo</div>
-                  <div style={{ fontSize: '20px', fontWeight: '700', color: '#00E5A0', fontFamily: 'DM Mono, monospace' }}>{formatTime(timer)}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-subtle)', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase' }}>Tiempo</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--primary)', fontFamily: 'var(--font-mono)' }}>{formatTime(timer)}</div>
                 </div>
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '24px 0', color: '#9CA3AF', fontSize: '13px' }}>Nada ejecutando</div>
+              <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-subtle)', fontSize: 13 }}>Nada ejecutando</div>
             )}
-            <a href="/pipeline" style={{ display: 'block', marginTop: '16px', textAlign: 'center', fontSize: '12px', color: '#059669', fontWeight: '500', textDecoration: 'none' }}>
+            <a href="/pipeline" style={{ display: 'block', marginTop: 16, textAlign: 'center', fontSize: 12, color: 'var(--primary)', fontWeight: 500, textDecoration: 'none' }}>
               Ver todos los runs →
             </a>
           </div>
 
-          {/* Actividad reciente — últimas 5 ideas modificadas */}
-          <div style={card}>
-            <div style={sectionTitle}>Actividad Reciente</div>
+          <div className="nz-card" style={{ padding: 20 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-subtle)', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 14 }}>Actividad Reciente</div>
             {latestIdeas.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '24px 0', color: '#9CA3AF', fontSize: '13px' }}>Sin actividad reciente</div>
+              <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-subtle)', fontSize: 13 }}>Sin actividad reciente</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {latestIdeas.map(idea => (
-                  <div key={idea.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                    <span style={{ fontSize: '13px', color: '#374151', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{idea.nombre}</span>
-                    <span style={{ fontSize: '11px', color: '#9CA3AF', marginLeft: '12px', flexShrink: 0 }}>{formatRelativeDate(idea.updated_at)}</span>
+                  <div key={idea.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{idea.nombre}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-subtle)', marginLeft: 12, flexShrink: 0 }}>{formatRelativeDate(idea.updated_at)}</span>
                   </div>
                 ))}
               </div>

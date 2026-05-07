@@ -168,25 +168,37 @@ function NavItem({ item, isActive, showBadge, pendingCount, isMobile }) {
     <li style={{ flex: isMobile ? 1 : undefined }}>
       <Link
         to={item.path}
-        className="flex items-center gap-3 rounded-lg transition-colors"
         style={{
-          color: isActive ? '#111827' : '#374151',
-          backgroundColor: isActive ? '#F3F4F6' : 'transparent',
+          display: 'flex',
+          alignItems: 'center',
+          borderRadius: '8px',
+          transition: 'background 0.15s, color 0.15s',
+          color: isActive ? '#059669' : '#6B7280',
+          backgroundColor: isActive ? '#F0FDF9' : 'transparent',
           borderLeft: isActive && !isMobile ? '3px solid #00E5A0' : '3px solid transparent',
           justifyContent: isMobile ? 'center' : undefined,
-          padding: isMobile ? '12px 0' : '8px 12px',
+          padding: isMobile ? '12px 0' : isActive ? '8px 9px' : '8px 12px',
           gap: isMobile ? 0 : '10px',
+          fontWeight: isActive ? '500' : '400',
+          fontSize: '14px',
           position: 'relative',
+          textDecoration: 'none',
         }}
         onMouseEnter={(e) => {
-          if (!isActive) e.currentTarget.style.backgroundColor = '#F9FAFB'
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = '#F3F4F6'
+            e.currentTarget.style.color = '#111827'
+          }
         }}
         onMouseLeave={(e) => {
-          if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = 'transparent'
+            e.currentTarget.style.color = '#6B7280'
+          }
         }}
       >
-        <span style={{ opacity: isActive ? 1 : 0.7 }}>{getIcon(item.icon)}</span>
-        {!isMobile && <span className="text-sm font-medium">{item.label}</span>}
+        <span style={{ display: 'flex', width: 18, height: 18 }}>{getIcon(item.icon)}</span>
+        {!isMobile && <span>{item.label}</span>}
         {showBadge && (
           <span style={{
             position: isMobile ? 'absolute' : 'relative',
@@ -243,11 +255,10 @@ export function Sidebar() {
     >
       {/* Logo */}
       {!isMobile && (
-        <div className="px-6 py-8 border-b" style={{ borderBottomColor: 'rgba(0,0,0,0.08)' }}>
-          <div className="flex items-baseline gap-1">
-            <span style={{ color: '#00E5A0' }} className="text-2xl font-bold">NZ</span>
-            <span style={{ color: '#111827' }} className="text-2xl font-bold">Tech</span>
-          </div>
+        <div style={{ padding: '20px 16px', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+          <span style={{ color: '#111827', fontWeight: '700', fontSize: '18px' }}>
+            <span style={{ color: '#00E5A0' }}>NZ</span>Tech
+          </span>
         </div>
       )}
 
@@ -272,18 +283,16 @@ export function Sidebar() {
           {navGroups.map((group, groupIndex) => (
             <div key={groupIndex} className={groupIndex > 0 ? 'mt-4' : ''}>
               {group.label && (
-                <div className="flex items-center gap-2 px-2 mb-2" style={{ marginTop: groupIndex > 0 ? '4px' : '0' }}>
+                <div style={{ padding: '16px 12px 6px' }}>
                   <span style={{
                     color: '#9CA3AF',
                     fontSize: '11px',
-                    fontWeight: '500',
-                    letterSpacing: '0.05em',
+                    fontWeight: '600',
+                    letterSpacing: '0.08em',
                     textTransform: 'uppercase',
-                    whiteSpace: 'nowrap',
                   }}>
                     {group.label}
                   </span>
-                  <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,0,0,0.06)' }} />
                 </div>
               )}
               <ul className="space-y-0.5">
@@ -305,27 +314,23 @@ export function Sidebar() {
 
       {/* User Footer */}
       {!isMobile && (
-        <div className="p-4 border-t space-y-3" style={{ borderTopColor: 'rgba(0,0,0,0.08)' }}>
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold"
-              style={{ backgroundColor: '#F3F4F6', color: '#00E5A0' }}
-            >
-              {getInitials(user?.email)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p style={{ color: '#6B7280' }} className="text-xs truncate">
-                {user?.email || 'Usuario'}
-              </p>
-            </div>
-          </div>
+        <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', padding: '12px 16px' }}>
+          <p style={{ fontSize: '12px', color: '#9CA3AF', marginBottom: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {user?.email || 'Usuario'}
+          </p>
           <button
             onClick={handleLogout}
-            className="w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             style={{
+              width: '100%',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: '500',
               backgroundColor: 'transparent',
-              color: '#6B7280',
-              border: '1px solid rgba(0,0,0,0.12)',
+              color: '#9CA3AF',
+              border: '1px solid rgba(0,0,0,0.10)',
+              cursor: 'pointer',
+              transition: 'background 0.15s',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#F3F4F6'
@@ -333,7 +338,7 @@ export function Sidebar() {
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = '#6B7280'
+              e.currentTarget.style.color = '#9CA3AF'
             }}
           >
             Salir

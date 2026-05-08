@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useIdeas } from '../hooks/useIdeas';
+import { colors } from '../styles/tokens';
 import ToastNotification from '../components/ui/ToastNotification';
 import DatePicker from '../components/ui/DatePicker';
 
@@ -416,13 +417,13 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                   cursor: step.id <= pasoAgente || step.id === 0 ? 'pointer' : 'default',
                   backgroundColor:
                     activeStep === step.id
-                      ? '#00E5A0'
+                      ? colors.accent
                       : step.completed
-                        ? 'rgba(0,229,160,0.15)'
-                        : '#F3F4F6',
+                        ? colors.accentLight
+                        : colors.surfaceHover,
                   color:
                     activeStep === step.id
-                      ? '#003D2B'
+                      ? colors.accentDark
                       : step.completed
                         ? '#059669'
                         : '#9CA3AF',
@@ -636,7 +637,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                       width: '40px',
                       height: '40px',
                       border: '3px solid rgba(255,255,255,0.1)',
-                      borderTop: '3px solid #00E5A0',
+                      borderTop: `3px solid ${colors.accent}`,
                       borderRadius: '50%',
                       animation: 'spin 0.8s linear infinite',
                     }}
@@ -757,7 +758,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                       width: '40px',
                       height: '40px',
                       border: '3px solid rgba(255,255,255,0.1)',
-                      borderTop: '3px solid #00E5A0',
+                      borderTop: `3px solid ${colors.accent}`,
                       borderRadius: '50%',
                       animation: 'spin 0.8s linear infinite',
                     }}
@@ -1801,8 +1802,8 @@ export default function Ideas() {
                     right: '12px',
                     width: '32px',
                     height: '32px',
-                    backgroundColor: '#F5F3FF',
-                    border: '1px solid #EDE9FE',
+                    backgroundColor: colors.purple[50],
+                    border: `1px solid ${colors.purple[100]}`,
                     color: 'var(--primary)',
                     borderRadius: '6px',
                     cursor: 'pointer',

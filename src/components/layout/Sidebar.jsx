@@ -155,7 +155,7 @@ export function Sidebar({ isOpen, onClose }) {
         <button
           onClick={onClose}
           className="md:hidden"
-          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4, display: 'flex' }}
+          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
         >
           {icons.close}
         </button>

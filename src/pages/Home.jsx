@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useApps } from '../hooks/useApps';
+import { useIdeas } from '../hooks/useIdeas';
 import { useTareas } from '../hooks/useTareas';
 import { useNotifications } from '../hooks/useNotifications';
 import { supabase } from '../lib/supabase';
@@ -117,19 +117,20 @@ const RunStatusBadge = ({ estado }) => {
 
 /* ── Home ───────────────────────────────────────────────── */
 export default function Home() {
-  const { apps } = useApps();
+  const { ideas } = useIdeas();
   const { tareas } = useTareas();
   const { notifications } = useNotifications();
 
   const [revenue, setRevenue] = useState('—');
-  const [ideasCount, setIdeasCount] = useState(0);
-  const [latestIdeas, setLatestIdeas] = useState([]);
   const [activeRun, setActiveRun] = useState(null);
   const [timer, setTimer] = useState(0);
 
+  const publishedApps = ideas.filter(i => i.publicada);
+  const latestIdeas = ideas.filter(i => !i.publicada).slice(0, 5);
+  const ideasCount = ideas.filter(i => !i.publicada).length;
+
   const pendingTareas = tareas.filter(t => !t.completada && t.estado !== 'completada');
   const urgentTarea = pendingTareas[0];
-  const publishedApps = apps.filter(a => a.publicada || a.estado === 'published' || a.status === 'published');
   const appsWithIssues = notifications.filter(n => n.tipo === 'error').length > 0;
 
   useEffect(() => {
@@ -139,16 +140,6 @@ export default function Home() {
       const { data } = await supabase.from('metrics').select('ingresos').gte('fecha', thirtyDaysAgo.toISOString());
       const total = (data || []).reduce((s, m) => s + (m.ingresos || 0), 0);
       setRevenue(total > 0 ? `$${total.toFixed(2)}` : '$0.00');
-    };
-    fetch();
-  }, []);
-
-  useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase.from('apps').select('id, nombre, updated_at').eq('publicada', false).order('updated_at', { ascending: false }).limit(5);
-      setLatestIdeas(data || []);
-      const { count } = await supabase.from('apps').select('id', { count: 'exact', head: true }).eq('publicada', false);
-      setIdeasCount(count || 0);
     };
     fetch();
   }, []);
@@ -223,13 +214,13 @@ export default function Home() {
               {publishedApps.slice(0, 6).map(app => (
                 <div key={app.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--surface-2)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
                   <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--primary-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--primary)', flexShrink: 0 }}>
-                    {(app.nombre || app.name || 'A').slice(0, 2).toUpperCase()}
+                    {(app.titulo || 'A').slice(0, 2).toUpperCase()}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{app.nombre || app.name}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{app.titulo}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-subtle)' }}>{formatDate(app.created_at)}</div>
                   </div>
-                  <StatusBadge status={app.estado || app.status || 'published'} />
+                  <StatusBadge status={app.estado || 'published'} />
                 </div>
               ))}
             </div>
@@ -277,7 +268,7 @@ export default function Home() {
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {latestIdeas.map(idea => (
                   <div key={idea.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                    <span style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{idea.nombre}</span>
+                    <span style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{idea.titulo}</span>
                     <span style={{ fontSize: 11, color: 'var(--text-subtle)', marginLeft: 12, flexShrink: 0 }}>{formatRelativeDate(idea.updated_at)}</span>
                   </div>
                 ))}

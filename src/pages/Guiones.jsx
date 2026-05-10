@@ -73,12 +73,12 @@ function GuionModal({ guion, onClose, onSave }) {
         <Field label="Hook">
           <textarea className="nz-input" value={hook} onChange={e => setHook(e.target.value)}
             placeholder="Primera oración o idea gancho…" rows={2}
-            style={{ resize: 'vertical' }} />
+            style={{ resize: 'vertical', minHeight: '80px' }} />
         </Field>
         <Field label="Guion">
           <textarea className="nz-input" value={body} onChange={e => setBody(e.target.value)}
             placeholder="Contenido completo del guion…" rows={12}
-            style={{ resize: 'vertical', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
+            style={{ resize: 'vertical', fontFamily: 'var(--font-mono)', fontSize: 13, minHeight: '300px' }} />
         </Field>
         <Field label="Status">
           <select className="nz-input" value={status} onChange={e => setStatus(e.target.value)}>
@@ -107,7 +107,7 @@ function Overlay({ onClose, children }) {
 function ModalBox({ title, onClose, children }) {
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12,
-      padding: 24, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto',
+      padding: 24, width: '100%', maxWidth: 700, maxHeight: '90vh', overflowY: 'auto',
       display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--text)' }}>{title}</h2>

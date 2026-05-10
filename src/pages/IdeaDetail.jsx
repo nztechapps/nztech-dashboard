@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import ToastNotification from '../components/ui/ToastNotification';
+import PostMortemModal from '../components/ideas/PostMortemModal';
+import { useAppPostmortems } from '../hooks/useAppPostmortems';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -272,6 +274,10 @@ export default function IdeaDetail() {
 
   // Help modals
   const [helpModal, setHelpModal] = useState(null);
+
+  // Postmortem
+  const [showPostmortem, setShowPostmortem] = useState(false);
+  const { savePostmortem } = useAppPostmortems();
 
   // ASO local state (to allow typing before save)
   const [asoLocal, setAsoLocal] = useState(null);
@@ -884,21 +890,10 @@ export default function IdeaDetail() {
 
             {stepCompleted[6] && (
               <button
-                onClick={async () => {
-                  try {
-                    const slug = idea.titulo.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                    const { error: insertError } = await supabase.from('apps').insert({ nombre: idea.titulo, descripcion: idea.descripcion, package_name: getPackageName(), estado: 'published', idea_id: idea.id, repo_url: allRuns.find(r => r.estado === 'completado')?.repo_url || '', categoria: idea.categoria });
-                    if (insertError) throw insertError;
-                    await supabase.from('ideas').update({ estado: 'publicada' }).eq('id', idea.id);
-                    setToast({ message: '✓ App creada exitosamente', type: 'success' });
-                    setTimeout(() => navigate('/apps'), 1500);
-                  } catch (err) {
-                    setToast({ message: 'Error: ' + err.message, type: 'error' });
-                  }
-                }}
+                onClick={() => setShowPostmortem(true)}
                 style={{ width: '100%', padding: '18px 32px', background: 'var(--primary)', border: 'none', color: 'var(--primary-fg)', borderRadius: 'var(--radius)', cursor: 'pointer', fontSize: '16px', fontWeight: '700', transition: 'opacity var(--dur)' }}
               >
-                🚀 Convertir en App
+                Publicar app →
               </button>
             )}
           </div>
@@ -1026,6 +1021,39 @@ export default function IdeaDetail() {
       )}
 
       {toast && <ToastNotification message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      {showPostmortem && (
+        <PostMortemModal
+          idea={idea}
+          onClose={() => setShowPostmortem(false)}
+          onComplete={async (postmortemData) => {
+            try {
+              await savePostmortem(idea.id, postmortemData);
+              const { data: appData, error: insertError } = await supabase
+                .from('apps')
+                .insert({
+                  nombre: idea.titulo,
+                  descripcion: idea.descripcion,
+                  package_name: getPackageName(),
+                  estado: 'published',
+                  idea_id: idea.id,
+                  repo_url: allRuns.find(r => r.estado === 'completado')?.repo_url || '',
+                  categoria: idea.categoria,
+                })
+                .select('id')
+                .single();
+              if (insertError) throw insertError;
+              await supabase.from('ideas').update({ estado: 'publicada' }).eq('id', idea.id);
+              setShowPostmortem(false);
+              setToast({ message: '✓ App publicada exitosamente', type: 'success' });
+              setTimeout(() => navigate(`/apps/${appData.id}`), 1200);
+            } catch (err) {
+              setToast({ message: 'Error: ' + err.message, type: 'error' });
+              setShowPostmortem(false);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

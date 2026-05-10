@@ -62,3 +62,19 @@ ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE metrics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE knowledge_base ENABLE ROW LEVEL SECURITY;
+
+-- Guiones table
+CREATE TABLE guiones (
+  id BIGSERIAL PRIMARY KEY,
+  tema TEXT NOT NULL,
+  formato TEXT NOT NULL, -- 'short' | 'youtube'
+  plataforma TEXT, -- for shorts: TikTok / Instagram Reels / YouTube Shorts
+  duracion TEXT,   -- for youtube: '5 min' | '10 min' | '15 min' | '20 min'
+  hook TEXT,
+  guion TEXT,
+  status TEXT NOT NULL DEFAULT 'borrador', -- 'borrador' | 'listo' | 'publicado'
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE guiones ENABLE ROW LEVEL SECURITY;

@@ -42,11 +42,11 @@ const IconSpinner = () => (
 
 const getStatusBg = (estado) => {
   switch (estado) {
-    case 'idea': return { bg: '#EFF6FF', color: '#1E40AF' };
-    case 'investigando': return { bg: '#EFF6FF', color: '#1E40AF' };
-    case 'aprobada': return { bg: '#ECFDF5', color: 'var(--nz-success)' };
-    case 'descartada': return { bg: '#FEF2F2', color: '#991B1B' };
-    default: return { bg: '#EFF6FF', color: '#1E40AF' };
+    case 'idea': return { bg: 'color-mix(in oklch, var(--nz-info) 15%, transparent)', color: 'var(--nz-info)' };
+    case 'investigando': return { bg: 'color-mix(in oklch, var(--nz-info) 15%, transparent)', color: 'var(--nz-info)' };
+    case 'aprobada': return { bg: 'color-mix(in oklch, var(--nz-success) 15%, transparent)', color: 'var(--nz-success)' };
+    case 'descartada': return { bg: 'color-mix(in oklch, var(--nz-danger) 15%, transparent)', color: 'var(--nz-danger)' };
+    default: return { bg: 'color-mix(in oklch, var(--nz-info) 15%, transparent)', color: 'var(--nz-info)' };
   }
 };
 
@@ -117,7 +117,7 @@ function DeleteConfirmModal({ field, isOpen, onConfirm, onCancel }) {
             Cancelar
           </button>
           <button onClick={onConfirm}
-            style={{ padding: '8px 16px', backgroundColor: '#FEF2F2', border: '1px solid #FCA5A5', color: 'var(--nz-danger)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+            style={{ padding: '8px 16px', backgroundColor: 'color-mix(in oklch, var(--nz-danger) 15%, transparent)', border: '1px solid color-mix(in oklch, var(--nz-danger) 40%, transparent)', color: 'var(--nz-danger)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
             Borrar
           </button>
         </div>
@@ -355,7 +355,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
           maxWidth: window.innerWidth < 768 ? '100vw' : '640px',
           width: '100%',
           height: window.innerWidth < 768 ? '100vh' : 'min(85vh, 600px)',
-          border: window.innerWidth < 768 ? 'none' : '1px solid rgba(0,0,0,0.08)',
+          border: window.innerWidth < 768 ? 'none' : '1px solid var(--border)',
           boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
           position: 'relative',
           display: 'flex',
@@ -367,7 +367,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid rgba(0,0,0,0.08)',
+            borderBottom: '1px solid var(--border)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
@@ -392,7 +392,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
         <div
           style={{
             padding: '16px 24px',
-            borderBottom: '1px solid rgba(0,0,0,0.08)',
+            borderBottom: '1px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
@@ -425,15 +425,15 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                     activeStep === step.id
                       ? colors.accentDark
                       : step.completed
-                        ? '#059669'
-                        : '#9CA3AF',
+                        ? 'var(--nz-success)'
+                        : 'var(--text-subtle)',
                   opacity: step.id > pasoAgente && step.id !== 0 ? 0.5 : 1,
                 }}
               >
                 {step.completed && step.id !== activeStep ? <IconCheck /> : step.id}
               </button>
               {idx < steps.length - 1 && (
-                <span style={{ color: '#D1D5DB', fontSize: '18px', margin: '0 -4px', display: window.innerWidth < 768 ? 'none' : 'block' }}>→</span>
+                <span style={{ color: 'var(--text-subtle)', fontSize: '18px', margin: '0 -4px', display: window.innerWidth < 768 ? 'none' : 'block' }}>→</span>
               )}
             </div>
           ))}
@@ -454,8 +454,8 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
           {errorMessage && (
             <div
               style={{
-                backgroundColor: 'rgba(255,77,79,0.12)',
-                border: '1px solid rgba(255,77,79,0.3)',
+                backgroundColor: 'color-mix(in oklch, var(--nz-danger) 12%, transparent)',
+                border: '1px solid color-mix(in oklch, var(--nz-danger) 30%, transparent)',
                 borderRadius: '6px',
                 padding: '12px 16px',
                 marginBottom: '20px',
@@ -473,7 +473,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                   }}
                   style={{
                     backgroundColor: 'transparent',
-                    border: '1px solid rgba(255,77,79,0.3)',
+                    border: '1px solid color-mix(in oklch, var(--nz-danger) 30%, transparent)',
                     color: 'var(--nz-danger)',
                     padding: '4px 12px',
                     borderRadius: '4px',
@@ -504,7 +504,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                   style={{
                     width: '100%',
                     background: 'var(--bg)',
-                    border: '1px solid rgba(0,0,0,0.12)',
+                    border: '1px solid var(--border)',
                     borderRadius: '6px',
                     padding: '10px 12px',
                     color: 'var(--text)',
@@ -524,7 +524,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                   style={{
                     width: '100%',
                     background: 'var(--bg)',
-                    border: '1px solid rgba(0,0,0,0.12)',
+                    border: '1px solid var(--border)',
                     borderRadius: '6px',
                     padding: '10px 12px',
                     color: 'var(--text)',
@@ -549,7 +549,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                     style={{
                       width: '100%',
                       background: 'var(--bg)',
-                      border: '1px solid rgba(0,0,0,0.12)',
+                      border: '1px solid var(--border)',
                       borderRadius: '6px',
                       padding: '10px 12px',
                       color: 'var(--text)',
@@ -570,7 +570,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                     style={{
                       width: '100%',
                       background: 'var(--bg)',
-                      border: '1px solid rgba(0,0,0,0.12)',
+                      border: '1px solid var(--border)',
                       borderRadius: '6px',
                       padding: '10px 12px',
                       color: 'var(--text)',
@@ -673,8 +673,8 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         position: 'absolute',
                         top: '8px',
                         right: '8px',
-                        backgroundColor: 'rgba(255,77,79,0.1)',
-                        border: '1px solid rgba(255,77,79,0.3)',
+                        backgroundColor: 'color-mix(in oklch, var(--nz-danger) 10%, transparent)',
+                        border: '1px solid color-mix(in oklch, var(--nz-danger) 30%, transparent)',
                         color: 'var(--nz-danger)',
                         borderRadius: '4px',
                         width: '32px',
@@ -686,10 +686,10 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         transition: 'all 0.2s',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.2)';
+                        e.currentTarget.style.backgroundColor = 'color-mix(in oklch, var(--nz-danger) 20%, transparent)';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.1)';
+                        e.currentTarget.style.backgroundColor = 'color-mix(in oklch, var(--nz-danger) 10%, transparent)';
                       }}
                       title="Borrar contenido"
                     >
@@ -704,7 +704,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         flex: 1,
                         padding: '10px 16px',
                         backgroundColor: 'transparent',
-                        border: '1px solid rgba(0,0,0,0.10)',
+                        border: '1px solid var(--border)',
                         color: 'var(--text-muted)',
                         borderRadius: '6px',
                         cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
@@ -798,8 +798,8 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                           position: 'absolute',
                           top: '8px',
                           right: '8px',
-                          backgroundColor: 'rgba(255,77,79,0.1)',
-                          border: '1px solid rgba(255,77,79,0.3)',
+                          backgroundColor: 'color-mix(in oklch, var(--nz-danger) 10%, transparent)',
+                          border: '1px solid color-mix(in oklch, var(--nz-danger) 30%, transparent)',
                           color: 'var(--nz-danger)',
                           borderRadius: '4px',
                           width: '32px',
@@ -811,10 +811,10 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                           transition: 'all 0.2s',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.2)';
+                          e.currentTarget.style.backgroundColor = 'color-mix(in oklch, var(--nz-danger) 20%, transparent)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.1)';
+                          e.currentTarget.style.backgroundColor = 'color-mix(in oklch, var(--nz-danger) 10%, transparent)';
                         }}
                         title="Borrar contenido"
                       >
@@ -851,8 +851,8 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                           position: 'absolute',
                           top: '8px',
                           right: '8px',
-                          backgroundColor: 'rgba(255,77,79,0.1)',
-                          border: '1px solid rgba(255,77,79,0.3)',
+                          backgroundColor: 'color-mix(in oklch, var(--nz-danger) 10%, transparent)',
+                          border: '1px solid color-mix(in oklch, var(--nz-danger) 30%, transparent)',
                           color: 'var(--nz-danger)',
                           borderRadius: '4px',
                           width: '32px',
@@ -864,10 +864,10 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                           transition: 'all 0.2s',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.2)';
+                          e.currentTarget.style.backgroundColor = 'color-mix(in oklch, var(--nz-danger) 20%, transparent)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.1)';
+                          e.currentTarget.style.backgroundColor = 'color-mix(in oklch, var(--nz-danger) 10%, transparent)';
                         }}
                         title="Borrar contenido"
                       >
@@ -904,8 +904,8 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                           position: 'absolute',
                           top: '8px',
                           right: '8px',
-                          backgroundColor: 'rgba(255,77,79,0.1)',
-                          border: '1px solid rgba(255,77,79,0.3)',
+                          backgroundColor: 'color-mix(in oklch, var(--nz-danger) 10%, transparent)',
+                          border: '1px solid color-mix(in oklch, var(--nz-danger) 30%, transparent)',
                           color: 'var(--nz-danger)',
                           borderRadius: '4px',
                           width: '32px',
@@ -917,10 +917,10 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                           transition: 'all 0.2s',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.2)';
+                          e.currentTarget.style.backgroundColor = 'color-mix(in oklch, var(--nz-danger) 20%, transparent)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.1)';
+                          e.currentTarget.style.backgroundColor = 'color-mix(in oklch, var(--nz-danger) 10%, transparent)';
                         }}
                         title="Borrar contenido"
                       >
@@ -956,8 +956,8 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                           position: 'absolute',
                           top: '8px',
                           right: '8px',
-                          backgroundColor: 'rgba(255,77,79,0.1)',
-                          border: '1px solid rgba(255,77,79,0.3)',
+                          backgroundColor: 'color-mix(in oklch, var(--nz-danger) 10%, transparent)',
+                          border: '1px solid color-mix(in oklch, var(--nz-danger) 30%, transparent)',
                           color: 'var(--nz-danger)',
                           borderRadius: '4px',
                           width: '32px',
@@ -969,10 +969,10 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                           transition: 'all 0.2s',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.2)';
+                          e.currentTarget.style.backgroundColor = 'color-mix(in oklch, var(--nz-danger) 20%, transparent)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(255,77,79,0.1)';
+                          e.currentTarget.style.backgroundColor = 'color-mix(in oklch, var(--nz-danger) 10%, transparent)';
                         }}
                         title="Borrar contenido"
                       >
@@ -988,7 +988,7 @@ function IdeaProcessingModal({ idea, isOpen, onClose, onUpdateIdea }) {
                         flex: 1,
                         padding: '10px 16px',
                         backgroundColor: 'transparent',
-                        border: '1px solid rgba(0,0,0,0.10)',
+                        border: '1px solid var(--border)',
                         color: 'var(--text-muted)',
                         borderRadius: '6px',
                         cursor: isProcessingNow || sendingPipeline || processingStep !== null ? 'not-allowed' : 'pointer',
@@ -1281,7 +1281,7 @@ function NewIdeaModal({ isOpen, onClose, onSubmit, isLoading }) {
                 flex: 1,
                 padding: '10px',
                 backgroundColor: 'transparent',
-                border: '1px solid rgba(0,0,0,0.10)',
+                border: '1px solid var(--border)',
                 color: 'var(--text-muted)',
                 borderRadius: '6px',
                 cursor: 'pointer',
@@ -1325,6 +1325,7 @@ export default function Ideas() {
   const [filterCategoria, setFilterCategoria] = useState('');
   const [filterMercado, setFilterMercado] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('prioridad');
   const [isCreating, setIsCreating] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -1353,7 +1354,14 @@ export default function Ideas() {
 
       return true;
     })
-    .sort((a, b) => (b.prioridad || 0) - (a.prioridad || 0));
+    .sort((a, b) => {
+      if (sortBy === 'score') {
+        const sa = a.validacion?.score ?? -1;
+        const sb = b.validacion?.score ?? -1;
+        return sb - sa;
+      }
+      return (b.prioridad || 0) - (a.prioridad || 0);
+    });
 
   const handleCreateIdea = async (formData) => {
     try {
@@ -1521,7 +1529,7 @@ export default function Ideas() {
                   gap: '8px',
                   padding: '10px 20px',
                   backgroundColor: 'transparent',
-                  border: '1px solid rgba(0,0,0,0.10)',
+                  border: '1px solid var(--border)',
                   color: 'var(--text-muted)',
                   borderRadius: '6px',
                   cursor: 'pointer',
@@ -1539,7 +1547,7 @@ export default function Ideas() {
                   gap: '8px',
                   padding: '10px 20px',
                   backgroundColor: 'transparent',
-                  border: '1px solid rgba(0,0,0,0.10)',
+                  border: '1px solid var(--border)',
                   color: 'var(--text-muted)',
                   borderRadius: '6px',
                   cursor: 'pointer',
@@ -1673,6 +1681,28 @@ export default function Ideas() {
               </select>
             </div>
           )}
+
+          <div>
+            <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
+              Ordenar por
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{
+                width: '100%',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: '6px',
+                padding: '10px 12px',
+                color: 'var(--text)',
+                fontSize: '13px',
+              }}
+            >
+              <option value="prioridad">Prioridad</option>
+              <option value="score">Score</option>
+            </select>
+          </div>
         </div>
 
         {/* Grid de ideas */}
@@ -1684,7 +1714,7 @@ export default function Ideas() {
           <div
             style={{
               background: 'var(--surface)',
-              border: '1px dashed rgba(0,0,0,0.12)',
+              border: '1px dashed var(--border)',
               borderRadius: '10px',
               padding: '40px 20px',
               textAlign: 'center',
@@ -1741,14 +1771,12 @@ export default function Ideas() {
                     transition: 'all 0.2s',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#FFFFFF';
-                    e.currentTarget.style.borderColor = 'rgba(139,92,246,0.3)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(139,92,246,0.08)';
+                    e.currentTarget.style.borderColor = 'color-mix(in oklch, var(--primary) 40%, transparent)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px color-mix(in oklch, var(--primary) 10%, transparent)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#FFFFFF';
-                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)';
-                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                    e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
                 <h3 style={{ color: 'var(--text)', margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
@@ -1778,10 +1806,24 @@ export default function Ideas() {
                     </span>
                   ); })()}
                   {idea.categoria && (
-                    <span style={{ backgroundColor: '#F5F3FF', color: 'var(--primary)', fontSize: '10px', fontWeight: '600', padding: '3px 8px', borderRadius: '20px' }}>
+                    <span style={{ backgroundColor: 'var(--primary-soft)', color: 'var(--primary)', fontSize: '10px', fontWeight: '600', padding: '3px 8px', borderRadius: '20px' }}>
                       {idea.categoria}
                     </span>
                   )}
+                  {(() => {
+                    const score = idea.validacion?.score;
+                    if (score == null) return (
+                      <span style={{ backgroundColor: 'color-mix(in oklch, var(--text-subtle) 15%, transparent)', color: 'var(--text-subtle)', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '20px', fontFamily: 'var(--font-mono)' }}>
+                        —
+                      </span>
+                    );
+                    const sc = score < 40 ? 'var(--nz-danger)' : score < 70 ? 'var(--nz-warning)' : 'var(--nz-success)';
+                    return (
+                      <span style={{ backgroundColor: `color-mix(in oklch, ${sc} 15%, transparent)`, color: sc, fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '20px', fontFamily: 'var(--font-mono)' }}>
+                        {score}
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 {idea.prioridad && (
@@ -1802,8 +1844,8 @@ export default function Ideas() {
                     right: '12px',
                     width: '32px',
                     height: '32px',
-                    backgroundColor: colors.purple[50],
-                    border: `1px solid ${colors.purple[100]}`,
+                    backgroundColor: 'var(--primary-soft)',
+                    border: '1px solid color-mix(in oklch, var(--primary) 30%, transparent)',
                     color: 'var(--primary)',
                     borderRadius: '6px',
                     cursor: 'pointer',
@@ -1816,10 +1858,10 @@ export default function Ideas() {
                     zIndex: 3,
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(100,150,255,0.2)';
+                    e.currentTarget.style.backgroundColor = 'color-mix(in oklch, var(--primary) 25%, transparent)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(100,150,255,0.1)';
+                    e.currentTarget.style.backgroundColor = 'var(--primary-soft)';
                   }}
                   title="Ver detalle"
                 >

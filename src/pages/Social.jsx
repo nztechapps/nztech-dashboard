@@ -84,7 +84,16 @@ function SocialTab({ plataforma, getByPlataforma, createMetric }) {
         step={step}
         value={form[key]}
         onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-        className="nz-input"
+        style={{
+          width: '100%',
+          backgroundColor: 'var(--bg)',
+          border: '1px solid var(--border)',
+          borderRadius: '6px',
+          padding: '8px 10px',
+          color: 'var(--text)',
+          fontSize: '13px',
+          boxSizing: 'border-box',
+        }}
       />
     </Field>
   );
@@ -116,7 +125,16 @@ function SocialTab({ plataforma, getByPlataforma, createMetric }) {
               type="date"
               value={form.fecha}
               onChange={(e) => setForm((f) => ({ ...f, fecha: e.target.value }))}
-              className="nz-input"
+              style={{
+                width: '100%',
+                backgroundColor: 'var(--bg)',
+                border: '1px solid var(--border)',
+                borderRadius: '6px',
+                padding: '8px 10px',
+                color: 'var(--text)',
+                fontSize: '13px',
+                boxSizing: 'border-box',
+              }}
             />
           </Field>
           {numInput('Seguidores', 'seguidores')}
@@ -125,7 +143,16 @@ function SocialTab({ plataforma, getByPlataforma, createMetric }) {
           {numInput('Reach', 'reach')}
           {numInput('Engagement Rate (%)', 'engagement_rate', '0.01')}
           <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <button type="submit" disabled={saving} className="nz-btn nz-btn-primary">
+            <button type="submit" disabled={saving} style={{
+              padding: '8px 20px',
+              background: 'var(--primary)',
+              border: 'none',
+              color: 'var(--bg)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+            }}>
               {saving ? 'Guardando...' : 'Guardar'}
             </button>
             {msg && (

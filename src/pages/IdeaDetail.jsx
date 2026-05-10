@@ -647,7 +647,7 @@ export default function IdeaDetail() {
                         const cScore = typeof c.puntaje === 'number' ? c.puntaje : null;
                         const cColor = cScore === null ? 'var(--text-muted)'
                           : cScore < 4 ? 'var(--nz-danger)'
-                          : cScore <= 7 ? 'var(--nz-warning)'
+                          : cScore < 7 ? 'var(--nz-warning)'
                           : 'var(--nz-success)';
                         return (
                           <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '16px' }}>

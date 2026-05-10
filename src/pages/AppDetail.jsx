@@ -108,6 +108,7 @@ export default function AppDetail() {
   const { ideas } = useIdeas();
   const apps = ideas.filter((i) => i.publicada === true);
   const { tareas, bloques, addTarea, updateTarea, deleteTarea } = useTareas();
+  const app = apps.find((a) => a.id === id);
   const appNombre = app?.titulo || app?.nombre || app?.name || '';
   const appBloqueIds = bloques.filter(b => b.nombre === appNombre).map(b => b.id);
   const tasks = tareas.filter(t => appBloqueIds.includes(t.bloque_id) || t.titulo?.includes(appNombre));
@@ -129,7 +130,6 @@ export default function AppDetail() {
   const [isAsoFormOpen, setIsAsoFormOpen] = useState(false);
   const [isVersionFormOpen, setIsVersionFormOpen] = useState(false);
   const [toast, setToast] = useState(null);
-  const app = apps.find((a) => a.id === id);
 
   const handleSaveMetric = async (metricData) => {
     try {

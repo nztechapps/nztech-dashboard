@@ -21,7 +21,8 @@
       "Bash(Select-Object -ExpandProperty Name)",
       "Bash(Remove-Item *)",
       "Bash(Get-ChildItem *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(npx vite *)"
     ]
   },
   "enableAllProjectMcpServers": true,

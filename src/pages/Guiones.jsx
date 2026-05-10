@@ -13,6 +13,9 @@ const FORMAT_COLORS = {
   youtube: { bg: 'rgba(239,68,68,0.15)',  text: '#F87171' },
 }
 
+const PLATAFORMAS_SHORT   = ['TikTok', 'Instagram Reels', 'YouTube Shorts']
+const PLATAFORMAS_YOUTUBE = ['YouTube']
+
 function Chip({ map, value }) {
   const c = map[value] || { bg: 'rgba(255,255,255,0.1)', text: '#aaa' }
   return (
@@ -27,202 +30,63 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' })
 }
 
-async function callClaude(prompt) {
-  const key = import.meta.env.VITE_ANTHROPIC_API_KEY
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1500,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  })
-  if (!res.ok) throw new Error(`API error ${res.status}`)
-  const json = await res.json()
-  const raw = json.content[0].text.trim()
-  // strip possible markdown fences
-  const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
-  return JSON.parse(cleaned)
-}
+/* ── Unified modal (create + edit) ───────────────────── */
+function GuionModal({ guion, onClose, onSave }) {
+  const isEdit = Boolean(guion)
+  const [tema, setTema]           = useState(guion?.tema     || '')
+  const [formato, setFormato]     = useState(guion?.formato  || 'short')
+  const [plataforma, setPlat]     = useState(guion?.plataforma || 'TikTok')
+  const [hook, setHook]           = useState(guion?.hook     || '')
+  const [body, setBody]           = useState(guion?.guion    || '')
+  const [status, setStatus]       = useState(guion?.status   || 'borrador')
 
-/* ── Short modal ─────────────────────────────────────── */
-function ShortModal({ onClose, onSave }) {
-  const [tema, setTema] = useState('')
-  const [plataforma, setPlataforma] = useState('TikTok')
-  const [result, setResult] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const plataformas = formato === 'short' ? PLATAFORMAS_SHORT : PLATAFORMAS_YOUTUBE
 
-  const generate = async () => {
-    if (!tema.trim()) return
-    setLoading(true)
-    setError('')
-    setResult(null)
-    try {
-      const prompt = `Sos un experto en contenido viral para redes sociales. Generá un guión para un Short de 60 segundos.
-
-Tema: ${tema}
-Plataforma: ${plataforma}
-
-Devolvé ÚNICAMENTE este JSON sin markdown:
-{
-  "hook": "primera oración gancho (máx 10 palabras)",
-  "guion": "guión completo con indicaciones de escena entre [corchetes]",
-  "status": "borrador"
-}`
-      setResult(await callClaude(prompt))
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setLoading(false)
-    }
+  const handleFormato = (val) => {
+    setFormato(val)
+    setPlat(val === 'short' ? 'TikTok' : 'YouTube')
   }
 
-  const save = () => {
-    onSave({
-      tema,
-      formato: 'short',
-      plataforma,
-      hook: result.hook,
-      guion: result.guion,
-      status: result.status || 'borrador',
-    })
+  const handleSave = () => {
+    if (!tema.trim()) return
+    onSave({ tema, formato, plataforma, hook, guion: body, status })
   }
 
   return (
     <Overlay onClose={onClose}>
-      <ModalBox title="Nuevo Short" onClose={onClose}>
+      <ModalBox title={isEdit ? guion.tema : 'Nuevo guion'} onClose={onClose}>
         <Field label="Tema">
           <input className="nz-input" value={tema} onChange={e => setTema(e.target.value)}
             placeholder="Ej: cómo ganar seguidores en TikTok" />
         </Field>
+        <Field label="Formato">
+          <select className="nz-input" value={formato} onChange={e => handleFormato(e.target.value)}>
+            <option value="short">Short</option>
+            <option value="youtube">YouTube</option>
+          </select>
+        </Field>
         <Field label="Plataforma">
-          <select className="nz-input" value={plataforma} onChange={e => setPlataforma(e.target.value)}>
-            {['TikTok', 'Instagram Reels', 'YouTube Shorts'].map(p =>
-              <option key={p}>{p}</option>)}
+          <select className="nz-input" value={plataforma} onChange={e => setPlat(e.target.value)}>
+            {plataformas.map(p => <option key={p}>{p}</option>)}
           </select>
         </Field>
-        <button className="nz-btn nz-btn-primary" onClick={generate} disabled={loading || !tema.trim()}>
-          {loading ? 'Generando…' : 'Generar'}
-        </button>
-        {error && <p style={{ color: '#F87171', fontSize: 13, marginTop: 8 }}>{error}</p>}
-        {result && (
-          <ResultBox hook={result.hook} guion={result.guion}>
-            <button className="nz-btn nz-btn-primary" style={{ marginTop: 16 }} onClick={save}>
-              Guardar
-            </button>
-          </ResultBox>
-        )}
-      </ModalBox>
-    </Overlay>
-  )
-}
-
-/* ── YouTube modal ───────────────────────────────────── */
-function YouTubeModal({ onClose, onSave }) {
-  const [tema, setTema] = useState('')
-  const [duracion, setDuracion] = useState('10 min')
-  const [result, setResult] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
-  const generate = async () => {
-    if (!tema.trim()) return
-    setLoading(true)
-    setError('')
-    setResult(null)
-    try {
-      const prompt = `Sos un experto en contenido para YouTube. Generá un guión completo para un video.
-
-Tema: ${tema}
-Duración: ${duracion}
-
-Devolvé ÚNICAMENTE este JSON sin markdown:
-{
-  "hook": "intro gancho de los primeros 15 segundos",
-  "guion": "guión completo con timestamps cada 2-3 minutos entre [MM:SS] y indicaciones de escena entre [corchetes]",
-  "status": "borrador"
-}`
-      setResult(await callClaude(prompt))
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const save = () => {
-    onSave({
-      tema,
-      formato: 'youtube',
-      duracion,
-      hook: result.hook,
-      guion: result.guion,
-      status: result.status || 'borrador',
-    })
-  }
-
-  return (
-    <Overlay onClose={onClose}>
-      <ModalBox title="Nuevo Video YouTube" onClose={onClose}>
-        <Field label="Tema">
-          <input className="nz-input" value={tema} onChange={e => setTema(e.target.value)}
-            placeholder="Ej: las mejores apps de productividad 2025" />
-        </Field>
-        <Field label="Duración estimada">
-          <select className="nz-input" value={duracion} onChange={e => setDuracion(e.target.value)}>
-            {['5 min', '10 min', '15 min', '20 min'].map(d => <option key={d}>{d}</option>)}
-          </select>
-        </Field>
-        <button className="nz-btn nz-btn-primary" onClick={generate} disabled={loading || !tema.trim()}>
-          {loading ? 'Generando…' : 'Generar'}
-        </button>
-        {error && <p style={{ color: '#F87171', fontSize: 13, marginTop: 8 }}>{error}</p>}
-        {result && (
-          <ResultBox hook={result.hook} guion={result.guion}>
-            <button className="nz-btn nz-btn-primary" style={{ marginTop: 16 }} onClick={save}>
-              Guardar
-            </button>
-          </ResultBox>
-        )}
-      </ModalBox>
-    </Overlay>
-  )
-}
-
-/* ── Edit/View modal ─────────────────────────────────── */
-function EditModal({ guion, onClose, onSave }) {
-  const [hook, setHook]   = useState(guion.hook || '')
-  const [body, setBody]   = useState(guion.guion || '')
-  const [status, setStatus] = useState(guion.status || 'borrador')
-
-  return (
-    <Overlay onClose={onClose}>
-      <ModalBox title={guion.tema} onClose={onClose}>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          <Chip map={FORMAT_COLORS} value={guion.formato} />
-          <Chip map={STATUS_COLORS} value={status} />
-        </div>
         <Field label="Hook">
-          <input className="nz-input" value={hook} onChange={e => setHook(e.target.value)} />
+          <textarea className="nz-input" value={hook} onChange={e => setHook(e.target.value)}
+            placeholder="Primera oración o idea gancho…" rows={2}
+            style={{ resize: 'vertical' }} />
+        </Field>
+        <Field label="Guion">
+          <textarea className="nz-input" value={body} onChange={e => setBody(e.target.value)}
+            placeholder="Contenido completo del guion…" rows={12}
+            style={{ resize: 'vertical', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
         </Field>
         <Field label="Status">
           <select className="nz-input" value={status} onChange={e => setStatus(e.target.value)}>
             {['borrador', 'listo', 'publicado'].map(s => <option key={s}>{s}</option>)}
           </select>
         </Field>
-        <Field label="Guión">
-          <textarea className="nz-input" value={body} onChange={e => setBody(e.target.value)}
-            rows={14} style={{ resize: 'vertical', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
-        </Field>
-        <button className="nz-btn nz-btn-primary" onClick={() => onSave({ hook, guion: body, status })}>
-          Guardar cambios
+        <button className="nz-btn nz-btn-primary" onClick={handleSave} disabled={!tema.trim()}>
+          {isEdit ? 'Guardar cambios' : 'Guardar'}
         </button>
       </ModalBox>
     </Overlay>
@@ -266,26 +130,6 @@ function Field({ label, children }) {
   )
 }
 
-function ResultBox({ hook, guion, children }) {
-  return (
-    <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
-      <div style={{ background: 'rgba(0,229,160,0.08)', border: '1px solid rgba(0,229,160,0.25)',
-        borderRadius: 8, padding: '10px 14px' }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase',
-          letterSpacing: '.08em', marginBottom: 4 }}>HOOK</div>
-        <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>{hook}</p>
-      </div>
-      <div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase',
-          letterSpacing: '.08em', marginBottom: 6 }}>GUIÓN</div>
-        <pre style={{ margin: 0, fontSize: 13, color: 'var(--text)', whiteSpace: 'pre-wrap',
-          fontFamily: 'var(--font-mono)', lineHeight: 1.7 }}>{guion}</pre>
-      </div>
-      {children}
-    </div>
-  )
-}
-
 /* ── Delete icon ─────────────────────────────────────── */
 function TrashIcon() {
   return (
@@ -301,7 +145,7 @@ function TrashIcon() {
 /* ── Main page ───────────────────────────────────────── */
 export default function Guiones() {
   const { guiones, loading, createGuion, updateGuion, deleteGuion } = useGuiones()
-  const [modal, setModal] = useState(null) // 'short' | 'youtube' | guion-object
+  const [modal, setModal] = useState(null) // null | 'new' | guion-object
   const [filterFormato, setFilterFormato] = useState('')
   const [filterStatus, setFilterStatus]   = useState('')
 
@@ -333,16 +177,10 @@ export default function Guiones() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
         <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: 'var(--text)' }}>Guiones</h1>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button className="nz-btn nz-btn-ghost" onClick={() => setModal('short')}
-            style={{ fontSize: 13 }}>
-            + Nuevo Short
-          </button>
-          <button className="nz-btn nz-btn-primary" onClick={() => setModal('youtube')}
-            style={{ fontSize: 13 }}>
-            + Nuevo YouTube
-          </button>
-        </div>
+        <button className="nz-btn nz-btn-primary" onClick={() => setModal('new')}
+          style={{ fontSize: 13 }}>
+          + Nuevo guion
+        </button>
       </div>
 
       {/* Filters */}
@@ -370,7 +208,7 @@ export default function Guiones() {
       ) : filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-subtle)' }}>
           <p style={{ fontSize: 15, margin: 0 }}>No hay guiones todavía.</p>
-          <p style={{ fontSize: 13, marginTop: 6 }}>Usá los botones de arriba para generar uno.</p>
+          <p style={{ fontSize: 13, marginTop: 6 }}>Usá el botón de arriba para crear uno.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -414,11 +252,12 @@ export default function Guiones() {
         </div>
       )}
 
-      {/* Modals */}
-      {modal === 'short'   && <ShortModal   onClose={() => setModal(null)} onSave={handleSaveNew} />}
-      {modal === 'youtube' && <YouTubeModal onClose={() => setModal(null)} onSave={handleSaveNew} />}
+      {/* Modal */}
+      {modal === 'new' && (
+        <GuionModal onClose={() => setModal(null)} onSave={handleSaveNew} />
+      )}
       {modal && typeof modal === 'object' && (
-        <EditModal guion={modal} onClose={() => setModal(null)} onSave={handleSaveEdit} />
+        <GuionModal guion={modal} onClose={() => setModal(null)} onSave={handleSaveEdit} />
       )}
     </div>
   )

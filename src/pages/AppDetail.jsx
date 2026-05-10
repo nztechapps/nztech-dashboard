@@ -107,7 +107,7 @@ function VersionForm({ onSubmit, onCancel }) {
 export default function AppDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { ideas } = useIdeas();
+  const { ideas, updateIdea } = useIdeas();
   const apps = ideas.filter((i) => i.publicada === true);
   const { tareas, bloques, addTarea, updateTarea, deleteTarea } = useTareas();
   const app = apps.find((a) => a.id === id);
@@ -134,6 +134,31 @@ export default function AppDetail() {
   const [isVersionFormOpen, setIsVersionFormOpen] = useState(false);
   const [isPostMortemModalOpen, setIsPostMortemModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
+
+  // Tab Info state
+  const [infoForm, setInfoForm] = useState({ admob_url: '', play_console_url: '', canva_logo_url: '', canva_screenshots_url: '' });
+
+  useEffect(() => {
+    if (app) {
+      setInfoForm({
+        admob_url: app.admob_url || '',
+        play_console_url: app.play_console_url || '',
+        canva_logo_url: app.canva_logo_url || '',
+        canva_screenshots_url: app.canva_screenshots_url || '',
+      });
+    }
+  }, [app?.id]);
+  const [isInfoSaving, setIsInfoSaving] = useState(false);
+
+  // Tab Métricas — Stats generales
+  const [statsForm, setStatsForm] = useState({
+    installs: '',
+    rating: '',
+    reviews: '',
+    revenue_mes: '',
+    crashes: '',
+  });
+  const [isStatsSaving, setIsStatsSaving] = useState(false);
 
   const handleSaveMetric = async (metricData) => {
     try {
@@ -224,24 +249,31 @@ export default function AppDetail() {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '16px', borderBottom: '1px solid var(--border)', marginBottom: '24px' }}>
-        {['produccion', 'metricas', 'aso', 'versiones', 'postmortem'].map((tab) => (
+        {[
+          { key: 'produccion', label: 'Producción' },
+          { key: 'metricas', label: 'Métricas' },
+          { key: 'aso', label: 'ASO' },
+          { key: 'versiones', label: 'Versiones' },
+          { key: 'info', label: 'Info' },
+          { key: 'postmortem', label: 'PostMortem' },
+        ].map(({ key, label }) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+            key={key}
+            onClick={() => setActiveTab(key)}
             style={{
               background: 'none',
               border: 'none',
-              color: activeTab === tab ? '#00E5A0' : '#999',
+              color: activeTab === key ? '#00E5A0' : '#999',
               cursor: 'pointer',
               padding: '12px 0',
               fontSize: '14px',
               fontWeight: '500',
-              borderBottom: activeTab === tab ? '2px solid #00E5A0' : 'none',
+              borderBottom: activeTab === key ? '2px solid #00E5A0' : 'none',
               marginBottom: '-1px',
               transition: 'color 0.2s',
             }}
           >
-            {tab === 'produccion' ? 'Producción' : tab === 'metricas' ? 'Métricas' : tab === 'aso' ? 'ASO' : tab === 'versiones' ? 'Versiones' : 'PostMortem'}
+            {label}
           </button>
         ))}
       </div>
@@ -314,6 +346,84 @@ export default function AppDetail() {
               </div>
             </>
           )}
+
+          {/* Stats generales */}
+          {(() => {
+            const lastStats = [...metrics].reverse().find(m =>
+              m.installs != null || m.rating != null || m.reviews != null || m.revenue_mes != null || m.crashes != null
+            );
+            return (
+              <div style={{ marginTop: '24px', backgroundColor: 'var(--surface)', padding: '20px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                <h3 style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', margin: '0 0 16px 0' }}>Stats generales</h3>
+                {lastStats && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px', marginBottom: '20px' }}>
+                    {[
+                      { label: 'Installs', value: lastStats.installs?.toLocaleString() ?? '—' },
+                      { label: 'Rating', value: lastStats.rating ?? '—' },
+                      { label: 'Reviews', value: lastStats.reviews?.toLocaleString() ?? '—' },
+                      { label: 'Revenue mes', value: lastStats.revenue_mes != null ? `$${lastStats.revenue_mes}` : '—' },
+                      { label: 'Crashes (sem)', value: lastStats.crashes ?? '—' },
+                    ].map(({ label, value }) => (
+                      <div key={label} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                        <div style={{ color: 'var(--text)', fontFamily: 'var(--font-mono)', fontWeight: '700', fontSize: '18px', marginBottom: '4px' }}>{value}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!statsForm.installs && !statsForm.rating && !statsForm.reviews && !statsForm.revenue_mes && !statsForm.crashes) return;
+                  try {
+                    setIsStatsSaving(true);
+                    await createMetric({
+                      fecha: new Date().toISOString().split('T')[0],
+                      ...(statsForm.installs !== '' && { installs: Number(statsForm.installs) }),
+                      ...(statsForm.rating !== '' && { rating: Number(statsForm.rating) }),
+                      ...(statsForm.reviews !== '' && { reviews: Number(statsForm.reviews) }),
+                      ...(statsForm.revenue_mes !== '' && { revenue_mes: Number(statsForm.revenue_mes) }),
+                      ...(statsForm.crashes !== '' && { crashes: Number(statsForm.crashes) }),
+                    });
+                    setStatsForm({ installs: '', rating: '', reviews: '', revenue_mes: '', crashes: '' });
+                    setToast({ message: 'Stats guardados', type: 'success' });
+                  } catch {
+                    setToast({ message: 'Error al guardar stats', type: 'error' });
+                  } finally {
+                    setIsStatsSaving(false);
+                  }
+                }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', marginBottom: '12px' }}>
+                    {[
+                      { key: 'installs', label: 'Installs totales', min: 0 },
+                      { key: 'rating', label: 'Rating (1-5)', min: 1, max: 5, step: 0.1 },
+                      { key: 'reviews', label: 'Reviews totales', min: 0 },
+                      { key: 'revenue_mes', label: 'Revenue mes (USD)', min: 0, step: 0.01 },
+                      { key: 'crashes', label: 'Crashes semana', min: 0 },
+                    ].map(({ key, label, ...props }) => (
+                      <div key={key}>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+                        <input
+                          type="number"
+                          placeholder="—"
+                          value={statsForm[key]}
+                          onChange={(e) => setStatsForm(s => ({ ...s, [key]: e.target.value }))}
+                          style={{ width: '100%', backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px', color: 'var(--text)', fontSize: '13px', boxSizing: 'border-box' }}
+                          {...props}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isStatsSaving}
+                    style={{ padding: '9px 20px', background: 'var(--primary)', border: 'none', color: 'var(--bg)', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', opacity: isStatsSaving ? 0.6 : 1 }}
+                  >
+                    {isStatsSaving ? 'Guardando...' : 'Guardar stats'}
+                  </button>
+                </form>
+              </div>
+            );
+          })()}
 
           {/* Form */}
           <MetricsForm
@@ -511,6 +621,77 @@ export default function AppDetail() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB: INFO */}
+      {activeTab === 'info' && (
+        <div>
+          <h2 style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '600', margin: '0 0 24px 0' }}>Info</h2>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            try {
+              setIsInfoSaving(true);
+              await updateIdea(id, {
+                admob_url: infoForm.admob_url || null,
+                play_console_url: infoForm.play_console_url || null,
+                canva_logo_url: infoForm.canva_logo_url || null,
+                canva_screenshots_url: infoForm.canva_screenshots_url || null,
+              });
+              setToast({ message: 'Links guardados', type: 'success' });
+            } catch {
+              setToast({ message: 'Error al guardar', type: 'error' });
+            } finally {
+              setIsInfoSaving(false);
+            }
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+              {[
+                { key: 'admob_url', label: 'AdMob URL' },
+                { key: 'play_console_url', label: 'Play Console URL' },
+                { key: 'canva_logo_url', label: 'Canva Logo URL' },
+                { key: 'canva_screenshots_url', label: 'Canva Screenshots URL' },
+              ].map(({ key, label }) => (
+                <div key={key} style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>{label}</div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      placeholder="https://..."
+                      value={infoForm[key]}
+                      onChange={(e) => setInfoForm(f => ({ ...f, [key]: e.target.value }))}
+                      style={{ flex: 1, backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => infoForm[key] && window.open(infoForm[key], '_blank')}
+                      disabled={!infoForm[key]}
+                      style={{
+                        padding: '8px 14px',
+                        background: infoForm[key] ? 'rgba(0,229,160,0.12)' : 'transparent',
+                        border: '1px solid var(--border)',
+                        color: infoForm[key] ? 'var(--primary)' : 'var(--text-muted)',
+                        borderRadius: '6px',
+                        cursor: infoForm[key] ? 'pointer' : 'not-allowed',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Abrir →
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              type="submit"
+              disabled={isInfoSaving}
+              style={{ padding: '10px 24px', background: 'var(--primary)', border: 'none', color: 'var(--bg)', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', opacity: isInfoSaving ? 0.6 : 1 }}
+            >
+              {isInfoSaving ? 'Guardando...' : 'Guardar'}
+            </button>
+          </form>
         </div>
       )}
 

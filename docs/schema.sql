@@ -45,8 +45,20 @@ CREATE TABLE notifications (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- Knowledge Base table
+CREATE TABLE knowledge_base (
+  id BIGSERIAL PRIMARY KEY,
+  titulo TEXT NOT NULL,
+  categoria TEXT,
+  contenido TEXT,
+  tags TEXT[] DEFAULT '{}',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
 -- Enable RLS (Row Level Security)
 ALTER TABLE apps ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE metrics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE knowledge_base ENABLE ROW LEVEL SECURITY;

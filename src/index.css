@@ -244,3 +244,22 @@ input, textarea, select { font-family: inherit; }
   box-shadow: var(--ring);
 }
 .nz-input::placeholder { color: var(--text-subtle); }
+
+/* ── Knowledge Base markdown preview ── */
+.kb-prose { font-size: 14px; line-height: 1.7; color: var(--text); }
+.kb-prose h1, .kb-prose h2, .kb-prose h3 { color: var(--text); font-weight: 600; margin: 1.2em 0 .4em; }
+.kb-prose h1 { font-size: 1.4em; }
+.kb-prose h2 { font-size: 1.2em; }
+.kb-prose h3 { font-size: 1.05em; }
+.kb-prose p { margin: .6em 0; }
+.kb-prose ul, .kb-prose ol { padding-left: 1.4em; margin: .6em 0; }
+.kb-prose li { margin: .2em 0; }
+.kb-prose code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-family: var(--font-mono); font-size: .9em; color: var(--primary); }
+.kb-prose pre { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; overflow-x: auto; margin: .8em 0; }
+.kb-prose pre code { background: none; padding: 0; color: var(--text); }
+.kb-prose blockquote { border-left: 3px solid var(--primary); padding-left: 12px; color: var(--text-muted); margin: .8em 0; }
+.kb-prose a { color: var(--primary); text-decoration: underline; }
+.kb-prose hr { border: none; border-top: 1px solid var(--border); margin: 1.2em 0; }
+.kb-prose strong { font-weight: 600; color: var(--text); }
+.kb-prose em { color: var(--text-muted); }
+

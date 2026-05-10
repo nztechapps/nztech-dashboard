@@ -15,6 +15,36 @@ const EMPTY_FORM = {
   engagement_rate: '',
 };
 
+function StatCard({ label, value }) {
+  return (
+    <div style={{
+      background: 'var(--surface)',
+      border: '1px solid var(--border)',
+      borderRadius: 12,
+      padding: '16px 20px',
+    }}>
+      <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{label}</p>
+      <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--primary)', fontFamily: 'var(--font-mono)' }}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label style={{
+        fontSize: 12, fontWeight: 600, color: 'var(--text-muted)',
+        textTransform: 'uppercase', letterSpacing: '.06em',
+      }}>
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
 function SocialTab({ plataforma, getByPlataforma, createMetric }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
@@ -38,6 +68,7 @@ function SocialTab({ plataforma, getByPlataforma, createMetric }) {
         engagement_rate: Number(form.engagement_rate),
       });
       setMsg('Guardado');
+      setForm(EMPTY_FORM);
       setTimeout(() => setMsg(''), 2000);
     } catch (err) {
       setMsg('Error: ' + err.message);
@@ -46,84 +77,94 @@ function SocialTab({ plataforma, getByPlataforma, createMetric }) {
     }
   };
 
-  const field = (label, key, step = '1') => (
-    <div>
-      <label className="block text-xs text-gray-400 mb-1">{label}</label>
+  const numInput = (label, key, step = '1') => (
+    <Field label={label}>
       <input
         type="number"
         step={step}
         value={form[key]}
         onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-        className="w-full bg-[#0A0A0F] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00E5A0]"
+        className="nz-input"
       />
-    </div>
+    </Field>
   );
 
   return (
-    <div className="space-y-6">
-      {/* Resumen */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Stats */}
       {last && (
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { label: 'Seguidores', value: last.seguidores?.toLocaleString() },
-            { label: 'Views', value: last.views?.toLocaleString() },
-            { label: 'Engagement', value: `${last.engagement_rate}%` },
-          ].map(({ label, value }) => (
-            <div key={label} className="bg-[#13131A] border border-white/10 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">{label}</p>
-              <p className="text-xl font-bold text-[#00E5A0] font-mono">{value}</p>
-            </div>
-          ))}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+          <StatCard label="Seguidores" value={last.seguidores?.toLocaleString()} />
+          <StatCard label="Views" value={last.views?.toLocaleString()} />
+          <StatCard label="Engagement" value={`${last.engagement_rate}%`} />
         </div>
       )}
 
-      {/* Formulario */}
-      <div className="bg-[#13131A] border border-white/10 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-4">Cargar métricas del día</h3>
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Fecha</label>
+      {/* Form */}
+      <div style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
+        borderRadius: 12,
+        padding: '20px 24px',
+      }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
+          Cargar métricas del día
+        </h3>
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <Field label="Fecha">
             <input
               type="date"
               value={form.fecha}
               onChange={(e) => setForm((f) => ({ ...f, fecha: e.target.value }))}
-              className="w-full bg-[#0A0A0F] border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00E5A0]"
+              className="nz-input"
             />
-          </div>
-          {field('Seguidores', 'seguidores')}
-          {field('Views', 'views')}
-          {field('Likes', 'likes')}
-          {field('Reach', 'reach')}
-          {field('Engagement Rate (%)', 'engagement_rate', '0.01')}
-          <div className="col-span-2 flex items-center gap-3">
-            <button
-              type="submit"
-              disabled={saving}
-              className="bg-[#00E5A0] text-black font-semibold text-sm px-5 py-2 rounded-lg hover:bg-[#00c887] transition disabled:opacity-50"
-            >
+          </Field>
+          {numInput('Seguidores', 'seguidores')}
+          {numInput('Views', 'views')}
+          {numInput('Likes', 'likes')}
+          {numInput('Reach', 'reach')}
+          {numInput('Engagement Rate (%)', 'engagement_rate', '0.01')}
+          <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button type="submit" disabled={saving} className="nz-btn nz-btn-primary">
               {saving ? 'Guardando...' : 'Guardar'}
             </button>
-            {msg && <span className="text-xs text-[#00E5A0]">{msg}</span>}
+            {msg && (
+              <span style={{ fontSize: 12, color: msg.startsWith('Error') ? '#F87171' : 'var(--primary)' }}>
+                {msg}
+              </span>
+            )}
           </div>
         </form>
       </div>
 
-      {/* Gráfico */}
+      {/* Chart */}
       {data.length > 0 && (
-        <div className="bg-[#13131A] border border-white/10 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-4">Últimos 30 días</h3>
+        <div style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          padding: '20px 24px',
+        }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
+            Últimos 30 días
+          </h3>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-              <XAxis dataKey="fecha" tick={{ fill: '#9ca3af', fontSize: 11 }} />
-              <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="fecha" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
+              <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
               <Tooltip
-                contentStyle={{ background: '#13131A', border: '1px solid #ffffff20', borderRadius: 8 }}
-                labelStyle={{ color: '#fff' }}
+                contentStyle={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 8,
+                }}
+                labelStyle={{ color: 'var(--text)' }}
+                itemStyle={{ color: 'var(--text-muted)' }}
               />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="views" stroke="#00E5A0" dot={false} strokeWidth={2} />
-              <Line type="monotone" dataKey="seguidores" stroke="#6366f1" dot={false} strokeWidth={2} />
+              <Legend wrapperStyle={{ fontSize: 12, color: 'var(--text-muted)' }} />
+              <Line type="monotone" dataKey="views" stroke="var(--primary)" dot={false} strokeWidth={2} />
+              <Line type="monotone" dataKey="seguidores" stroke="#818CF8" dot={false} strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -137,22 +178,29 @@ export default function Social() {
   const { loading, createMetric, getByPlataforma } = useSocialMetrics();
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>
+    <div style={{ padding: '28px 32px', maxWidth: 860, margin: '0 auto' }}>
+      <h1 style={{ margin: '0 0 24px', fontSize: 24, fontWeight: 700, color: 'var(--text)' }}>
         Social Metrics
       </h1>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
+      <div style={{ display: 'flex', gap: 16, borderBottom: '1px solid var(--border)', marginBottom: 24 }}>
         {PLATAFORMAS.map((p) => (
           <button
             key={p}
             onClick={() => setTab(p)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-              tab === p
-                ? 'bg-[#00E5A0] text-black'
-                : 'bg-[#13131A] text-gray-400 hover:text-white border border-white/10'
-            }`}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: tab === p ? 'var(--primary)' : 'var(--text-muted)',
+              cursor: 'pointer',
+              padding: '12px 0',
+              fontSize: 14,
+              fontWeight: 500,
+              borderBottom: tab === p ? '2px solid var(--primary)' : '2px solid transparent',
+              marginBottom: -1,
+              transition: 'color 0.2s',
+            }}
           >
             {p}
           </button>
@@ -160,7 +208,7 @@ export default function Social() {
       </div>
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Cargando...</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Cargando…</p>
       ) : (
         <SocialTab plataforma={tab} getByPlataforma={getByPlataforma} createMetric={createMetric} />
       )}

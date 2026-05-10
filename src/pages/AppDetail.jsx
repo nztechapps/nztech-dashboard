@@ -14,6 +14,7 @@ import { useTareas } from '../hooks/useTareas';
 import { useMetrics } from '../hooks/useMetrics';
 import { useAsoTracker } from '../hooks/useAsoTracker';
 import { useVersionLog } from '../hooks/useVersionLog';
+import { useAppPostmortems } from '../hooks/useAppPostmortems';
 
 const IconArrowLeft = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -114,6 +115,7 @@ export default function AppDetail() {
   const tasks = tareas.filter(t => appBloqueIds.includes(t.bloque_id) || t.titulo?.includes(appNombre));
   const { keywords, addKeyword, deleteKeyword } = useAsoTracker(id);
   const { versions, addVersion, deleteVersion } = useVersionLog(id);
+  const { postmortem } = useAppPostmortems(id);
 
   // Métricas: últimos 30 días
   const thirtyDaysAgo = new Date();
@@ -220,7 +222,7 @@ export default function AppDetail() {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '16px', borderBottom: '1px solid var(--border)', marginBottom: '24px' }}>
-        {['produccion', 'metricas', 'aso', 'versiones'].map((tab) => (
+        {['produccion', 'metricas', 'aso', 'versiones', 'postmortem'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -237,7 +239,7 @@ export default function AppDetail() {
               transition: 'color 0.2s',
             }}
           >
-            {tab === 'produccion' ? 'Producción' : tab === 'metricas' ? 'Métricas' : tab === 'aso' ? 'ASO' : 'Versiones'}
+            {tab === 'produccion' ? 'Producción' : tab === 'metricas' ? 'Métricas' : tab === 'aso' ? 'ASO' : tab === 'versiones' ? 'Versiones' : 'PostMortem'}
           </button>
         ))}
       </div>
@@ -505,6 +507,82 @@ export default function AppDetail() {
                   </button>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB: POSTMORTEM */}
+      {activeTab === 'postmortem' && (
+        <div>
+          <h2 style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '600', margin: '0 0 24px 0' }}>PostMortem</h2>
+          {!postmortem ? (
+            <div style={{ backgroundColor: 'var(--surface)', padding: '40px', borderRadius: '10px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              Esta app aún no tiene postmortem registrado
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Score */}
+              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{
+                  fontFamily: 'var(--font-mono)', fontSize: '52px', fontWeight: '700', lineHeight: 1,
+                  color: postmortem.puntaje >= 8 ? '#00E5A0' : postmortem.puntaje >= 5 ? '#FFB400' : '#FF5C5C',
+                }}>
+                  {postmortem.puntaje}
+                </div>
+                <div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Puntaje general</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>sobre 10</div>
+                </div>
+              </div>
+
+              {/* Respuestas */}
+              {[
+                { label: '¿Qué fue lo más difícil de construir esta app?', value: postmortem.dificultad },
+                { label: '¿Qué salió mejor de lo esperado?', value: postmortem.exito },
+                { label: '¿Qué harías diferente si empezaras de cero?', value: postmortem.diferente },
+              ].map(({ label, value }) => (
+                <div key={label} style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>{label}</div>
+                  <div style={{ color: 'var(--text)', fontSize: '13px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{value}</div>
+                </div>
+              ))}
+
+              {/* Tiempos */}
+              {postmortem.tiempos && (
+                <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px' }}>Tiempos reales</div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                        {['Diseño', 'Desarrollo', 'Testing', 'Deploy'].map(h => (
+                          <th key={h} style={{ padding: '8px 12px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: '500' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        {[postmortem.tiempos.disenio, postmortem.tiempos.desarrollo, postmortem.tiempos.testing, postmortem.tiempos.deploy].map((val, i) => (
+                          <td key={i} style={{ padding: '12px', textAlign: 'center', color: 'var(--text)', fontFamily: 'var(--font-mono)', fontWeight: '600', fontSize: '15px' }}>
+                            {val}<span style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '400' }}>h</span>
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Insight Claude */}
+              {postmortem.insight_claude && (
+                <div style={{ backgroundColor: 'rgba(0, 229, 160, 0.06)', border: '1px solid rgba(0, 229, 160, 0.25)', borderRadius: '10px', padding: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#00E5A0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                    <span style={{ color: '#00E5A0', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Insight de Claude</span>
+                  </div>
+                  <div style={{ color: 'var(--text)', fontSize: '13px', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>{postmortem.insight_claude}</div>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -277,7 +277,7 @@ export default function IdeaDetail() {
 
   // Postmortem
   const [showPostmortem, setShowPostmortem] = useState(false);
-  const { savePostmortem } = useAppPostmortems();
+  const { savePostmortem } = useAppPostmortems(id);
 
   // ASO local state (to allow typing before save)
   const [asoLocal, setAsoLocal] = useState(null);
@@ -1028,7 +1028,7 @@ export default function IdeaDetail() {
           onClose={() => setShowPostmortem(false)}
           onComplete={async (postmortemData) => {
             try {
-              await savePostmortem(idea.id, postmortemData);
+              await savePostmortem(postmortemData);
               const { data: appData, error: insertError } = await supabase
                 .from('apps')
                 .insert({

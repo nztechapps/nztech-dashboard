@@ -1,10 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
-export function useAppPostmortems() {
+export function useAppPostmortems(ideaId) {
   const [loading, setLoading] = useState(false);
+  const [postmortem, setPostmortem] = useState(null);
 
-  const savePostmortem = async (ideaId, data) => {
+  useEffect(() => {
+    if (!ideaId) return;
+    setLoading(true);
+    supabase
+      .from('app_postmortems')
+      .select('*')
+      .eq('idea_id', ideaId)
+      .maybeSingle()
+      .then(({ data }) => {
+        setPostmortem(data || null);
+        setLoading(false);
+      });
+  }, [ideaId]);
+
+  const savePostmortem = async (data) => {
     setLoading(true);
     try {
       const { error } = await supabase
@@ -16,5 +31,5 @@ export function useAppPostmortems() {
     }
   };
 
-  return { loading, savePostmortem };
+  return { loading, postmortem, savePostmortem };
 }

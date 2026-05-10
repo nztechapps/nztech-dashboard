@@ -15,6 +15,7 @@ import { useMetrics } from '../hooks/useMetrics';
 import { useAsoTracker } from '../hooks/useAsoTracker';
 import { useVersionLog } from '../hooks/useVersionLog';
 import { useAppPostmortems } from '../hooks/useAppPostmortems';
+import PostMortemModal from '../components/ideas/PostMortemModal';
 
 const IconArrowLeft = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -115,7 +116,7 @@ export default function AppDetail() {
   const tasks = tareas.filter(t => appBloqueIds.includes(t.bloque_id) || t.titulo?.includes(appNombre));
   const { keywords, addKeyword, deleteKeyword } = useAsoTracker(id);
   const { versions, addVersion, deleteVersion } = useVersionLog(id);
-  const { postmortem } = useAppPostmortems(id);
+  const { postmortem, savePostmortem } = useAppPostmortems(id);
 
   // Métricas: últimos 30 días
   const thirtyDaysAgo = new Date();
@@ -131,6 +132,7 @@ export default function AppDetail() {
   const [isMetricsSaving, setIsMetricsSaving] = useState(false);
   const [isAsoFormOpen, setIsAsoFormOpen] = useState(false);
   const [isVersionFormOpen, setIsVersionFormOpen] = useState(false);
+  const [isPostMortemModalOpen, setIsPostMortemModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
   const handleSaveMetric = async (metricData) => {
@@ -518,7 +520,22 @@ export default function AppDetail() {
           <h2 style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '600', margin: '0 0 24px 0' }}>PostMortem</h2>
           {!postmortem ? (
             <div style={{ backgroundColor: 'var(--surface)', padding: '40px', borderRadius: '10px', textAlign: 'center', color: 'var(--text-muted)' }}>
-              Esta app aún no tiene postmortem registrado
+              <div style={{ marginBottom: '16px' }}>Esta app aún no tiene postmortem registrado</div>
+              <button
+                onClick={() => setIsPostMortemModalOpen(true)}
+                style={{
+                  padding: '10px 20px',
+                  background: 'var(--primary)',
+                  border: 'none',
+                  color: 'var(--bg)',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                }}
+              >
+                Registrar PostMortem
+              </button>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -586,6 +603,23 @@ export default function AppDetail() {
             </div>
           )}
         </div>
+      )}
+
+      {/* PostMortem Modal */}
+      {isPostMortemModalOpen && (
+        <PostMortemModal
+          idea={app}
+          onClose={() => setIsPostMortemModalOpen(false)}
+          onComplete={async (data) => {
+            try {
+              await savePostmortem(data);
+              setIsPostMortemModalOpen(false);
+              setToast({ message: 'PostMortem registrado', type: 'success' });
+            } catch (err) {
+              setToast({ message: 'Error al guardar postmortem', type: 'error' });
+            }
+          }}
+        />
       )}
 
       {/* Toast Notification */}

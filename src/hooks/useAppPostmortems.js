@@ -26,6 +26,12 @@ export function useAppPostmortems(ideaId) {
         .from('app_postmortems')
         .upsert({ idea_id: ideaId, ...data }, { onConflict: 'idea_id' });
       if (error) throw error;
+      const { data: saved } = await supabase
+        .from('app_postmortems')
+        .select('*')
+        .eq('idea_id', ideaId)
+        .maybeSingle();
+      setPostmortem(saved || null);
     } finally {
       setLoading(false);
     }

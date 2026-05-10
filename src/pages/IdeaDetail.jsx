@@ -638,30 +638,34 @@ export default function IdeaDetail() {
                 </div>
 
                 {/* 6 criterios */}
-                {Array.isArray(validacion.criterios) && validacion.criterios.length > 0 && (
-                  <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 640 ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                    {validacion.criterios.map((c, i) => {
-                      const cScore = typeof c.puntaje === 'number' ? c.puntaje : null;
-                      const cColor = cScore === null ? 'var(--text-muted)'
-                        : cScore < 40 ? 'var(--nz-danger)'
-                        : cScore < 70 ? 'var(--nz-warning)'
-                        : 'var(--nz-success)';
-                      return (
-                        <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '16px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                            <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text)', flex: 1 }}>{c.criterio}</div>
-                            {cScore !== null && (
-                              <div style={{ fontSize: '18px', fontWeight: '700', color: cColor, fontFamily: 'var(--font-mono)', flexShrink: 0, marginLeft: '8px' }}>
-                                {cScore}
-                              </div>
-                            )}
+                {(() => {
+                  const criterios = validacion.analisis || validacion.criterios;
+                  if (!Array.isArray(criterios) || criterios.length === 0) return null;
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 640 ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                      {criterios.map((c, i) => {
+                        const cScore = typeof c.puntaje === 'number' ? c.puntaje : null;
+                        const cColor = cScore === null ? 'var(--text-muted)'
+                          : cScore < 4 ? 'var(--nz-danger)'
+                          : cScore <= 7 ? 'var(--nz-warning)'
+                          : 'var(--nz-success)';
+                        return (
+                          <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '16px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                              <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text)', flex: 1 }}>{c.criterio}</div>
+                              {cScore !== null && (
+                                <div style={{ fontSize: '16px', fontWeight: '700', color: cColor, fontFamily: 'var(--font-mono)', flexShrink: 0, marginLeft: '8px', whiteSpace: 'nowrap' }}>
+                                  {cScore}<span style={{ fontSize: '11px', color: 'var(--text-subtle)' }}>/10</span>
+                                </div>
+                              )}
+                            </div>
+                            {c.texto && <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>{c.texto}</div>}
                           </div>
-                          {c.texto && <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5' }}>{c.texto}</div>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>

@@ -118,7 +118,7 @@ const RunStatusBadge = ({ estado }) => {
 /* ── Home ───────────────────────────────────────────────── */
 export default function Home() {
   const { ideas } = useIdeas();
-  const { tareas } = useTareas();
+  const { tareas, bloques } = useTareas();
   const { notifications } = useNotifications();
 
   const [revenue, setRevenue] = useState('—');
@@ -129,7 +129,11 @@ export default function Home() {
   const latestIdeas = ideas.filter(i => !i.publicada).slice(0, 5);
   const ideasCount = ideas.filter(i => !i.publicada).length;
 
-  const pendingTareas = tareas.filter(t => !t.completada && t.estado !== 'completada');
+  const bloquesActivosIds = new Set(bloques.filter(b => !b.archivado).map(b => b.id));
+  const pendingTareas = tareas.filter(t =>
+    t.estado !== 'completado' &&
+    bloquesActivosIds.has(t.bloque)
+  );
   const urgentTarea = pendingTareas[0];
   const appsWithIssues = notifications.filter(n => n.tipo === 'error').length > 0;
 

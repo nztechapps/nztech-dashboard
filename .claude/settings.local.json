@@ -29,7 +29,8 @@
       "Bash(git push *)",
       "PowerShell(Remove-Item *)",
       "PowerShell(git *)",
-      "PowerShell(Get-ChildItem C:\\\\Users\\\\FedeN\\\\nztech-code\\\\nztech-dashboard -File | Where-Object { $_.Extension -in '.json','.jsonc','.toml','.yaml','.yml' } | Select-Object Name)"
+      "PowerShell(Get-ChildItem C:\\\\Users\\\\FedeN\\\\nztech-code\\\\nztech-dashboard -File | Where-Object { $_.Extension -in '.json','.jsonc','.toml','.yaml','.yml' } | Select-Object Name)",
+      "Bash(npx supabase *)"
     ]
   },
   "enableAllProjectMcpServers": true,

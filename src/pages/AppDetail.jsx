@@ -147,11 +147,12 @@ export default function AppDetail() {
   const [toast, setToast] = useState(null);
 
   // Tab Info state
-  const [infoForm, setInfoForm] = useState({ admob_url: '', play_console_url: '', canva_logo_url: '', canva_screenshots_url: '' });
+  const [infoForm, setInfoForm] = useState({ package: '', admob_url: '', play_console_url: '', canva_logo_url: '', canva_screenshots_url: '' });
 
   useEffect(() => {
     if (app) {
       setInfoForm({
+        package: app.package || '',
         admob_url: app.admob_url || '',
         play_console_url: app.play_console_url || '',
         canva_logo_url: app.canva_logo_url || '',
@@ -696,6 +697,7 @@ export default function AppDetail() {
             try {
               setIsInfoSaving(true);
               await updateIdea(id, {
+                package: infoForm.package || null,
                 admob_url: infoForm.admob_url || null,
                 play_console_url: infoForm.play_console_url || null,
                 canva_logo_url: infoForm.canva_logo_url || null,
@@ -709,6 +711,16 @@ export default function AppDetail() {
             }
           }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>Package Name</div>
+                <input
+                  type="text"
+                  placeholder="com.nztech.dolar"
+                  value={infoForm.package}
+                  onChange={(e) => setInfoForm(f => ({ ...f, package: e.target.value }))}
+                  style={{ width: '100%', boxSizing: 'border-box', backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px 12px', color: 'var(--text)', fontSize: '13px' }}
+                />
+              </div>
               {[
                 { key: 'admob_url', label: 'AdMob URL' },
                 { key: 'play_console_url', label: 'Play Console URL' },

@@ -131,6 +131,7 @@ export default function AppDetail() {
 
   const { isConnected: pcConnected, stats: pcStats, fetchStats: pcFetchStats, error: pcError } = usePlayConsole()
   const [pcSyncing, setPcSyncing] = useState(false)
+  const [activeTab, setActiveTab] = useState('produccion');
 
   useEffect(() => {
     if (pcConnected && app?.package && activeTab === 'metricas') {
@@ -138,8 +139,6 @@ export default function AppDetail() {
       pcFetchStats(app.package).finally(() => setPcSyncing(false))
     }
   }, [pcConnected, app?.package, activeTab])
-
-  const [activeTab, setActiveTab] = useState('produccion');
   const [isMetricsFormOpen, setIsMetricsFormOpen] = useState(false);
   const [isMetricsSaving, setIsMetricsSaving] = useState(false);
   const [isAsoFormOpen, setIsAsoFormOpen] = useState(false);

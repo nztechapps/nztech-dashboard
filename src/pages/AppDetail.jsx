@@ -16,8 +16,7 @@ import { useAsoTracker } from '../hooks/useAsoTracker';
 import { useVersionLog } from '../hooks/useVersionLog';
 import { useAppPostmortems } from '../hooks/useAppPostmortems';
 import PostMortemModal from '../components/ideas/PostMortemModal'
-import PlayConsoleConnect from '../components/apps/PlayConsoleConnect'
-import { usePlayConsole } from '../hooks/usePlayConsole';
+import { useAppMetricsSnapshots } from '../hooks/useAppMetricsSnapshots';
 
 const IconArrowLeft = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -129,16 +128,8 @@ export default function AppDetail() {
     new Date().toISOString().split('T')[0]
   );
 
-  const { isConnected: pcConnected, stats: pcStats, fetchStats: pcFetchStats, error: pcError } = usePlayConsole()
-  const [pcSyncing, setPcSyncing] = useState(false)
+  const { snapshots, createSnapshot } = useAppMetricsSnapshots(id);
   const [activeTab, setActiveTab] = useState('produccion');
-
-  useEffect(() => {
-    if (pcConnected && app?.package && activeTab === 'metricas') {
-      setPcSyncing(true)
-      pcFetchStats(app.package).finally(() => setPcSyncing(false))
-    }
-  }, [pcConnected, app?.package, activeTab])
   const [isMetricsFormOpen, setIsMetricsFormOpen] = useState(false);
   const [isMetricsSaving, setIsMetricsSaving] = useState(false);
   const [isAsoFormOpen, setIsAsoFormOpen] = useState(false);
@@ -171,6 +162,15 @@ export default function AppDetail() {
     crashes: '',
   });
   const [isStatsSaving, setIsStatsSaving] = useState(false);
+
+  // Snapshot form
+  const emptySnapshot = {
+    installs_totales: '', installs_activos: '', rating: '', reviews_totales: '',
+    crashes_semana: '', anr_rate: '', revenue_mes: '', ecpm_promedio: '',
+    dau: '', retencion_dia1: '', retencion_dia7: '', top_pais: '',
+  };
+  const [snapshotForm, setSnapshotForm] = useState(emptySnapshot);
+  const [isSnapshotSaving, setIsSnapshotSaving] = useState(false);
 
   const handleSaveMetric = async (metricData) => {
     try {
@@ -302,57 +302,147 @@ export default function AppDetail() {
 
       {activeTab === 'metricas' && (
         <div>
-          {/* Play Console */}
-          <div style={{ marginBottom: '20px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <span style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600' }}>Google Play Console</span>
-              {pcConnected && app?.package && (
-                <button
-                  onClick={async () => {
-                    setPcSyncing(true)
-                    await pcFetchStats(app.package)
-                    setPcSyncing(false)
-                  }}
-                  disabled={pcSyncing}
-                  style={{ padding: '7px 14px', background: 'var(--primary)', border: 'none', color: 'var(--bg)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', opacity: pcSyncing ? 0.6 : 1 }}
-                >
-                  {pcSyncing ? 'Sincronizando...' : 'Sincronizar'}
-                </button>
-              )}
-            </div>
-            <PlayConsoleConnect />
-            {pcError && <div style={{ color: '#FF5C5C', fontSize: '12px', marginTop: '8px' }}>{pcError}</div>}
-            {pcConnected && !app?.package && (
-              <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '12px', padding: '10px', backgroundColor: 'var(--bg)', borderRadius: '6px', border: '1px solid var(--border)' }}>
-                Agregá el package name en el tab Info para sincronizar
+          {/* Play Console Quick Links + Snapshot Form */}
+          {(() => {
+            const match = app.play_console_url?.match(/\/developers\/(\d+)\/app\/(\d+)/);
+            const devId = match?.[1];
+            const appId = match?.[2];
+            const base = devId && appId ? `https://play.google.com/console/u/0/developers/${devId}/app/${appId}` : null;
+            const links = base ? [
+              { label: 'Installs', url: `${base}/statistics`, icon: '📥' },
+              { label: 'Ratings & Reviews', url: `${base}/ratings`, icon: '⭐' },
+              { label: 'Crashes & ANR', url: `${base}/crashes`, icon: '💥' },
+              { label: 'Revenue', url: `${base}/monetization-overview`, icon: '💰' },
+              { label: 'Retención', url: `${base}/retention`, icon: '📊' },
+              { label: 'Countries', url: `${base}/statistics?metrics=STORE_LISTING_CONVERSION_RATE&dimension=COUNTRY`, icon: '🌍' },
+            ] : null;
+
+            const snapshotFields = [
+              { key: 'installs_totales', label: 'Installs totales', type: 'number' },
+              { key: 'installs_activos', label: 'Installs activos', type: 'number' },
+              { key: 'rating', label: 'Rating (1-5)', type: 'number', min: 1, max: 5, step: 0.1 },
+              { key: 'reviews_totales', label: 'Reviews totales', type: 'number' },
+              { key: 'crashes_semana', label: 'Crashes última semana', type: 'number' },
+              { key: 'anr_rate', label: 'ANR rate (%)', type: 'number', step: 0.01 },
+              { key: 'revenue_mes', label: 'Revenue mes (USD)', type: 'number', step: 0.01 },
+              { key: 'ecpm_promedio', label: 'eCPM promedio (USD)', type: 'number', step: 0.01 },
+              { key: 'dau', label: 'DAU', type: 'number' },
+              { key: 'retencion_dia1', label: 'Retención día 1 (%)', type: 'number', step: 0.1 },
+              { key: 'retencion_dia7', label: 'Retención día 7 (%)', type: 'number', step: 0.1 },
+              { key: 'top_pais', label: 'Top país', type: 'text' },
+            ];
+
+            return (
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                  {/* Quick Links */}
+                  <div style={{ flex: '1 1 320px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
+                    <div style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', marginBottom: '14px' }}>Google Play Console</div>
+                    {links ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                        {links.map(({ label, url, icon }) => (
+                          <a
+                            key={label}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                              padding: '12px 8px', backgroundColor: 'var(--bg)', border: '1px solid var(--border)',
+                              borderRadius: '8px', textDecoration: 'none', color: 'var(--text)',
+                              fontSize: '12px', textAlign: 'center', transition: 'border-color 0.15s',
+                            }}
+                          >
+                            <span style={{ fontSize: '20px' }}>{icon}</span>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{label}</span>
+                            <span style={{ color: 'var(--primary)', fontSize: '11px', fontWeight: '600' }}>Abrir →</span>
+                          </a>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ color: 'var(--text-muted)', fontSize: '13px', padding: '20px', textAlign: 'center', backgroundColor: 'var(--bg)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                        Agregá la Play Console URL en el tab Info
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Snapshot Form */}
+                  <div style={{ flex: '1 1 320px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
+                    <div style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', marginBottom: '14px' }}>Cargar snapshot</div>
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      try {
+                        setIsSnapshotSaving(true);
+                        const payload = {};
+                        snapshotFields.forEach(({ key, type }) => {
+                          if (snapshotForm[key] !== '') {
+                            payload[key] = type === 'number' ? Number(snapshotForm[key]) : snapshotForm[key];
+                          }
+                        });
+                        await createSnapshot(payload);
+                        setSnapshotForm(emptySnapshot);
+                        setToast({ message: 'Snapshot guardado', type: 'success' });
+                      } catch {
+                        setToast({ message: 'Error al guardar snapshot', type: 'error' });
+                      } finally {
+                        setIsSnapshotSaving(false);
+                      }
+                    }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '12px' }}>
+                        {snapshotFields.map(({ key, label, type, ...rest }) => (
+                          <div key={key}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '10px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+                            <input
+                              type={type}
+                              placeholder="—"
+                              value={snapshotForm[key]}
+                              onChange={(e) => setSnapshotForm(s => ({ ...s, [key]: e.target.value }))}
+                              style={{ width: '100%', boxSizing: 'border-box', backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '7px', color: 'var(--text)', fontSize: '12px' }}
+                              {...rest}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isSnapshotSaving}
+                        style={{ width: '100%', padding: '9px', background: 'var(--primary)', border: 'none', color: 'var(--bg)', borderRadius: '7px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', opacity: isSnapshotSaving ? 0.6 : 1 }}
+                      >
+                        {isSnapshotSaving ? 'Guardando...' : 'Guardar snapshot'}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                {/* Snapshot History */}
+                {snapshots.length > 0 && (
+                  <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', marginBottom: '8px', overflowX: 'auto' }}>
+                    <div style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Historial de snapshots</div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                          {['Fecha', 'Installs activos', 'Rating', 'Revenue mes', 'DAU'].map(h => (
+                            <th key={h} style={{ padding: '8px 12px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: '500' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {snapshots.map((s, i) => (
+                          <tr key={s.id} style={{ backgroundColor: i % 2 === 0 ? 'var(--bg)' : 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
+                            <td style={{ padding: '10px 12px', textAlign: 'center', color: 'var(--text-muted)' }}>{new Date(s.created_at).toLocaleDateString('es-ES')}</td>
+                            <td style={{ padding: '10px 12px', textAlign: 'center', color: 'var(--text)', fontFamily: 'var(--font-mono)', fontWeight: '600' }}>{s.installs_activos?.toLocaleString() ?? '—'}</td>
+                            <td style={{ padding: '10px 12px', textAlign: 'center', color: 'var(--primary)', fontFamily: 'var(--font-mono)', fontWeight: '600' }}>{s.rating ?? '—'}</td>
+                            <td style={{ padding: '10px 12px', textAlign: 'center', color: 'var(--text)', fontFamily: 'var(--font-mono)', fontWeight: '600' }}>{s.revenue_mes != null ? `$${s.revenue_mes}` : '—'}</td>
+                            <td style={{ padding: '10px 12px', textAlign: 'center', color: 'var(--text)', fontFamily: 'var(--font-mono)', fontWeight: '600' }}>{s.dau?.toLocaleString() ?? '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            )}
-            {pcConnected && app?.package && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '14px' }}>
-                {pcSyncing ? (
-                  Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px', textAlign: 'center' }}>
-                      <div style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '4px', marginBottom: '8px', animation: 'pulse 1.5s ease-in-out infinite' }} />
-                      <div style={{ height: '12px', width: '70%', margin: '0 auto', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: '4px' }} />
-                    </div>
-                  ))
-                ) : pcStats ? (
-                  [
-                    { icon: '📥', label: 'Installs activos', value: pcStats.installs != null ? pcStats.installs.toLocaleString() : '—' },
-                    { icon: '⭐', label: 'Rating', value: pcStats.rating != null ? `${pcStats.rating} / 5` : '—' },
-                    { icon: '💬', label: 'Reviews totales', value: pcStats.reviews != null ? pcStats.reviews.toLocaleString() : '—' },
-                    { icon: '🌍', label: 'Top país', value: pcStats.top_country ?? '—' },
-                  ].map(({ icon, label, value }) => (
-                    <div key={label} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '20px', marginBottom: '6px' }}>{icon}</div>
-                      <div style={{ color: '#00E5A0', fontFamily: 'var(--font-mono)', fontWeight: '700', fontSize: '16px', marginBottom: '4px' }}>{value}</div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
-                    </div>
-                  ))
-                ) : null}
-              </div>
-            )}
-          </div>
+            );
+          })()}
 
           {/* Header con botón */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>

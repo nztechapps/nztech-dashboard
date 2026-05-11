@@ -239,11 +239,52 @@ function NuevoBloqueModal({ onClose, onSave }) {
 }
 
 // ---- Bloque Modal (task list) ----
-function BloqueModal({ bloque, tareas, readonly, onClose, onUpdateEstado, onAddTarea, onArchivar, onOpenDetail, onReorder }) {
+function BloqueModal({ bloque, tareas, readonly, onClose, onUpdateEstado, onAddTarea, onArchivar, onOpenDetail, onReorder, onSaveTarea, onDeleteTarea }) {
   const [showForm, setShowForm] = useState(false)
   const [newTarea, setNewTarea] = useState({ titulo: '', tiempo_estimado: '' })
   const [dragOverId, setDragOverId] = useState(null)
   const draggedId = useRef(null)
+  const [expandedId, setExpandedId] = useState(null)
+  const [expandForms, setExpandForms] = useState({})
+  const [savingId, setSavingId] = useState(null)
+  const [copiedTaskId, setCopiedTaskId] = useState(null)
+
+  const toggleExpand = (t) => {
+    if (expandedId === t.id) { setExpandedId(null); return }
+    setExpandedId(t.id)
+    setExpandForms(f => ({
+      ...f,
+      [t.id]: { notas: t.notas || '', estado: t.estado || 'pendiente', tiempo_estimado: t.tiempo_estimado || '' },
+    }))
+  }
+
+  const handleSaveInline = async (t) => {
+    const form = expandForms[t.id]
+    if (!form) return
+    setSavingId(t.id)
+    try {
+      await onSaveTarea(t.id, { notas: form.notas.trim(), estado: form.estado, tiempo_estimado: form.tiempo_estimado.trim() })
+      setExpandedId(null)
+    } catch (e) { alert('Error: ' + e.message) }
+    finally { setSavingId(null) }
+  }
+
+  const handleDeleteInline = async (t) => {
+    if (!window.confirm('¿Eliminar esta tarea?')) return
+    await onDeleteTarea(t.id)
+    setExpandedId(null)
+  }
+
+  const copyTask = (t) => {
+    const check = t.estado === 'completado' ? '✓' : '☐'
+    const parts = [t.titulo, t.estado]
+    if (t.tiempo_estimado) parts.push(t.tiempo_estimado)
+    const text = `${check} ${parts.join(' — ')}`
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedTaskId(t.id)
+      setTimeout(() => setCopiedTaskId(null), 2000)
+    })
+  }
 
   const completadas = tareas.filter(t => t.estado === 'completado').length
   const total = tareas.length
@@ -316,36 +357,108 @@ function BloqueModal({ bloque, tareas, readonly, onClose, onUpdateEstado, onAddT
             {tareas.slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)).map(t => {
               const cfg = ESTADO_CONFIG[t.estado] || ESTADO_CONFIG.pendiente
               const handlers = !readonly ? makeDragHandlers(t) : {}
+              const isExpanded = expandedId === t.id
+              const ef = expandForms[t.id] || {}
               return (
-                <div
-                  key={t.id}
-                  draggable={!readonly}
-                  {...handlers}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    padding: '8px 10px', borderRadius: '8px',
-                    background: dragOverId === t.id ? 'var(--surface-2)' : 'transparent',
-                    cursor: readonly ? 'default' : 'grab',
-                    transition: 'background 0.1s',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={t.estado === 'completado'}
-                    disabled={readonly}
-                    onChange={() => !readonly && onUpdateEstado(t.id, t.estado === 'completado' ? 'pendiente' : 'completado')}
-                    style={{ accentColor: bloque.color, width: '15px', height: '15px', flexShrink: 0, cursor: readonly ? 'default' : 'pointer' }}
-                  />
-                  <span
-                    onClick={() => onOpenDetail(t)}
-                    style={{ flex: 1, fontSize: '13px', fontWeight: '500', color: t.estado === 'completado' ? 'var(--text-subtle)' : 'var(--text)', textDecoration: t.estado === 'completado' ? 'line-through' : 'none', cursor: 'pointer', lineHeight: '1.4' }}
+                <div key={t.id}>
+                  <div
+                    draggable={!readonly}
+                    {...handlers}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                      padding: '8px 10px', borderRadius: isExpanded ? '8px 8px 0 0' : '8px',
+                      background: dragOverId === t.id ? 'var(--surface-2)' : isExpanded ? 'color-mix(in oklch, var(--primary) 6%, var(--surface))' : 'transparent',
+                      cursor: readonly ? 'default' : 'grab',
+                      transition: 'background 0.1s',
+                    }}
                   >
-                    {t.titulo}
-                  </span>
-                  {t.flag && <span style={{ fontSize: '12px', flexShrink: 0 }}>🚩</span>}
-                  <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 7px', borderRadius: '6px', background: cfg.bg, color: cfg.color, flexShrink: 0, whiteSpace: 'nowrap' }}>
-                    {cfg.label}
-                  </span>
+                    <input
+                      type="checkbox"
+                      checked={t.estado === 'completado'}
+                      disabled={readonly}
+                      onChange={() => !readonly && onUpdateEstado(t.id, t.estado === 'completado' ? 'pendiente' : 'completado')}
+                      style={{ accentColor: bloque.color, width: '15px', height: '15px', flexShrink: 0, cursor: readonly ? 'default' : 'pointer' }}
+                    />
+                    <span
+                      onClick={() => toggleExpand(t)}
+                      style={{ flex: 1, fontSize: '13px', fontWeight: '500', color: t.estado === 'completado' ? 'var(--text-subtle)' : 'var(--text)', textDecoration: t.estado === 'completado' ? 'line-through' : 'none', cursor: 'pointer', lineHeight: '1.4' }}
+                    >
+                      {t.titulo}
+                    </span>
+                    {t.flag && <span style={{ fontSize: '12px', flexShrink: 0 }}>🚩</span>}
+                    <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 7px', borderRadius: '6px', background: cfg.bg, color: cfg.color, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                      {cfg.label}
+                    </span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); copyTask(t) }}
+                      title="Copiar tarea"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: copiedTaskId === t.id ? 'var(--nz-success)' : 'var(--text-subtle)', fontSize: '12px', padding: '2px', flexShrink: 0, lineHeight: 1 }}
+                    >
+                      {copiedTaskId === t.id ? '✓' : '📋'}
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleExpand(t) }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-subtle)', fontSize: '10px', padding: '2px', flexShrink: 0, lineHeight: 1, transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}
+                    >
+                      ▼
+                    </button>
+                  </div>
+                  {isExpanded && (
+                    <div style={{ background: 'color-mix(in oklch, var(--primary) 4%, var(--surface))', border: '1px solid color-mix(in oklch, var(--primary) 15%, var(--border))', borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div>
+                          <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '10px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '3px' }}>Estado</label>
+                          <select
+                            value={ef.estado || 'pendiente'}
+                            onChange={(e) => setExpandForms(f => ({ ...f, [t.id]: { ...f[t.id], estado: e.target.value } }))}
+                            disabled={readonly}
+                            style={{ ...inputStyle, fontSize: '12px', padding: '5px 8px' }}
+                          >
+                            {ESTADOS.map(e => <option key={e} value={e}>{ESTADO_CONFIG[e].label}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '10px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '3px' }}>Tiempo estimado</label>
+                          <input
+                            value={ef.tiempo_estimado || ''}
+                            onChange={(e) => setExpandForms(f => ({ ...f, [t.id]: { ...f[t.id], tiempo_estimado: e.target.value } }))}
+                            disabled={readonly}
+                            placeholder="ej: 3h"
+                            style={{ ...inputStyle, fontSize: '12px', padding: '5px 8px' }}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '10px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '3px' }}>Notas</label>
+                        <textarea
+                          value={ef.notas || ''}
+                          onChange={(e) => setExpandForms(f => ({ ...f, [t.id]: { ...f[t.id], notas: e.target.value } }))}
+                          disabled={readonly}
+                          rows={3}
+                          placeholder="Notas o aprendizajes…"
+                          style={{ ...inputStyle, fontSize: '12px', padding: '5px 8px', resize: 'vertical', fontFamily: 'var(--font-mono)' }}
+                        />
+                      </div>
+                      {!readonly && (
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            onClick={() => handleSaveInline(t)}
+                            disabled={savingId === t.id}
+                            style={{ ...btnPrimaryStyle, fontSize: '12px', padding: '5px 12px' }}
+                          >
+                            {savingId === t.id ? 'Guardando…' : 'Guardar'}
+                          </button>
+                          <button onClick={() => setExpandedId(null)} style={{ ...btnSecondaryStyle, fontSize: '12px', padding: '5px 10px' }}>Cancelar</button>
+                          <button
+                            onClick={() => handleDeleteInline(t)}
+                            style={{ marginLeft: 'auto', padding: '5px 10px', borderRadius: '6px', background: 'transparent', border: '1px solid color-mix(in oklch, var(--nz-danger) 40%, transparent)', color: 'var(--nz-danger)', fontSize: '12px', cursor: 'pointer' }}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -402,11 +515,28 @@ function BloqueModal({ bloque, tareas, readonly, onClose, onUpdateEstado, onAddT
 // ---- Bloque Card (grid item) ----
 function BloqueCard({ bloque, tareas, isDragOver, bloqueDragHandlers, onClick, readonly }) {
   const isDraggingRef = useRef(false)
+  const [blockCopied, setBlockCopied] = useState(false)
   const completadas = tareas.filter(t => t.estado === 'completado').length
   const total = tareas.length
   const progreso = total > 0 ? Math.round((completadas / total) * 100) : 0
   const badge = getBadge(bloque)
   const color = readonly ? 'var(--text-subtle)' : bloque.color
+
+  const copyBlock = (e) => {
+    e.stopPropagation()
+    const sorted = tareas.slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+    const header = `📦 ${bloque.nombre} (${progreso}% · ${completadas}/${total})`
+    const lines = sorted.map(t => {
+      const check = t.estado === 'completado' ? '✓' : '☐'
+      const pri = t.tiempo_estimado ? ` — ${t.tiempo_estimado}` : ''
+      return `${check} ${t.titulo}${pri}`
+    })
+    const text = [header, '', ...lines].join('\n')
+    navigator.clipboard.writeText(text).then(() => {
+      setBlockCopied(true)
+      setTimeout(() => setBlockCopied(false), 2000)
+    })
+  }
 
   return (
     <div
@@ -444,6 +574,13 @@ function BloqueCard({ bloque, tareas, isDragOver, bloqueDragHandlers, onClick, r
               arch.
             </span>
           )}
+          <button
+            onClick={copyBlock}
+            title="Copiar bloque"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: blockCopied ? 'var(--nz-success)' : 'var(--text-subtle)', fontSize: '12px', padding: '2px', lineHeight: 1 }}
+          >
+            {blockCopied ? '✓' : '📋'}
+          </button>
           {bloqueDragHandlers && (
             <span style={{ color: 'var(--text-subtle)', fontSize: '13px', cursor: 'grab', letterSpacing: '-1px', lineHeight: 1, userSelect: 'none' }}>
               ⋮⋮
@@ -619,6 +756,8 @@ export default function Tareas() {
           onArchivar={handleArchivar}
           onOpenDetail={(t) => { setSelectedTarea(t) }}
           onReorder={handleReorder}
+          onSaveTarea={handleSaveDetail}
+          onDeleteTarea={handleDeleteFromDetail}
         />
       )}
 

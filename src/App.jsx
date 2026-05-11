@@ -13,6 +13,7 @@ import Reportes from './pages/Reportes'
 import Ideas from './pages/Ideas'
 import IdeaDetail from './pages/IdeaDetail'
 import Tareas from './pages/Tareas'
+import OAuthCallback from './pages/OAuthCallback'
 import { AuthGuard } from './components/layout/AuthGuard'
 import { Sidebar } from './components/layout/Sidebar'
 import { TopBar } from './components/layout/TopBar'
@@ -43,6 +44,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
         <Route path="/" element={<AuthGuard><ProtectedLayout title="Home"><Home /></ProtectedLayout></AuthGuard>} />
         <Route path="/apps" element={<AuthGuard><ProtectedLayout title="Apps"><Apps /></ProtectedLayout></AuthGuard>} />
         <Route path="/apps/:id" element={<AuthGuard><ProtectedLayout title="Detalles de la App"><AppDetail /></ProtectedLayout></AuthGuard>} />

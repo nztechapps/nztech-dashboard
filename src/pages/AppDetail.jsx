@@ -15,7 +15,9 @@ import { useMetrics } from '../hooks/useMetrics';
 import { useAsoTracker } from '../hooks/useAsoTracker';
 import { useVersionLog } from '../hooks/useVersionLog';
 import { useAppPostmortems } from '../hooks/useAppPostmortems';
-import PostMortemModal from '../components/ideas/PostMortemModal';
+import PostMortemModal from '../components/ideas/PostMortemModal'
+import PlayConsoleConnect from '../components/apps/PlayConsoleConnect'
+import { usePlayConsole } from '../hooks/usePlayConsole';
 
 const IconArrowLeft = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -126,6 +128,9 @@ export default function AppDetail() {
     thirtyDaysAgo.toISOString().split('T')[0],
     new Date().toISOString().split('T')[0]
   );
+
+  const { isConnected: pcConnected, stats: pcStats, fetchStats: pcFetchStats, error: pcError } = usePlayConsole()
+  const [pcSyncing, setPcSyncing] = useState(false)
 
   const [activeTab, setActiveTab] = useState('produccion');
   const [isMetricsFormOpen, setIsMetricsFormOpen] = useState(false);
@@ -290,6 +295,43 @@ export default function AppDetail() {
 
       {activeTab === 'metricas' && (
         <div>
+          {/* Play Console */}
+          <div style={{ marginBottom: '20px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: pcConnected ? '12px' : '0' }}>
+              <span style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600' }}>Google Play Console</span>
+              {pcConnected && app?.package && (
+                <button
+                  onClick={async () => {
+                    setPcSyncing(true)
+                    await pcFetchStats(app.package)
+                    setPcSyncing(false)
+                  }}
+                  disabled={pcSyncing}
+                  style={{ padding: '7px 14px', background: 'var(--primary)', border: 'none', color: 'var(--bg)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', opacity: pcSyncing ? 0.6 : 1 }}
+                >
+                  {pcSyncing ? 'Sincronizando...' : 'Sincronizar desde Play Console'}
+                </button>
+              )}
+            </div>
+            <PlayConsoleConnect />
+            {pcError && <div style={{ color: '#FF5C5C', fontSize: '12px', marginTop: '8px' }}>{pcError}</div>}
+            {pcStats && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '14px' }}>
+                {[
+                  { label: 'Installs', value: pcStats.installs != null ? pcStats.installs.toLocaleString() : '—' },
+                  { label: 'Rating', value: pcStats.rating ?? '—' },
+                  { label: 'Reviews', value: pcStats.reviews != null ? pcStats.reviews.toLocaleString() : '—' },
+                  { label: 'Revenue est.', value: pcStats.revenue != null ? `$${pcStats.revenue}` : '—' },
+                ].map(({ label, value }) => (
+                  <div key={label} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px', textAlign: 'center' }}>
+                    <div style={{ color: '#00E5A0', fontFamily: 'var(--font-mono)', fontWeight: '700', fontSize: '16px', marginBottom: '4px' }}>{value}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Header con botón */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <h2 style={{ color: 'var(--text)', fontSize: '16px', fontWeight: '600', margin: 0 }}>

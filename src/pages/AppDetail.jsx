@@ -209,7 +209,7 @@ export default function AppDetail() {
 
   const [asoMiApp, setAsoMiApp] = useState({ titulo: '', desc_corta: '', desc_larga: '', keywords: '', screenshots: '', video: false });
   const [asoComp, setAsoComp] = useState({ nombre: '', package: '', titulo: '', desc_corta: '', desc_larga: '', keywords: '', screenshots: '', video: false });
-  const [asoAnalisis, setAsoAnalisis] = useState(null);
+  const [asoAnalisis, setAsoAnalisis] = useState(app?.aso_analisis || null);
   const [asoAnalisisComp, setAsoAnalisisComp] = useState(null);
   const [asoLoading, setAsoLoading] = useState(false);
 
@@ -1101,21 +1101,26 @@ Devolvé ÚNICAMENTE este JSON sin markdown:
           try {
             const datos = tipo === 'mi_app' ? asoMiApp : asoComp;
             const nombre = tipo === 'mi_app' ? appNombre : (asoComp.nombre || 'Competidor');
-            const prompt = `Sos un experto en ASO para Google Play. Analizá esta ficha y devolvé un score detallado.
+            const prompt = `Sos un experto en ASO para Google Play. Analizá esta ficha y devolvé un score con mejoras concretas listas para implementar.
 
 App analizada: ${nombre}
-Título: ${datos.titulo}
-Descripción corta: ${datos.desc_corta}
-Descripción larga: ${datos.desc_larga}
+Título actual: ${datos.titulo}
+Descripción corta actual: ${datos.desc_corta}
+Descripción larga actual: ${datos.desc_larga}
 Keywords objetivo: ${datos.keywords}
 Screenshots: ${datos.screenshots}
 Video: ${datos.video ? 'sí' : 'no'}
 
 Devolvé ÚNICAMENTE este JSON sin markdown:
-{"score_total":0,"categorias":[{"nombre":"Título","score":0,"observacion":"","sugerencia":""},{"nombre":"Descripción corta","score":0,"observacion":"","sugerencia":""},{"nombre":"Descripción larga","score":0,"observacion":"","sugerencia":""},{"nombre":"Keywords","score":0,"observacion":"","sugerencia":""},{"nombre":"Assets visuales","score":0,"observacion":"","sugerencia":""}],"recomendacion_principal":""}`;
+{"score_total":0,"categorias":[{"nombre":"Título","score":0,"observacion":"qué está bien y qué falta","sugerencia":"texto alternativo listo para copiar y pegar, no una recomendación genérica","implementacion_directa":true},{"nombre":"Descripción corta","score":0,"observacion":"","sugerencia":"","implementacion_directa":true},{"nombre":"Descripción larga","score":0,"observacion":"","sugerencia":"","implementacion_directa":true},{"nombre":"Keywords","score":0,"observacion":"","sugerencia":"","implementacion_directa":true},{"nombre":"Assets visuales","score":0,"observacion":"","sugerencia":"","implementacion_directa":false}],"recomendacion_principal":"la mejora más impactante","titulo_sugerido":"texto exacto del nuevo título si aplica","desc_corta_sugerida":"texto exacto de la nueva descripción corta si aplica","keywords_sugeridas":["keyword1","keyword2","keyword3","keyword4","keyword5"]}`;
             const result = await callClaude(prompt);
-            if (tipo === 'mi_app') setAsoAnalisis(result);
-            else setAsoAnalisisComp(result);
+            if (tipo === 'mi_app') {
+              setAsoAnalisis(result);
+              await updateIdea(id, {
+                aso_analisis: result,
+                aso_analisis_updated_at: new Date().toISOString(),
+              });
+            } else setAsoAnalisisComp(result);
             setToast({ message: 'Análisis completado', type: 'success' });
           } catch {
             setToast({ message: 'Error al analizar ficha', type: 'error' });
@@ -1177,6 +1182,18 @@ Devolvé ÚNICAMENTE este JSON sin markdown:
 
         const scoreColor = (s) => s >= 75 ? '#00E5A0' : s >= 50 ? '#FFB400' : '#FF5C5C';
 
+        const CopyButton = ({ text }) => {
+          const [copied, setCopied] = useState(false);
+          return (
+            <button
+              onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+              style={{ padding: '2px 8px', background: copied ? 'var(--primary)' : 'transparent', border: '1px solid var(--border)', color: copied ? 'var(--bg)' : 'var(--text-muted)', borderRadius: '4px', cursor: 'pointer', fontSize: '10px', flexShrink: 0 }}
+            >
+              {copied ? 'Copiado' : 'Copiar'}
+            </button>
+          );
+        };
+
         const AsoScoreCard = ({ analisis, titulo }) => {
           if (!analisis) return null;
           return (
@@ -1201,6 +1218,48 @@ Devolvé ÚNICAMENTE este JSON sin markdown:
               {analisis.recomendacion_principal && (
                 <div style={{ backgroundColor: 'rgba(0,229,160,0.08)', border: '1px solid rgba(0,229,160,0.2)', borderRadius: '7px', padding: '10px', marginTop: '10px', color: 'var(--text)', fontSize: '12px', lineHeight: '1.5' }}>
                   <span style={{ color: 'var(--primary)', fontWeight: '600' }}>Prioridad: </span>{analisis.recomendacion_principal}
+                </div>
+              )}
+              {(analisis.titulo_sugerido || analisis.desc_corta_sugerida || analisis.keywords_sugeridas?.length > 0) && (
+                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Textos sugeridos</div>
+                  {analisis.titulo_sugerido && (
+                    <div style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px 10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                        <div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '10px', marginBottom: '2px' }}>Título</div>
+                          <div style={{ color: 'var(--text)', fontSize: '12px' }}>{analisis.titulo_sugerido}</div>
+                        </div>
+                        <CopyButton text={analisis.titulo_sugerido} />
+                      </div>
+                    </div>
+                  )}
+                  {analisis.desc_corta_sugerida && (
+                    <div style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px 10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '10px', marginBottom: '2px' }}>Descripción corta</div>
+                          <div style={{ color: 'var(--text)', fontSize: '12px' }}>{analisis.desc_corta_sugerida}</div>
+                        </div>
+                        <CopyButton text={analisis.desc_corta_sugerida} />
+                      </div>
+                    </div>
+                  )}
+                  {analisis.keywords_sugeridas?.length > 0 && (
+                    <div style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px 10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '10px', marginBottom: '4px' }}>Keywords</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                            {analisis.keywords_sugeridas.map(k => (
+                              <span key={k} style={{ backgroundColor: 'rgba(0,229,160,0.1)', color: 'var(--primary)', fontSize: '11px', padding: '2px 6px', borderRadius: '4px' }}>{k}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <CopyButton text={analisis.keywords_sugeridas.join(', ')} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1320,6 +1379,11 @@ Devolvé ÚNICAMENTE este JSON sin markdown:
                   <button onClick={() => handleAnalizarAso('mi_app')} disabled={asoLoading} style={{ marginTop: '12px', width: '100%', padding: '8px', background: 'var(--primary)', border: 'none', color: 'var(--bg)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', opacity: asoLoading ? 0.6 : 1 }}>
                     {asoLoading ? 'Analizando...' : 'Analizar ficha'}
                   </button>
+                  {app?.aso_analisis_updated_at && (
+                    <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '6px', textAlign: 'center' }}>
+                      Último análisis: {new Date(app.aso_analisis_updated_at).toLocaleDateString('es-ES')}
+                    </div>
+                  )}
                 </div>
                 {/* Competidor */}
                 <div style={{ flex: '1 1 260px', backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px' }}>

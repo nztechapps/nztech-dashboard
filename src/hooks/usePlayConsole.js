@@ -99,7 +99,7 @@ export function usePlayConsole() {
         reviews: totalReviews,
         rating: avgRating,
         installs: null,
-        revenue: null,
+        top_country: null,
       }
       setStats(result)
       return result

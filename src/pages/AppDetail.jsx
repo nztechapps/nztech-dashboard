@@ -132,6 +132,13 @@ export default function AppDetail() {
   const { isConnected: pcConnected, stats: pcStats, fetchStats: pcFetchStats, error: pcError } = usePlayConsole()
   const [pcSyncing, setPcSyncing] = useState(false)
 
+  useEffect(() => {
+    if (pcConnected && app?.package && activeTab === 'metricas') {
+      setPcSyncing(true)
+      pcFetchStats(app.package).finally(() => setPcSyncing(false))
+    }
+  }, [pcConnected, app?.package, activeTab])
+
   const [activeTab, setActiveTab] = useState('produccion');
   const [isMetricsFormOpen, setIsMetricsFormOpen] = useState(false);
   const [isMetricsSaving, setIsMetricsSaving] = useState(false);
@@ -297,7 +304,7 @@ export default function AppDetail() {
         <div>
           {/* Play Console */}
           <div style={{ marginBottom: '20px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: pcConnected ? '12px' : '0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <span style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600' }}>Google Play Console</span>
               {pcConnected && app?.package && (
                 <button
@@ -309,25 +316,40 @@ export default function AppDetail() {
                   disabled={pcSyncing}
                   style={{ padding: '7px 14px', background: 'var(--primary)', border: 'none', color: 'var(--bg)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', opacity: pcSyncing ? 0.6 : 1 }}
                 >
-                  {pcSyncing ? 'Sincronizando...' : 'Sincronizar desde Play Console'}
+                  {pcSyncing ? 'Sincronizando...' : 'Sincronizar'}
                 </button>
               )}
             </div>
             <PlayConsoleConnect />
             {pcError && <div style={{ color: '#FF5C5C', fontSize: '12px', marginTop: '8px' }}>{pcError}</div>}
-            {pcStats && (
+            {pcConnected && !app?.package && (
+              <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '12px', padding: '10px', backgroundColor: 'var(--bg)', borderRadius: '6px', border: '1px solid var(--border)' }}>
+                Agregá el package name en el tab Info para sincronizar
+              </div>
+            )}
+            {pcConnected && app?.package && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '14px' }}>
-                {[
-                  { label: 'Installs', value: pcStats.installs != null ? pcStats.installs.toLocaleString() : '—' },
-                  { label: 'Rating', value: pcStats.rating ?? '—' },
-                  { label: 'Reviews', value: pcStats.reviews != null ? pcStats.reviews.toLocaleString() : '—' },
-                  { label: 'Revenue est.', value: pcStats.revenue != null ? `$${pcStats.revenue}` : '—' },
-                ].map(({ label, value }) => (
-                  <div key={label} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px', textAlign: 'center' }}>
-                    <div style={{ color: '#00E5A0', fontFamily: 'var(--font-mono)', fontWeight: '700', fontSize: '16px', marginBottom: '4px' }}>{value}</div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
-                  </div>
-                ))}
+                {pcSyncing ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px', textAlign: 'center' }}>
+                      <div style={{ height: '20px', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '4px', marginBottom: '8px', animation: 'pulse 1.5s ease-in-out infinite' }} />
+                      <div style={{ height: '12px', width: '70%', margin: '0 auto', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: '4px' }} />
+                    </div>
+                  ))
+                ) : pcStats ? (
+                  [
+                    { icon: '📥', label: 'Installs activos', value: pcStats.installs != null ? pcStats.installs.toLocaleString() : '—' },
+                    { icon: '⭐', label: 'Rating', value: pcStats.rating != null ? `${pcStats.rating} / 5` : '—' },
+                    { icon: '💬', label: 'Reviews totales', value: pcStats.reviews != null ? pcStats.reviews.toLocaleString() : '—' },
+                    { icon: '🌍', label: 'Top país', value: pcStats.top_country ?? '—' },
+                  ].map(({ icon, label, value }) => (
+                    <div key={label} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '20px', marginBottom: '6px' }}>{icon}</div>
+                      <div style={{ color: '#00E5A0', fontFamily: 'var(--font-mono)', fontWeight: '700', fontSize: '16px', marginBottom: '4px' }}>{value}</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+                    </div>
+                  ))
+                ) : null}
               </div>
             )}
           </div>

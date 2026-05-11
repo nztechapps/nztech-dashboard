@@ -171,6 +171,7 @@ export default function AppDetail() {
   };
   const [snapshotForm, setSnapshotForm] = useState(emptySnapshot);
   const [isSnapshotSaving, setIsSnapshotSaving] = useState(false);
+  const [isCsvProcessing, setIsCsvProcessing] = useState(false);
 
   const handleSaveMetric = async (metricData) => {
     try {
@@ -309,12 +310,12 @@ export default function AppDetail() {
             const appId = match?.[2];
             const base = devId && appId ? `https://play.google.com/console/u/0/developers/${devId}/app/${appId}` : null;
             const links = base ? [
-              { label: 'Installs', url: `${base}/statistics`, icon: '📥' },
-              { label: 'Ratings & Reviews', url: `${base}/ratings`, icon: '⭐' },
-              { label: 'Crashes & ANR', url: `${base}/crashes`, icon: '💥' },
-              { label: 'Revenue', url: `${base}/monetization-overview`, icon: '💰' },
-              { label: 'Retención', url: `${base}/retention`, icon: '📊' },
-              { label: 'Countries', url: `${base}/statistics?metrics=STORE_LISTING_CONVERSION_RATE&dimension=COUNTRY`, icon: '🌍' },
+              { label: 'Usuarios activos', desc: 'Installs y usuarios activos', url: `${base}/statistics`, icon: '📥' },
+              { label: 'Adquisición', desc: 'De dónde vienen los installs', url: `${base}/reporting/acquisition/overview`, icon: '🎯' },
+              { label: 'Grow Overview', desc: 'Conversión y ficha de Play Store', url: `${base}/grow-overview`, icon: '📈' },
+              { label: 'Monitor', desc: 'Crashes, ANR y vitals', url: `${base}/monitor`, icon: '💥' },
+              { label: 'Ratings & Reviews', desc: 'Rating y reseñas de usuarios', url: `${base}/ratings`, icon: '⭐' },
+              { label: 'Monetización', desc: 'Revenue y AdMob', url: `${base}/monetization/monetization-overview`, icon: '💰' },
             ] : null;
 
             const snapshotFields = [
@@ -340,22 +341,23 @@ export default function AppDetail() {
                     <div style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', marginBottom: '14px' }}>Google Play Console</div>
                     {links ? (
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                        {links.map(({ label, url, icon }) => (
+                        {links.map(({ label, desc, url, icon }) => (
                           <a
                             key={label}
                             href={url}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{
-                              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
                               padding: '12px 8px', backgroundColor: 'var(--bg)', border: '1px solid var(--border)',
                               borderRadius: '8px', textDecoration: 'none', color: 'var(--text)',
                               fontSize: '12px', textAlign: 'center', transition: 'border-color 0.15s',
                             }}
                           >
                             <span style={{ fontSize: '20px' }}>{icon}</span>
-                            <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{label}</span>
-                            <span style={{ color: 'var(--primary)', fontSize: '11px', fontWeight: '600' }}>Abrir →</span>
+                            <span style={{ color: 'var(--text)', fontSize: '11px', fontWeight: '600' }}>{label}</span>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '10px', lineHeight: '1.3' }}>{desc}</span>
+                            <span style={{ color: 'var(--primary)', fontSize: '11px', fontWeight: '600', marginTop: '2px' }}>Abrir →</span>
                           </a>
                         ))}
                       </div>
@@ -368,7 +370,71 @@ export default function AppDetail() {
 
                   {/* Snapshot Form */}
                   <div style={{ flex: '1 1 320px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
-                    <div style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600', marginBottom: '14px' }}>Cargar snapshot</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                      <div style={{ color: 'var(--text)', fontSize: '14px', fontWeight: '600' }}>Cargar snapshot</div>
+                      <label style={{
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                        padding: '6px 12px', backgroundColor: 'rgba(0,229,160,0.1)', border: '1px solid rgba(0,229,160,0.3)',
+                        borderRadius: '6px', cursor: isCsvProcessing ? 'not-allowed' : 'pointer',
+                        color: 'var(--primary)', fontSize: '12px', fontWeight: '600',
+                        opacity: isCsvProcessing ? 0.6 : 1,
+                      }}>
+                        {isCsvProcessing ? 'Procesando...' : '📂 Importar CSV'}
+                        <input
+                          type="file"
+                          accept=".csv"
+                          style={{ display: 'none' }}
+                          disabled={isCsvProcessing}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            e.target.value = '';
+                            setIsCsvProcessing(true);
+                            try {
+                              const csvText = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => resolve(ev.target.result);
+                                reader.onerror = reject;
+                                reader.readAsText(file);
+                              });
+                              const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+                              const res = await fetch('https://api.anthropic.com/v1/messages', {
+                                method: 'POST',
+                                headers: {
+                                  'x-api-key': apiKey,
+                                  'anthropic-version': '2023-06-01',
+                                  'content-type': 'application/json',
+                                  'anthropic-dangerous-direct-browser-access': 'true',
+                                },
+                                body: JSON.stringify({
+                                  model: 'claude-haiku-4-5-20251001',
+                                  max_tokens: 512,
+                                  messages: [{
+                                    role: 'user',
+                                    content: `Analizá este CSV exportado de Google Play Console y extraé los datos más recientes disponibles.\n\nCSV:\n${csvText}\n\nDevolvé ÚNICAMENTE este JSON sin markdown:\n{"installs_activos": number | null, "installs_totales": number | null, "dau": number | null, "top_pais": string | null, "fecha": "YYYY-MM-DD"}\n\nSi el CSV tiene datos de retención, rating, revenue o crashes, incluílos también con sus keys correspondientes: retencion_dia1, retencion_dia7, rating, reviews_totales, crashes_semana, anr_rate, revenue_mes, ecpm_promedio.\nSolo incluí los campos que realmente estén en el CSV.`,
+                                  }],
+                                }),
+                              });
+                              const data = await res.json();
+                              const raw = data.content?.[0]?.text?.trim() ?? '{}';
+                              const parsed = JSON.parse(raw);
+                              setSnapshotForm(s => {
+                                const next = { ...s };
+                                Object.entries(parsed).forEach(([k, v]) => {
+                                  if (k in next && v != null) next[k] = String(v);
+                                });
+                                return next;
+                              });
+                              setToast({ message: 'CSV procesado — revisá los datos y guardá', type: 'success' });
+                            } catch {
+                              setToast({ message: 'Error al procesar CSV', type: 'error' });
+                            } finally {
+                              setIsCsvProcessing(false);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
                     <form onSubmit={async (e) => {
                       e.preventDefault();
                       try {

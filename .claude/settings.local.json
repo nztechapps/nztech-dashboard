@@ -25,7 +25,11 @@
       "Bash(npx vite *)",
       "Bash(npx tsc *)",
       "Bash(Write-Host \"Cache borrada\")",
-      "Bash(netlify deploy *)"
+      "Bash(netlify deploy *)",
+      "Bash(git push *)",
+      "PowerShell(Remove-Item *)",
+      "PowerShell(git *)",
+      "PowerShell(Get-ChildItem C:\\\\Users\\\\FedeN\\\\nztech-code\\\\nztech-dashboard -File | Where-Object { $_.Extension -in '.json','.jsonc','.toml','.yaml','.yml' } | Select-Object Name)"
     ]
   },
   "enableAllProjectMcpServers": true,

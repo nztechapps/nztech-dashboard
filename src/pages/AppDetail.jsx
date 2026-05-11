@@ -17,6 +17,7 @@ import { useVersionLog } from '../hooks/useVersionLog';
 import { useAppPostmortems } from '../hooks/useAppPostmortems';
 import PostMortemModal from '../components/ideas/PostMortemModal'
 import { useAppMetricsSnapshots } from '../hooks/useAppMetricsSnapshots';
+import { useAppExperimentos } from '../hooks/useAppExperimentos';
 
 const IconArrowLeft = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -129,6 +130,7 @@ export default function AppDetail() {
   );
 
   const { snapshots, createSnapshot } = useAppMetricsSnapshots(id);
+  const { experimentos, createExperimento, updateExperimento, deleteExperimento } = useAppExperimentos(id);
   const [activeTab, setActiveTab] = useState('produccion');
   const [isMetricsFormOpen, setIsMetricsFormOpen] = useState(false);
   const [isMetricsSaving, setIsMetricsSaving] = useState(false);
@@ -201,6 +203,23 @@ export default function AppDetail() {
     }
   };
 
+  // --- Estrategia state ---
+  const [planAccion, setPlanAccion] = useState(null);
+  const [planLoading, setPlanLoading] = useState(false);
+
+  const [asoMiApp, setAsoMiApp] = useState({ titulo: '', desc_corta: '', desc_larga: '', keywords: '', screenshots: '', video: false });
+  const [asoComp, setAsoComp] = useState({ nombre: '', package: '', titulo: '', desc_corta: '', desc_larga: '', keywords: '', screenshots: '', video: false });
+  const [asoAnalisis, setAsoAnalisis] = useState(null);
+  const [asoAnalisisComp, setAsoAnalisisComp] = useState(null);
+  const [asoLoading, setAsoLoading] = useState(false);
+
+  const [abElemento, setAbElemento] = useState('Título');
+  const [abVarianteA, setAbVarianteA] = useState('');
+  const [abContexto, setAbContexto] = useState('');
+  const [abResult, setAbResult] = useState(null);
+  const [abLoading, setAbLoading] = useState(false);
+  const [abSaving, setAbSaving] = useState(false);
+
   if (!app) {
     return (
       <div style={{ backgroundColor: 'var(--bg)', minHeight: '100%', padding: '24px' }}>
@@ -269,6 +288,7 @@ export default function AppDetail() {
           { key: 'versiones', label: 'Versiones' },
           { key: 'info', label: 'Info' },
           { key: 'postmortem', label: 'PostMortem' },
+          { key: 'estrategia', label: 'Estrategia' },
         ].map(({ key, label }) => (
           <button
             key={key}
@@ -1016,6 +1036,476 @@ export default function AppDetail() {
           )}
         </div>
       )}
+
+      {/* TAB: ESTRATEGIA */}
+      {activeTab === 'estrategia' && (() => {
+        const callClaude = async (prompt) => {
+          const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+          const res = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'x-api-key': apiKey,
+              'anthropic-version': '2023-06-01',
+              'content-type': 'application/json',
+              'anthropic-dangerous-direct-browser-access': 'true',
+            },
+            body: JSON.stringify({
+              model: 'claude-haiku-4-5-20251001',
+              max_tokens: 1024,
+              messages: [{ role: 'user', content: prompt }],
+            }),
+          });
+          const data = await res.json();
+          const raw = data.content?.[0]?.text?.trim() ?? '{}';
+          return JSON.parse(raw);
+        };
+
+        const latestSnapshot = snapshots[0];
+
+        const handleGenerarPlan = async () => {
+          if (!latestSnapshot) return;
+          setPlanLoading(true);
+          try {
+            const prompt = `Sos un experto en growth de apps móviles Android. Analizá estas métricas y generá un plan de acción priorizado.
+
+App: ${appNombre}
+Métricas más recientes:
+- Installs activos: ${latestSnapshot.installs_activos ?? 'N/A'}
+- Installs totales: ${latestSnapshot.installs_totales ?? 'N/A'}
+- Rating: ${latestSnapshot.rating ?? 'N/A'} (${latestSnapshot.reviews_totales ?? 'N/A'} reviews)
+- DAU: ${latestSnapshot.dau ?? 'N/A'}
+- Retención día 1: ${latestSnapshot.retencion_dia1 ?? 'N/A'}%
+- Retención día 7: ${latestSnapshot.retencion_dia7 ?? 'N/A'}%
+- Revenue mes: $${latestSnapshot.revenue_mes ?? 'N/A'}
+- Crashes última semana: ${latestSnapshot.crashes_semana ?? 'N/A'}
+- Top país: ${latestSnapshot.top_pais ?? 'N/A'}
+
+Devolvé ÚNICAMENTE este JSON sin markdown:
+{"resumen":"2-3 oraciones sobre el estado actual de la app","acciones":[{"prioridad":"urgente|esta_semana|proximo_mes","accion":"qué hacer exactamente","razon":"por qué es importante","metrica_objetivo":"qué número querés mover y a cuánto"}]}`;
+            const result = await callClaude(prompt);
+            setPlanAccion(result);
+            // persist in ideas.plan_accion
+            await updateIdea(id, { plan_accion: result });
+            setToast({ message: 'Plan generado y guardado', type: 'success' });
+          } catch {
+            setToast({ message: 'Error al generar plan', type: 'error' });
+          } finally {
+            setPlanLoading(false);
+          }
+        };
+
+        const handleAnalizarAso = async (tipo) => {
+          setAsoLoading(true);
+          try {
+            const datos = tipo === 'mi_app' ? asoMiApp : asoComp;
+            const nombre = tipo === 'mi_app' ? appNombre : (asoComp.nombre || 'Competidor');
+            const prompt = `Sos un experto en ASO para Google Play. Analizá esta ficha y devolvé un score detallado.
+
+App analizada: ${nombre}
+Título: ${datos.titulo}
+Descripción corta: ${datos.desc_corta}
+Descripción larga: ${datos.desc_larga}
+Keywords objetivo: ${datos.keywords}
+Screenshots: ${datos.screenshots}
+Video: ${datos.video ? 'sí' : 'no'}
+
+Devolvé ÚNICAMENTE este JSON sin markdown:
+{"score_total":0,"categorias":[{"nombre":"Título","score":0,"observacion":"","sugerencia":""},{"nombre":"Descripción corta","score":0,"observacion":"","sugerencia":""},{"nombre":"Descripción larga","score":0,"observacion":"","sugerencia":""},{"nombre":"Keywords","score":0,"observacion":"","sugerencia":""},{"nombre":"Assets visuales","score":0,"observacion":"","sugerencia":""}],"recomendacion_principal":""}`;
+            const result = await callClaude(prompt);
+            if (tipo === 'mi_app') setAsoAnalisis(result);
+            else setAsoAnalisisComp(result);
+            setToast({ message: 'Análisis completado', type: 'success' });
+          } catch {
+            setToast({ message: 'Error al analizar ficha', type: 'error' });
+          } finally {
+            setAsoLoading(false);
+          }
+        };
+
+        const handleGenerarAB = async () => {
+          setAbLoading(true);
+          try {
+            const prompt = `Sos un experto en CRO para apps móviles. Generá un test A/B para mejorar la conversión en Play Store.
+
+App: ${appNombre}
+Elemento a testear: ${abElemento}
+Variante A: ${abVarianteA}
+Contexto adicional: ${abContexto}
+
+Devolvé ÚNICAMENTE este JSON sin markdown:
+{"variante_a":{"descripcion":"","hipotesis":""},"variante_b":{"descripcion":"","hipotesis":""},"metrica_principal":"","duracion_sugerida":"","como_medir":""}`;
+            const result = await callClaude(prompt);
+            setAbResult(result);
+          } catch {
+            setToast({ message: 'Error al generar test A/B', type: 'error' });
+          } finally {
+            setAbLoading(false);
+          }
+        };
+
+        const handleGuardarExp = async () => {
+          if (!abResult) return;
+          setAbSaving(true);
+          try {
+            await createExperimento({
+              elemento: abElemento,
+              variante_a: abResult.variante_a?.descripcion,
+              variante_b: abResult.variante_b?.descripcion,
+              hipotesis: abResult.variante_b?.hipotesis,
+              metrica: abResult.metrica_principal,
+              duracion: abResult.duracion_sugerida,
+              resultado: 'en_curso',
+            });
+            setToast({ message: 'Experimento guardado', type: 'success' });
+            setAbResult(null);
+            setAbVarianteA('');
+            setAbContexto('');
+          } catch {
+            setToast({ message: 'Error al guardar experimento', type: 'error' });
+          } finally {
+            setAbSaving(false);
+          }
+        };
+
+        const prioridadConfig = {
+          urgente: { icon: '🔴', label: 'Urgente', color: '#FF5C5C' },
+          esta_semana: { icon: '🟡', label: 'Esta semana', color: '#FFB400' },
+          proximo_mes: { icon: '🟢', label: 'Próximo mes', color: '#00E5A0' },
+        };
+
+        const scoreColor = (s) => s >= 75 ? '#00E5A0' : s >= 50 ? '#FFB400' : '#FF5C5C';
+
+        const AsoScoreCard = ({ analisis, titulo }) => {
+          if (!analisis) return null;
+          return (
+            <div style={{ flex: '1 1 280px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <div style={{ color: 'var(--text)', fontSize: '13px', fontWeight: '600' }}>{titulo}</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '28px', fontWeight: '700', color: scoreColor(analisis.score_total) }}>{analisis.score_total}</div>
+              </div>
+              {analisis.categorias?.map(c => (
+                <div key={c.nombre} style={{ marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>{c.nombre}</span>
+                    <span style={{ color: scoreColor(c.score), fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: '600' }}>{c.score}</span>
+                  </div>
+                  <div style={{ height: '4px', backgroundColor: 'var(--border)', borderRadius: '2px' }}>
+                    <div style={{ height: '100%', width: `${c.score}%`, backgroundColor: scoreColor(c.score), borderRadius: '2px' }} />
+                  </div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '3px' }}>{c.observacion}</div>
+                  {c.sugerencia && <div style={{ color: 'var(--primary)', fontSize: '11px', marginTop: '2px' }}>→ {c.sugerencia}</div>}
+                </div>
+              ))}
+              {analisis.recomendacion_principal && (
+                <div style={{ backgroundColor: 'rgba(0,229,160,0.08)', border: '1px solid rgba(0,229,160,0.2)', borderRadius: '7px', padding: '10px', marginTop: '10px', color: 'var(--text)', fontSize: '12px', lineHeight: '1.5' }}>
+                  <span style={{ color: 'var(--primary)', fontWeight: '600' }}>Prioridad: </span>{analisis.recomendacion_principal}
+                </div>
+              )}
+            </div>
+          );
+        };
+
+        const inputStyle = { width: '100%', boxSizing: 'border-box', backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '8px 10px', color: 'var(--text)', fontSize: '12px' };
+        const labelStyle = { color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' };
+        const sectionStyle = { backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '20px', marginBottom: '20px' };
+
+        return (
+          <div>
+            {/* SECCIÓN 1: Plan de Acción IA */}
+            <div style={sectionStyle}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div>
+                  <div style={{ color: 'var(--text)', fontSize: '15px', fontWeight: '600' }}>Plan de Acción IA</div>
+                  {!latestSnapshot && <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '4px' }}>Necesitás un snapshot en Métricas para generar el plan</div>}
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {(planAccion || app.plan_accion) && (
+                    <button
+                      onClick={handleGenerarPlan}
+                      disabled={planLoading || !latestSnapshot}
+                      style={{ padding: '8px 14px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: '7px', cursor: 'pointer', fontSize: '12px', opacity: planLoading ? 0.6 : 1 }}
+                    >
+                      {planLoading ? 'Generando...' : 'Regenerar'}
+                    </button>
+                  )}
+                  <button
+                    onClick={handleGenerarPlan}
+                    disabled={planLoading || !latestSnapshot}
+                    style={{ padding: '8px 16px', background: 'var(--primary)', border: 'none', color: 'var(--bg)', borderRadius: '7px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', opacity: (planLoading || !latestSnapshot) ? 0.5 : 1 }}
+                  >
+                    {planLoading ? 'Generando...' : 'Generar Plan de Acción'}
+                  </button>
+                </div>
+              </div>
+
+              {(() => {
+                const plan = planAccion || app.plan_accion;
+                if (!plan) return null;
+                const grouped = { urgente: [], esta_semana: [], proximo_mes: [] };
+                plan.acciones?.forEach(a => { if (grouped[a.prioridad]) grouped[a.prioridad].push(a); });
+                return (
+                  <div>
+                    {plan.resumen && (
+                      <div style={{ backgroundColor: 'rgba(0,229,160,0.08)', border: '1px solid rgba(0,229,160,0.2)', borderRadius: '8px', padding: '14px', marginBottom: '16px', color: 'var(--text)', fontSize: '13px', lineHeight: '1.6' }}>
+                        {plan.resumen}
+                      </div>
+                    )}
+                    {Object.entries(grouped).map(([prio, acciones]) => {
+                      if (!acciones.length) return null;
+                      const cfg = prioridadConfig[prio];
+                      return (
+                        <div key={prio} style={{ marginBottom: '14px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                            <span>{cfg.icon}</span>
+                            <span style={{ color: cfg.color, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{cfg.label}</span>
+                          </div>
+                          {acciones.map((a, i) => (
+                            <details key={i} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '7px', padding: '12px', marginBottom: '6px' }}>
+                              <summary style={{ color: 'var(--text)', fontSize: '13px', fontWeight: '500', cursor: 'pointer', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span>{a.accion}</span>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>▼</span>
+                              </summary>
+                              <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}><span style={{ color: 'var(--text)', fontWeight: '500' }}>Por qué: </span>{a.razon}</div>
+                                <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}><span style={{ color: 'var(--primary)', fontWeight: '500' }}>Objetivo: </span>{a.metrica_objetivo}</div>
+                              </div>
+                            </details>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* SECCIÓN 2: Análisis de Ficha ASO */}
+            <div style={sectionStyle}>
+              <div style={{ color: 'var(--text)', fontSize: '15px', fontWeight: '600', marginBottom: '16px' }}>Análisis de Ficha ASO</div>
+              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                {/* Mi App */}
+                <div style={{ flex: '1 1 260px', backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px' }}>
+                  <div style={{ color: 'var(--text)', fontSize: '13px', fontWeight: '600', marginBottom: '12px' }}>Mi App</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                      { key: 'titulo', label: 'Título', max: 30 },
+                      { key: 'desc_corta', label: 'Descripción corta', max: 80 },
+                    ].map(({ key, label, max }) => (
+                      <div key={key}>
+                        <div style={labelStyle}>{label} <span style={{ color: asoMiApp[key].length > max ? '#FF5C5C' : 'var(--text-muted)' }}>{asoMiApp[key].length}/{max}</span></div>
+                        <input type="text" value={asoMiApp[key]} onChange={e => setAsoMiApp(s => ({ ...s, [key]: e.target.value }))} style={inputStyle} maxLength={max + 20} />
+                      </div>
+                    ))}
+                    <div>
+                      <div style={labelStyle}>Descripción larga <span style={{ color: asoMiApp.desc_larga.length > 4000 ? '#FF5C5C' : 'var(--text-muted)' }}>{asoMiApp.desc_larga.length}/4000</span></div>
+                      <textarea value={asoMiApp.desc_larga} onChange={e => setAsoMiApp(s => ({ ...s, desc_larga: e.target.value }))} style={{ ...inputStyle, minHeight: '70px', resize: 'vertical', fontFamily: 'inherit' }} />
+                    </div>
+                    <div>
+                      <div style={labelStyle}>Keywords (separadas por coma)</div>
+                      <input type="text" value={asoMiApp.keywords} onChange={e => setAsoMiApp(s => ({ ...s, keywords: e.target.value }))} style={inputStyle} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div>
+                        <div style={labelStyle}>Screenshots</div>
+                        <input type="number" min="0" max="8" value={asoMiApp.screenshots} onChange={e => setAsoMiApp(s => ({ ...s, screenshots: e.target.value }))} style={inputStyle} />
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingTop: '14px' }}>
+                        <input type="checkbox" id="video-mi" checked={asoMiApp.video} onChange={e => setAsoMiApp(s => ({ ...s, video: e.target.checked }))} />
+                        <label htmlFor="video-mi" style={{ color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer' }}>¿Tiene video?</label>
+                      </div>
+                    </div>
+                  </div>
+                  <button onClick={() => handleAnalizarAso('mi_app')} disabled={asoLoading} style={{ marginTop: '12px', width: '100%', padding: '8px', background: 'var(--primary)', border: 'none', color: 'var(--bg)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', opacity: asoLoading ? 0.6 : 1 }}>
+                    {asoLoading ? 'Analizando...' : 'Analizar ficha'}
+                  </button>
+                </div>
+                {/* Competidor */}
+                <div style={{ flex: '1 1 260px', backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px' }}>
+                  <div style={{ color: 'var(--text)', fontSize: '13px', fontWeight: '600', marginBottom: '12px' }}>Competidor</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                      { key: 'nombre', label: 'Nombre del competidor' },
+                      { key: 'package', label: 'Package name o URL' },
+                    ].map(({ key, label }) => (
+                      <div key={key}>
+                        <div style={labelStyle}>{label}</div>
+                        <input type="text" value={asoComp[key]} onChange={e => setAsoComp(s => ({ ...s, [key]: e.target.value }))} style={inputStyle} />
+                      </div>
+                    ))}
+                    {[
+                      { key: 'titulo', label: 'Título', max: 30 },
+                      { key: 'desc_corta', label: 'Descripción corta', max: 80 },
+                    ].map(({ key, label, max }) => (
+                      <div key={key}>
+                        <div style={labelStyle}>{label} <span style={{ color: asoComp[key].length > max ? '#FF5C5C' : 'var(--text-muted)' }}>{asoComp[key].length}/{max}</span></div>
+                        <input type="text" value={asoComp[key]} onChange={e => setAsoComp(s => ({ ...s, [key]: e.target.value }))} style={inputStyle} maxLength={max + 20} />
+                      </div>
+                    ))}
+                    <div>
+                      <div style={labelStyle}>Descripción larga <span style={{ color: asoComp.desc_larga.length > 4000 ? '#FF5C5C' : 'var(--text-muted)' }}>{asoComp.desc_larga.length}/4000</span></div>
+                      <textarea value={asoComp.desc_larga} onChange={e => setAsoComp(s => ({ ...s, desc_larga: e.target.value }))} style={{ ...inputStyle, minHeight: '70px', resize: 'vertical', fontFamily: 'inherit' }} />
+                    </div>
+                    <div>
+                      <div style={labelStyle}>Keywords</div>
+                      <input type="text" value={asoComp.keywords} onChange={e => setAsoComp(s => ({ ...s, keywords: e.target.value }))} style={inputStyle} />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div>
+                        <div style={labelStyle}>Screenshots</div>
+                        <input type="number" min="0" max="8" value={asoComp.screenshots} onChange={e => setAsoComp(s => ({ ...s, screenshots: e.target.value }))} style={inputStyle} />
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingTop: '14px' }}>
+                        <input type="checkbox" id="video-comp" checked={asoComp.video} onChange={e => setAsoComp(s => ({ ...s, video: e.target.checked }))} />
+                        <label htmlFor="video-comp" style={{ color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer' }}>¿Tiene video?</label>
+                      </div>
+                    </div>
+                  </div>
+                  <button onClick={() => handleAnalizarAso('competidor')} disabled={asoLoading} style={{ marginTop: '12px', width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', opacity: asoLoading ? 0.6 : 1 }}>
+                    {asoLoading ? 'Analizando...' : 'Analizar competidor'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Resultados ASO */}
+              {(asoAnalisis || asoAnalisisComp) && (
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '16px' }}>
+                  {asoAnalisis && <AsoScoreCard analisis={asoAnalisis} titulo={`Mi App — ${appNombre}`} />}
+                  {asoAnalisisComp && <AsoScoreCard analisis={asoAnalisisComp} titulo={`Competidor — ${asoComp.nombre || 'Competidor'}`} />}
+                </div>
+              )}
+            </div>
+
+            {/* SECCIÓN 3: Generador de Test A/B */}
+            <div style={sectionStyle}>
+              <div style={{ color: 'var(--text)', fontSize: '15px', fontWeight: '600', marginBottom: '16px' }}>Generador de Test A/B</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <div style={labelStyle}>Elemento a testear</div>
+                  <select value={abElemento} onChange={e => setAbElemento(e.target.value)} style={{ ...inputStyle }}>
+                    {['Ícono', 'Título', 'Descripción corta', 'Screenshots', 'Feature graphic'].map(o => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <div style={labelStyle}>{['Ícono', 'Screenshots', 'Feature graphic'].includes(abElemento) ? 'Concepto visual Variante A' : 'Variante A (texto actual)'}</div>
+                  <input type="text" value={abVarianteA} onChange={e => setAbVarianteA(e.target.value)} placeholder={['Ícono', 'Screenshots', 'Feature graphic'].includes(abElemento) ? 'Describe el concepto visual...' : 'Texto actual...'} style={inputStyle} />
+                </div>
+              </div>
+              <div style={{ marginBottom: '14px' }}>
+                <div style={labelStyle}>Contexto adicional (opcional)</div>
+                <input type="text" value={abContexto} onChange={e => setAbContexto(e.target.value)} placeholder="Público objetivo, tono, estilo..." style={inputStyle} />
+              </div>
+              <button onClick={handleGenerarAB} disabled={abLoading || !abVarianteA.trim()} style={{ padding: '9px 18px', background: 'var(--primary)', border: 'none', color: 'var(--bg)', borderRadius: '7px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', opacity: (abLoading || !abVarianteA.trim()) ? 0.5 : 1 }}>
+                {abLoading ? 'Generando...' : 'Generar Test A/B'}
+              </button>
+
+              {abResult && (
+                <div style={{ marginTop: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                    {[{ label: 'Variante A', data: abResult.variante_a }, { label: 'Variante B', data: abResult.variante_b }].map(({ label, data }) => (
+                      <div key={label} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px' }}>
+                        <div style={{ color: 'var(--primary)', fontSize: '12px', fontWeight: '700', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+                        <div style={{ color: 'var(--text)', fontSize: '13px', marginBottom: '8px', lineHeight: '1.5' }}>{data?.descripcion}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '11px', fontStyle: 'italic', lineHeight: '1.5' }}>{data?.hipotesis}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '14px' }}>
+                    {[
+                      { label: 'Métrica principal', value: abResult.metrica_principal },
+                      { label: 'Duración sugerida', value: abResult.duracion_sugerida },
+                      { label: 'Cómo medir', value: abResult.como_medir },
+                    ].map(({ label, value }) => value ? (
+                      <div key={label} style={{ flex: '1 1 160px', backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '7px', padding: '10px' }}>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{label}</div>
+                        <div style={{ color: 'var(--text)', fontSize: '12px' }}>{value}</div>
+                      </div>
+                    ) : null)}
+                  </div>
+                  <button onClick={handleGuardarExp} disabled={abSaving} style={{ padding: '9px 18px', background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', borderRadius: '7px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', opacity: abSaving ? 0.6 : 1 }}>
+                    {abSaving ? 'Guardando...' : 'Guardar experimento'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* SECCIÓN 4: Historial de experimentos */}
+            <div style={sectionStyle}>
+              <div style={{ color: 'var(--text)', fontSize: '15px', fontWeight: '600', marginBottom: '16px' }}>Historial de experimentos</div>
+              {experimentos.length === 0 ? (
+                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '30px', backgroundColor: 'var(--bg)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                  No hay experimentos registrados
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                        {['Elemento', 'Variante A', 'Variante B', 'Estado', 'Aprendizaje', ''].map(h => (
+                          <th key={h} style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: '500', whiteSpace: 'nowrap' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {experimentos.map((exp, i) => {
+                        const estadoOpts = ['en_curso', 'ganó_a', 'ganó_b', 'sin_diferencia'];
+                        const estadoColor = { en_curso: '#FFB400', 'ganó_a': '#00E5A0', 'ganó_b': '#00E5A0', sin_diferencia: '#888' };
+                        return (
+                          <tr key={exp.id} style={{ backgroundColor: i % 2 === 0 ? 'var(--bg)' : 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
+                            <td style={{ padding: '10px 12px', color: 'var(--text)', fontWeight: '500', whiteSpace: 'nowrap' }}>{exp.elemento}</td>
+                            <td style={{ padding: '10px 12px', color: 'var(--text-muted)', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={exp.variante_a}>{exp.variante_a || '—'}</td>
+                            <td style={{ padding: '10px 12px', color: 'var(--text-muted)', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={exp.variante_b}>{exp.variante_b || '—'}</td>
+                            <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
+                              <select
+                                value={exp.resultado}
+                                onChange={async (e) => {
+                                  try { await updateExperimento(exp.id, { resultado: e.target.value }); }
+                                  catch { setToast({ message: 'Error al actualizar estado', type: 'error' }); }
+                                }}
+                                style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '5px', padding: '4px 8px', color: estadoColor[exp.resultado] || 'var(--text)', fontSize: '11px', cursor: 'pointer' }}
+                              >
+                                {estadoOpts.map(o => <option key={o} value={o}>{o.replace('_', ' ')}</option>)}
+                              </select>
+                            </td>
+                            <td style={{ padding: '10px 12px', minWidth: '180px' }}>
+                              <input
+                                type="text"
+                                defaultValue={exp.aprendizaje || ''}
+                                placeholder="Anotá el aprendizaje..."
+                                onBlur={async (e) => {
+                                  if (e.target.value !== (exp.aprendizaje || '')) {
+                                    try { await updateExperimento(exp.id, { aprendizaje: e.target.value }); }
+                                    catch { setToast({ message: 'Error al guardar aprendizaje', type: 'error' }); }
+                                  }
+                                }}
+                                style={{ width: '100%', boxSizing: 'border-box', backgroundColor: 'transparent', border: '1px solid transparent', borderRadius: '4px', padding: '4px 6px', color: 'var(--text)', fontSize: '11px', outline: 'none' }}
+                                onFocus={e => e.target.style.borderColor = 'var(--border)'}
+                                onBlurCapture={e => e.target.style.borderColor = 'transparent'}
+                              />
+                            </td>
+                            <td style={{ padding: '10px 12px' }}>
+                              <button
+                                onClick={async () => {
+                                  try { await deleteExperimento(exp.id); setToast({ message: 'Experimento eliminado', type: 'success' }); }
+                                  catch { setToast({ message: 'Error al eliminar', type: 'error' }); }
+                                }}
+                                style={{ background: 'none', border: 'none', color: 'var(--nz-danger)', cursor: 'pointer' }}
+                              >
+                                <IconTrash />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* PostMortem Modal */}
       {isPostMortemModalOpen && (

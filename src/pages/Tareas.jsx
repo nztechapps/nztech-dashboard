@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useTareas } from '../hooks/useTareas'
 import { supabase } from '../lib/supabase'
 
@@ -565,6 +565,7 @@ function TareaGridCard({ tarea, bloqueName, bloqueColor, onOpenDetail }) {
 function BloqueSection({
   bloque, tareas, idx, esBloqueActivo, readonly, viewMode,
   onUpdateEstado, onToggleFlag, onUpdateNotas, onDelete, onAddTarea, onArchivar, onOpenDetail, onReorder,
+  bloqueDragHandlers, isDragOver,
 }) {
   const [collapsed, setCollapsed] = useState(false)
   const [showForm, setShowForm] = useState(false)
@@ -593,7 +594,8 @@ function BloqueSection({
     setShowForm(false)
   }
 
-  const badge = bloque.nombre.trim()[0]?.toUpperCase() || String(idx + 1)
+  const badgeMatch = bloque.nombre.match(/bloque\s+([^\s—–\-]+)/i)
+  const badge = badgeMatch ? badgeMatch[1].toUpperCase() : (bloque.nombre.trim()[0]?.toUpperCase() || String(idx + 1))
 
   const borderColor = readonly
     ? 'var(--border)'
@@ -635,37 +637,57 @@ function BloqueSection({
   })
 
   return (
-    <div style={{
-      background: 'var(--surface)',
-      border: `1px solid ${borderColor}`,
-      borderRadius: '14px', overflow: 'hidden',
-      opacity: readonly ? 0.75 : 1,
-      transition: 'opacity 0.2s',
-    }}>
+    <div
+      draggable={!!bloqueDragHandlers}
+      onDragStart={bloqueDragHandlers?.onDragStart}
+      onDragOver={bloqueDragHandlers?.onDragOver}
+      onDrop={bloqueDragHandlers?.onDrop}
+      onDragEnd={bloqueDragHandlers?.onDragEnd}
+      style={{
+        background: 'var(--surface)',
+        border: `1px solid ${isDragOver ? 'var(--primary)' : borderColor}`,
+        borderRadius: '14px', overflow: 'hidden',
+        opacity: readonly ? 0.75 : 1,
+        transition: 'opacity 0.2s, border-color 0.15s',
+      }}
+    >
       {/* Header */}
       <div
         style={{
-          padding: '16px 20px',
+          padding: '10px 14px',
           borderBottom: collapsed ? 'none' : '1px solid var(--border)',
           cursor: 'pointer',
         }}
         onClick={() => setCollapsed((c) => !c)}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {bloqueDragHandlers && (
+            <span
+              onMouseDown={(e) => e.stopPropagation()}
+              style={{
+                color: 'var(--text-subtle)', fontSize: '13px', cursor: 'grab',
+                padding: '0 2px', flexShrink: 0, lineHeight: 1, userSelect: 'none',
+                letterSpacing: '-1px',
+              }}
+              title="Arrastrar bloque"
+            >
+              ⋮⋮
+            </span>
+          )}
           <div style={{
-            width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+            width: '28px', height: '28px', borderRadius: '7px', flexShrink: 0,
             backgroundColor: `color-mix(in oklch, ${readonly ? 'var(--text-subtle)' : bloque.color} 15%, transparent)`,
             border: `1px solid color-mix(in oklch, ${readonly ? 'var(--text-subtle)' : bloque.color} 30%, transparent)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: readonly ? 'var(--text-subtle)' : bloque.color,
-            fontWeight: '700', fontSize: '14px',
+            fontWeight: '700', fontSize: '13px',
           }}>
             {badge}
           </div>
 
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="flex items-center gap-2 flex-wrap">
-              <span style={{ color: readonly ? 'var(--text-subtle)' : 'var(--text)', fontWeight: '600', fontSize: '15px' }}>
+              <span style={{ color: readonly ? 'var(--text-subtle)' : 'var(--text)', fontWeight: '600', fontSize: '13px' }}>
                 {bloque.nombre}
               </span>
               {readonly && (
@@ -675,14 +697,14 @@ function BloqueSection({
               )}
             </div>
             <div className="flex items-center gap-2 mt-1">
-              <div style={{ flex: 1, height: '4px', backgroundColor: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
+              <div style={{ flex: 1, height: '3px', backgroundColor: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
                 <div style={{
                   width: `${progreso}%`, height: '100%',
                   backgroundColor: readonly ? 'var(--text-subtle)' : bloque.color,
                   borderRadius: '2px', transition: 'width 0.4s ease',
                 }} />
               </div>
-              <span style={{ color: 'var(--text-subtle)', fontSize: '12px', whiteSpace: 'nowrap' }}>
+              <span style={{ color: 'var(--text-subtle)', fontSize: '11px', whiteSpace: 'nowrap' }}>
                 {completadas}/{total} · {progreso}%
               </span>
             </div>
@@ -828,11 +850,13 @@ function BloqueSection({
 
 // ---- Main page ----
 export default function Tareas() {
-  const { tareas, bloques, loading, error, addBloque, archivarBloque, updateTarea, addTarea, deleteTarea, importTareas, refetch } = useTareas()
+  const { tareas, bloques, loading, error, addBloque, archivarBloque, updateTarea, addTarea, deleteTarea, importTareas, reorderBloques, refetch } = useTareas()
   const [showArchivar, setShowArchivar] = useState(false)
   const [showNuevoBloque, setShowNuevoBloque] = useState(false)
   const [viewMode, setViewMode] = useState('list')
   const [selectedTarea, setSelectedTarea] = useState(null)
+  const bloqueDragRef = useRef(null)
+  const [bloqueDragOver, setBloqueDragOver] = useState(null)
 
   const handleUpdateEstado = async (id, estado) => {
     try { await updateTarea(id, { estado }) } catch (e) { console.error(e) }
@@ -868,6 +892,37 @@ export default function Tareas() {
       await Promise.all(reorderedTareas.map(t => updateTarea(t.id, { orden: t.orden })))
     } catch (e) { console.error(e) }
   }
+
+  const makeBloqueDragHandlers = (bloque) => ({
+    onDragStart: (e) => {
+      bloqueDragRef.current = bloque.id
+      e.dataTransfer.effectAllowed = 'move'
+    },
+    onDragOver: (e) => {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+      if (bloqueDragRef.current !== bloque.id) setBloqueDragOver(bloque.id)
+    },
+    onDrop: (e) => {
+      e.preventDefault()
+      const fromId = bloqueDragRef.current
+      if (!fromId || fromId === bloque.id) { setBloqueDragOver(null); return }
+      const sorted = bloques.filter((b) => !b.archivado).sort((a, b) => a.orden - b.orden)
+      const fromIdx = sorted.findIndex((b) => b.id === fromId)
+      const toIdx = sorted.findIndex((b) => b.id === bloque.id)
+      if (fromIdx === -1 || toIdx === -1) { setBloqueDragOver(null); return }
+      const reordered = [...sorted]
+      const [moved] = reordered.splice(fromIdx, 1)
+      reordered.splice(toIdx, 0, moved)
+      reorderBloques(reordered.map((b, i) => ({ ...b, orden: i })))
+      bloqueDragRef.current = null
+      setBloqueDragOver(null)
+    },
+    onDragEnd: () => {
+      bloqueDragRef.current = null
+      setBloqueDragOver(null)
+    },
+  })
 
   const bloquesActivos = bloques.filter((b) => !b.archivado).sort((a, b) => a.orden - b.orden)
   const bloquesArchivados = bloques.filter((b) => b.archivado).sort((a, b) => a.orden - b.orden)
@@ -1071,6 +1126,8 @@ export default function Tareas() {
             onArchivar={handleArchivar}
             onOpenDetail={setSelectedTarea}
             onReorder={handleReorder}
+            bloqueDragHandlers={makeBloqueDragHandlers(bloque)}
+            isDragOver={bloqueDragOver === bloque.id}
           />
         ))}
       </div>

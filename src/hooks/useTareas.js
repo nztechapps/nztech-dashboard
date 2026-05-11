@@ -91,6 +91,18 @@ export function useTareas() {
     return data
   }
 
+  const reorderBloques = async (reordered) => {
+    setBloques((prev) => {
+      const map = Object.fromEntries(reordered.map((b) => [b.id, b.orden]))
+      return prev.map((b) => (map[b.id] !== undefined ? { ...b, orden: map[b.id] } : b))
+    })
+    await Promise.all(
+      reordered.map((b) =>
+        supabase.from('bloques_tareas').update({ orden: b.orden }).eq('id', b.id)
+      )
+    )
+  }
+
   return {
     tareas,
     bloques,
@@ -102,6 +114,7 @@ export function useTareas() {
     addTarea,
     deleteTarea,
     importTareas,
+    reorderBloques,
     refetch: fetchAll,
   }
 }

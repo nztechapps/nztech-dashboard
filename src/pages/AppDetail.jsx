@@ -1051,13 +1051,15 @@ export default function AppDetail() {
             },
             body: JSON.stringify({
               model: 'claude-haiku-4-5-20251001',
-              max_tokens: 1024,
+              max_tokens: 2000,
               messages: [{ role: 'user', content: prompt }],
             }),
           });
           const data = await res.json();
+          if (data.error) throw new Error(data.error.message);
           const raw = data.content?.[0]?.text?.trim() ?? '{}';
-          return JSON.parse(raw);
+          const clean = raw.replace(/```json|```/g, '').trim();
+          return JSON.parse(clean);
         };
 
         const latestSnapshot = snapshots[0];

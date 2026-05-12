@@ -5,6 +5,7 @@ import { useAgentInbox } from '../hooks/useAgentInbox';
 import ToastNotification from '../components/ui/ToastNotification';
 
 const N8N_BASE_URL = import.meta.env.VITE_N8N_URL || 'http://localhost:5678';
+const N8N_WEBHOOK_PATH = import.meta.env.VITE_N8N_WEBHOOK_PATH || 'webhook-test';
 
 const AGENTS = [
   {
@@ -12,7 +13,7 @@ const AGENTS = [
     name: 'Agente Legal',
     description: 'Genera política de privacidad y textos legales para Play Store',
     status: 'activo',
-    webhook: '/.netlify/functions/run-legal-agent',
+    webhook: `${N8N_BASE_URL}/${N8N_WEBHOOK_PATH}/agente-legal`,
     icon: 'shield',
   },
   {
@@ -301,10 +302,13 @@ function LegalAgentPanel({ agent, allItems, onSubmit, isLoading, recentExecution
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedItem || !descripcion.trim()) return;
+    const isIdea = selectedItem.source === 'idea';
     await onSubmit({
-      app_id: selectedItem.id,
+      app_id: isIdea ? null : selectedItem.id,
+      idea_id: isIdea ? selectedItem.id : null,
       app_name: selectedItem.name,
       package_name: selectedItem.package_name || '',
+      descripcion_app: selectedItem.descripcion || '',
       descripcion,
       source: selectedItem.source,
     });

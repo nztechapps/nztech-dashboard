@@ -12,7 +12,7 @@ const AGENTS = [
     name: 'Agente Legal',
     description: 'Genera política de privacidad y textos legales para Play Store',
     status: 'activo',
-    webhook: `${N8N_BASE_URL}/webhook/agente-legal`,
+    webhook: '/.netlify/functions/run-legal-agent',
     icon: 'shield',
   },
   {

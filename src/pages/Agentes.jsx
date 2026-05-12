@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useApps } from '../hooks/useApps';
+import { useIdeas } from '../hooks/useIdeas';
 import { useAgentInbox } from '../hooks/useAgentInbox';
 import ToastNotification from '../components/ui/ToastNotification';
 
@@ -184,23 +185,131 @@ function AgentCard({ agent, isSelected, onSelect }) {
   );
 }
 
-function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions }) {
-  const [formData, setFormData] = useState({
-    app_id: '',
-    descripcion: '',
-  });
+function AppIdeaAutocomplete({ items, selectedItem, onSelect }) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef(null);
 
-  const selectedApp = apps.find((a) => a.id === formData.app_id);
+  const filtered = query.length === 0
+    ? items
+    : items.filter((i) => i.label.toLowerCase().includes(query.toLowerCase()));
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const handleSelect = (item) => {
+    onSelect(item);
+    setQuery(item.label);
+    setOpen(false);
+  };
+
+  const handleInputChange = (e) => {
+    setQuery(e.target.value);
+    setOpen(true);
+    if (!e.target.value) onSelect(null);
+  };
+
+  return (
+    <div ref={wrapperRef} style={{ position: 'relative' }}>
+      <input
+        type="text"
+        value={query}
+        onChange={handleInputChange}
+        onFocus={() => setOpen(true)}
+        placeholder="Buscar app o idea..."
+        autoComplete="off"
+        style={{
+          width: '100%',
+          backgroundColor: 'var(--bg)',
+          border: '1px solid var(--border)',
+          borderRadius: '6px',
+          padding: '10px 12px',
+          color: 'var(--text)',
+          fontSize: '13px',
+          boxSizing: 'border-box',
+          outline: 'none',
+        }}
+      />
+      {open && filtered.length > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            zIndex: 100,
+            backgroundColor: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: '6px',
+            marginTop: '4px',
+            maxHeight: '200px',
+            overflowY: 'auto',
+          }}
+        >
+          {filtered.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              onMouseDown={() => handleSelect(item)}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 12px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                textAlign: 'left',
+                color: 'var(--text)',
+                fontSize: '13px',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+            >
+              <span
+                style={{
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  marginRight: '6px',
+                  padding: '2px 5px',
+                  borderRadius: '3px',
+                  backgroundColor: item.source === 'app' ? 'rgba(0,229,160,0.15)' : 'rgba(100,100,255,0.15)',
+                  color: item.source === 'app' ? 'var(--primary)' : '#8888ff',
+                }}
+              >
+                {item.source === 'app' ? 'App' : 'Idea'}
+              </span>
+              {item.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LegalAgentPanel({ agent, allItems, onSubmit, isLoading, recentExecutions }) {
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [descripcion, setDescripcion] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.app_id.trim() || !formData.descripcion.trim()) return;
+    if (!selectedItem || !descripcion.trim()) return;
     await onSubmit({
-      app_id: formData.app_id,
-      package_name: selectedApp?.package_name || '',
-      descripcion: formData.descripcion,
+      app_id: selectedItem.id,
+      app_name: selectedItem.name,
+      package_name: selectedItem.package_name || '',
+      descripcion,
+      source: selectedItem.source,
     });
-    setFormData({ app_id: '', descripcion: '' });
+    setSelectedItem(null);
+    setDescripcion('');
   };
 
   return (
@@ -249,40 +358,23 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div>
           <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
-            App *
+            App o Idea *
           </label>
-          <select
-            value={formData.app_id}
-            onChange={(e) => setFormData({ ...formData, app_id: e.target.value })}
-            required
-            style={{
-              width: '100%',
-              backgroundColor: 'var(--bg)',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              padding: '10px 12px',
-              color: 'var(--text)',
-              fontSize: '13px',
-              boxSizing: 'border-box',
-            }}
-          >
-            <option value="">Seleccionar app...</option>
-            {apps.map((app) => (
-              <option key={app.id} value={app.id}>
-                {app.nombre || app.name}
-              </option>
-            ))}
-          </select>
+          <AppIdeaAutocomplete
+            items={allItems}
+            selectedItem={selectedItem}
+            onSelect={setSelectedItem}
+          />
         </div>
 
-        {selectedApp && (
+        {selectedItem?.package_name && (
           <div>
             <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '11px', marginBottom: '6px', fontWeight: '500' }}>
               Package
             </label>
             <input
               type="text"
-              value={selectedApp.package_name || ''}
+              value={selectedItem.package_name}
               disabled
               style={{
                 width: '100%',
@@ -303,8 +395,8 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
             Descripción del problema o solicitud *
           </label>
           <textarea
-            value={formData.descripcion}
-            onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+            value={descripcion}
+            onChange={(e) => setDescripcion(e.target.value)}
             placeholder="Describe qué necesitas..."
             required
             style={{
@@ -325,10 +417,10 @@ function LegalAgentPanel({ agent, apps, onSubmit, isLoading, recentExecutions })
 
         <button
           type="submit"
-          disabled={isLoading || !formData.app_id || !formData.descripcion}
+          disabled={isLoading || !selectedItem || !descripcion}
           style={{
             padding: '10px 16px',
-            backgroundColor: isLoading || !formData.app_id || !formData.descripcion ? '#999' : '#00E5A0',
+            backgroundColor: isLoading || !selectedItem || !descripcion ? '#999' : '#00E5A0',
             border: 'none',
             color: 'var(--bg)',
             borderRadius: '6px',
@@ -567,7 +659,29 @@ function InboxSection() {
 
 export default function Agentes() {
   const { apps } = useApps();
+  const { ideas } = useIdeas();
   const { items } = useAgentInbox();
+
+  const allItems = [
+    ...(apps || []).map((a) => ({
+      key: `app-${a.id}`,
+      id: a.id,
+      source: 'app',
+      name: a.nombre || a.name,
+      label: `[App] ${a.nombre || a.name}`,
+      package_name: a.package_name || '',
+      descripcion: a.descripcion || '',
+    })),
+    ...(ideas || []).map((i) => ({
+      key: `idea-${i.id}`,
+      id: i.id,
+      source: 'idea',
+      name: i.nombre || i.name,
+      label: `[Idea] ${i.nombre || i.name}`,
+      package_name: i.package_name || '',
+      descripcion: i.descripcion || '',
+    })),
+  ];
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState(null);
@@ -636,7 +750,7 @@ export default function Agentes() {
             }}
           >
             {selectedAgent ? (
-              <LegalAgentPanel agent={selectedAgent} apps={apps} onSubmit={handleExecuteAgent} isLoading={isLoading} recentExecutions={recentExecutions} />
+              <LegalAgentPanel agent={selectedAgent} allItems={allItems} onSubmit={handleExecuteAgent} isLoading={isLoading} recentExecutions={recentExecutions} />
             ) : (
               <EmptyState />
             )}

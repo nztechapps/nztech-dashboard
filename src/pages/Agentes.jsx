@@ -6,6 +6,7 @@ import ToastNotification from '../components/ui/ToastNotification';
 
 const N8N_BASE_URL = import.meta.env.VITE_N8N_URL || 'http://localhost:5678';
 const N8N_WEBHOOK_PATH = import.meta.env.VITE_N8N_WEBHOOK_PATH || 'webhook-test';
+const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 const AGENTS = [
   {
@@ -13,8 +14,20 @@ const AGENTS = [
     name: 'Agente Legal',
     description: 'Genera política de privacidad y textos legales para Play Store',
     status: 'activo',
-    webhook: `${N8N_BASE_URL}/${N8N_WEBHOOK_PATH}/agente-legal`,
+    webhook: IS_LOCAL
+      ? `${N8N_BASE_URL}/${N8N_WEBHOOK_PATH}/agente-legal`
+      : '/run-legal-agent',
     icon: 'shield',
+  },
+  {
+    id: 'validator',
+    name: 'Validar idea',
+    description: 'Evalúa una idea de app con 6 criterios específicos de NZTech y da un score de viabilidad',
+    status: 'activo',
+    webhook: IS_LOCAL
+      ? `${N8N_BASE_URL}/${N8N_WEBHOOK_PATH}/agente-validador`
+      : '/run-validator-agent',
+    icon: 'star',
   },
   {
     id: 'research',
@@ -85,6 +98,12 @@ const IconRefresh = () => (
   </svg>
 );
 
+const IconStar = () => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+  </svg>
+);
+
 const IconChevronDown = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <polyline points="6 9 12 15 18 9"></polyline>
@@ -110,6 +129,8 @@ const getAgentIcon = (iconName) => {
       return <IconPlay />;
     case 'refresh':
       return <IconRefresh />;
+    case 'star':
+      return <IconStar />;
     default:
       return null;
   }
@@ -482,6 +503,226 @@ function LegalAgentPanel({ agent, allItems, onSubmit, isLoading, recentExecution
   );
 }
 
+const RECOMENDACION_COLOR = {
+  publicar: '#00E5A0',
+  esperar: '#FFB400',
+  descartar: '#FF4D4F',
+};
+
+function ValidatorAgentPanel({ agent }) {
+  const { ideas } = useIdeas();
+  const [selectedIdea, setSelectedIdea] = useState(null);
+  const [form, setForm] = useState({ titulo: '', descripcion: '', mercado: '', categoria: '' });
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const wrapperRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+
+  const filtered = query.length === 0
+    ? ideas
+    : ideas.filter((i) => i.titulo?.toLowerCase().includes(query.toLowerCase()));
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const handleSelectIdea = (idea) => {
+    setSelectedIdea(idea);
+    setQuery(idea.titulo || '');
+    setOpen(false);
+    setForm({
+      titulo: idea.titulo || '',
+      descripcion: idea.descripcion || '',
+      mercado: idea.mercado || '',
+      categoria: idea.categoria || '',
+    });
+    setResult(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.titulo.trim()) return;
+    try {
+      setIsLoading(true);
+      setError(null);
+      setResult(null);
+      const response = await fetch(agent.webhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const text = await response.text();
+      if (!response.ok) throw new Error(`Error ${response.status}: ${text || response.statusText}`);
+      if (!text || !text.trim()) throw new Error('El agente no devolvió ninguna respuesta. Revisá que el workflow de n8n esté activo y retorne datos.');
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Respuesta inválida del agente: ${text.slice(0, 200)}`);
+      }
+      setResult(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const inputStyle = {
+    width: '100%',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--border)',
+    borderRadius: '6px',
+    padding: '10px 12px',
+    color: 'var(--text)',
+    fontSize: '13px',
+    boxSizing: 'border-box',
+    outline: 'none',
+  };
+
+  const labelStyle = {
+    display: 'block',
+    color: 'var(--text-muted)',
+    fontSize: '11px',
+    marginBottom: '6px',
+    fontWeight: '500',
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+          <div style={{ color: 'var(--primary)' }}>{getAgentIcon(agent.icon)}</div>
+          <h2 style={{ color: 'var(--text)', margin: 0, fontSize: '18px', fontWeight: '600' }}>{agent.name}</h2>
+        </div>
+        <span style={{ backgroundColor: 'rgba(0,229,160,0.12)', color: 'var(--primary)', fontSize: '11px', fontWeight: '600', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
+          {agent.status}
+        </span>
+        <p style={{ color: 'var(--text-muted)', margin: '12px 0 0 0', fontSize: '13px' }}>{agent.description}</p>
+      </div>
+
+      <div style={{ borderTop: '1px solid var(--border)' }} />
+
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {/* Idea autocomplete */}
+        <div>
+          <label style={labelStyle}>Idea del portfolio (opcional)</label>
+          <div ref={wrapperRef} style={{ position: 'relative' }}>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+              onFocus={() => setOpen(true)}
+              placeholder="Buscar idea guardada..."
+              autoComplete="off"
+              style={inputStyle}
+            />
+            {open && filtered.length > 0 && (
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '6px', marginTop: '4px', maxHeight: '180px', overflowY: 'auto' }}>
+                {filtered.map((idea) => (
+                  <button
+                    key={idea.id}
+                    type="button"
+                    onMouseDown={() => handleSelectIdea(idea)}
+                    style={{ display: 'block', width: '100%', padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', color: 'var(--text)', fontSize: '13px' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                  >
+                    {idea.titulo}
+                    {idea.categoria && <span style={{ marginLeft: '6px', fontSize: '10px', color: 'var(--text-muted)' }}>{idea.categoria}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <label style={labelStyle}>Título de la idea *</label>
+          <input type="text" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder="ej. Calculadora de propinas" required style={inputStyle} />
+        </div>
+        <div>
+          <label style={labelStyle}>Descripción</label>
+          <textarea value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} placeholder="Describe qué hace la app..." style={{ ...inputStyle, minHeight: '80px', fontFamily: 'var(--font-mono)', resize: 'vertical' }} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div>
+            <label style={labelStyle}>Mercado</label>
+            <input type="text" value={form.mercado} onChange={(e) => setForm({ ...form, mercado: e.target.value })} placeholder="ej. Global, LATAM" style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Categoría</label>
+            <input type="text" value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} placeholder="ej. Utilities, Finance" style={inputStyle} />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isLoading || !form.titulo.trim()}
+          style={{ padding: '10px 16px', backgroundColor: isLoading || !form.titulo.trim() ? '#999' : '#00E5A0', border: 'none', color: 'var(--bg)', borderRadius: '6px', cursor: isLoading ? 'not-allowed' : 'pointer', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+        >
+          {isLoading && <IconSpinner />}
+          {isLoading ? 'Evaluando...' : 'Evaluar idea'}
+        </button>
+      </form>
+
+      {error && (
+        <div style={{ backgroundColor: 'rgba(255,77,79,0.1)', border: '1px solid rgba(255,77,79,0.3)', borderRadius: '6px', padding: '10px 12px', color: '#FF4D4F', fontSize: '12px' }}>
+          {error}
+        </div>
+      )}
+
+      {result && (
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Score + Veredicto */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ textAlign: 'center', minWidth: '64px' }}>
+              <div style={{ fontSize: '36px', fontWeight: '700', color: result.score >= 7 ? '#00E5A0' : result.score >= 4 ? '#FFB400' : '#FF4D4F', fontFamily: 'var(--font-mono)' }}>
+                {result.score}
+              </div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>/ 10</div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ marginBottom: '6px' }}>
+                <span style={{ backgroundColor: `${RECOMENDACION_COLOR[result.recomendacion] || '#999'}22`, color: RECOMENDACION_COLOR[result.recomendacion] || '#999', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>
+                  {result.recomendacion}
+                </span>
+              </div>
+              <p style={{ color: 'var(--text)', fontSize: '13px', margin: 0, lineHeight: '1.5' }}>{result.veredicto}</p>
+            </div>
+          </div>
+
+          {/* Análisis por criterio */}
+          {result.analisis?.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {result.analisis.map((item) => (
+                <div key={item.criterio} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', padding: '10px 12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <span style={{ color: 'var(--text)', fontSize: '12px', fontWeight: '600' }}>{item.criterio}</span>
+                    <span style={{ color: item.puntaje >= 7 ? '#00E5A0' : item.puntaje >= 4 ? '#FFB400' : '#FF4D4F', fontSize: '13px', fontWeight: '700', fontFamily: 'var(--font-mono)' }}>{item.puntaje}/10</span>
+                  </div>
+                  <div style={{ width: '100%', height: '3px', backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: '2px', marginBottom: '6px' }}>
+                    <div style={{ width: `${item.puntaje * 10}%`, height: '100%', backgroundColor: item.puntaje >= 7 ? '#00E5A0' : item.puntaje >= 4 ? '#FFB400' : '#FF4D4F', borderRadius: '2px', transition: 'width 0.4s' }} />
+                  </div>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '11px', margin: 0, lineHeight: '1.4' }}>{item.texto}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EmptyState() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center' }}>
@@ -753,8 +994,12 @@ export default function Agentes() {
               transition: 'border-color 0.2s',
             }}
           >
-            {selectedAgent ? (
+            {selectedAgent?.id === 'legal' ? (
               <LegalAgentPanel agent={selectedAgent} allItems={allItems} onSubmit={handleExecuteAgent} isLoading={isLoading} recentExecutions={recentExecutions} />
+            ) : selectedAgent?.id === 'validator' ? (
+              <ValidatorAgentPanel agent={selectedAgent} />
+            ) : selectedAgent ? (
+              <EmptyState />
             ) : (
               <EmptyState />
             )}

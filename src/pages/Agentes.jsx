@@ -14,9 +14,7 @@ const AGENTS = [
     name: 'Agente Legal',
     description: 'Genera política de privacidad y textos legales para Play Store',
     status: 'activo',
-    webhook: IS_LOCAL
-      ? `${N8N_BASE_URL}/${N8N_WEBHOOK_PATH}/agente-legal`
-      : '/run-legal-agent',
+    webhook: `${N8N_BASE_URL}/webhook/agente-legal`,
     icon: 'shield',
   },
   {

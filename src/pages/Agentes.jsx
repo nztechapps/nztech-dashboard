@@ -325,7 +325,9 @@ function LegalAgentPanel({ agent, allItems, onSubmit, isLoading, recentExecution
     await onSubmit({
       app_id: isIdea ? null : selectedItem.id,
       idea_id: isIdea ? selectedItem.id : null,
+      nombre: selectedItem.name || '',
       app_name: selectedItem.name,
+      package: selectedItem.package_name || '',
       package_name: selectedItem.package_name || '',
       descripcion_app: selectedItem.descripcion || '',
       descripcion,
